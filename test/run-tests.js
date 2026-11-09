@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0, camFetch = false;
+let fails = 0, camFetch = false, s;
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -16,7 +16,7 @@ async function start(b, user, extra = []) {
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
     if (n === "0-2_901.xml") camFetch = true;
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml" }[n];
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -50,7 +50,8 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   let pg = await start(b, "Demo");
   const pin = await ko(pg, "Gartentor", "slot_pin"), val = await ko(pg, "Sollwert Pool", "slot_value"), mu = await ko(pg, "Restmüll", "muell_val");
   await pg.close();
-  pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`, "2|9001|8450.0|0", "2|9002|47503.779|0", "2|9003|6554.0|0"]);
+  pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`, "2|9001|8450.0|0", "2|9002|47503.779|0", "2|9003|6554.0|0",
+    "2|9113|0.0|0", "2|9116|Testband|0", "2|9117|Testlied|0", "2|9118|1.0|0", "2|9115|25.0|0", "2|9112|1.0|0"]);
 
   console.log("Menü");
   ok("Startseite ist das Menü", (await pg.textContent("#title")) === "Menü");
@@ -69,6 +70,15 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   await pg.click("#pclose"); ok("Schließen", !(await pg.isVisible("#plug")));
   await pg.click('#grid .mcard:has-text("Kamera")'); await pg.waitForTimeout(200);
   ok("Kamera-Einstellungen (mit Zugangsdaten) werden nicht abgerufen", !camFetch);
+  console.log("Plugin Sonos (1-25, Sendewerte aus dem Original-Plugin)");
+  await pg.click('#grid .mcard:has-text("Musik")'); await pg.waitForTimeout(300);
+  ok("Titel und Interpret", (await pg.textContent("#pbody")).includes("Testlied") && (await pg.textContent("#pbody")).includes("Testband"));
+  ok("Weiter gesperrt (CanNext = 0)", await pg.isDisabled('#pbody [data-pa="next"]'));
+  const sonos = [["play", "1|9101|1"], ["prev", "1|9104|0"], ["vup", "1|9105|1"], ["vdn", "1|9105|0"], ["stop", "1|9103|1"], ["mute", "1|9106|1"]];
+  for (const [a, exp] of sonos) { await pg.click(`#pbody [data-pa="${a}"]`); s = await sent(pg); ok(a + " sendet " + exp, s[0] === exp, JSON.stringify(s)); }
+  await pg.evaluate(() => WSI.onmessage({ data: "1|9110|1.0|0" })); await pg.waitForTimeout(50);
+  await pg.click('#pbody [data-pa="play"]'); s = await sent(pg); ok("spielt → Knopf sendet Pause", s[0] === "1|9102|1", JSON.stringify(s));
+  await pg.click("#pclose");
 
   console.log("Taster (1-118, Mitschnitt flows3/flows4)");
   await pg.click('nav button:has-text("Flur")'); await pg.waitForTimeout(200);
@@ -81,7 +91,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   const sw = await ko(pg, "Gartentor", "switch");
   await card(pg, "Gartentor").locator(".tog").click(); await pg.fill("#dinput", "0000"); await pg.click("#dok"); await pg.waitForTimeout(100);
   ok("falsche PIN abgelehnt", (await pg.textContent("#derr")) === "PIN falsch");
-  await pg.fill("#dinput", "1234"); await pg.click("#dok"); let s = await sent(pg); ok("richtige PIN schaltet", s[0] === `1|${sw}|1`, JSON.stringify(s));
+  await pg.fill("#dinput", "1234"); await pg.click("#dok"); s = await sent(pg); ok("richtige PIN schaltet", s[0] === `1|${sw}|1`, JSON.stringify(s));
   console.log("Müll (0-7)");
   await pg.click('nav button:has-text("Garten")'); await pg.waitForTimeout(200);
   await card(pg, "Restmüll").locator('[data-act="waste"]').click(); s = await sent(pg); ok("Erledigt sendet 0", s[0] === `1|${mu}|0`, JSON.stringify(s));

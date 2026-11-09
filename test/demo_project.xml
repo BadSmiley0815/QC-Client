@@ -84,6 +84,9 @@
     <mnu_item id="511" txt1="Zähler" txt2="Plugin Wertanzeige" ico="mnu_btn_ico_accountancy.xaml" group="3" visibleinqc="1" page="0">
       <cmd type="2" plugin_id="900" pos="0" pluginFullSize="0" />
     </mnu_item>
+    <mnu_item id="512" txt1="Musik" txt2="Plugin Sonos" ico="mnu_btn_ico_music.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="2" plugin_id="902" pos="0" pluginFullSize="0" />
+    </mnu_item>
     <page_item id="600" page="1" txt1="Extras" ico="" group="3" visibleinqc="1" />
     <mnu_item id="510" txt1="Pool" txt2="Unterseite" ico="mnu_btn_ico_pool.xaml" group="3" visibleinqc="1" page="1">
       <cmd type="3" room="17" />

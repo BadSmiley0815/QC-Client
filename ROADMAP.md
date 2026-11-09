@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.6.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.6.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -15,9 +15,10 @@ Stand: v0.6.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
 
 - [ ] **Plugins** aus dem Menü
   - [x] Wertanzeige (v0.6.0)
-  - [ ] Sonos (Sendewerte prüfen)
+  - [x] Sonos (v0.6.1)
   - [ ] Kamera live
-  - [ ] Diagramme, Meldungsarchiv, Kamera-Archiv (Mitschnitt nötig)
+  - [ ] Diagramme, Meldungsarchiv, Kamera-Archiv (Abruf steckt im QuadClient-Programm `qcclient.zip`)
+  - [ ] Sprechanlage, Energieverbrauch
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [ ] Raum- und Gewerkesymbole aus der QC-Visu

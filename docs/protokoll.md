@@ -121,8 +121,23 @@ Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Dat
 | Klasse | Plugin | Stand im Client |
 |---|---|---|
 | 1-2 | Wertanzeige („Wetterstation“): `<station_item caption>` mit `<value title dpt=KO format unit>` | umgesetzt (v0.6.0) |
-| 1-25 | Sonos: KOs für Play/Pause/Stop/Weiter/Lautstärke/Titel … | Sendewerte ungeprüft |
+| 1-25 | Sonos / Universal-Player: `<item>` mit `co…`-KOs | umgesetzt (v0.6.1), siehe unten |
 | 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
 | 0-3, 1-4, 1-16 | Diagramme (Archiv-IDs) | offen – Protokoll für Archivdaten fehlt |
 | 0-4, 0-7 | Meldungs-/Kamera-Archiv | offen – Protokoll fehlt |
 | 1-3 | Wetter (Gira-Dienst) | offen |
+
+### Sonos (1-25) – Sendewerte
+
+Ermittelt aus dem Original-Plugin (`1-25_client.dll`, Klasse `Player`), nicht geraten:
+
+| Bedienung | Senden |
+|---|---|
+| Abspielen/Pause (ein Knopf) | spielt (`coIsPlaying` > 0) → `coPause` = 1, sonst `coPlay` = 1; Gruppen-Mitglied (`coSlaveModeRM` > 0) → `coStop` = 1 |
+| Stopp / Weiter / Lauter | `coStop` / `coNext` / `coVolumeUp` = 1 |
+| Zurück | `coPrevious` = 0, wenn gleiches KO wie `coNext`, sonst 1 |
+| Leiser | `coVolumeDown` = 0, wenn gleiches KO wie `coVolumeUp`, sonst 1 |
+| Stumm, Zufall, Wiederholen, Gruppe, Ein/Aus | umschalten: 1 bzw. 0 nach `…RM` |
+| Lautstärke direkt | `coVolume` = 0–100 |
+
+Rückmeldungen gelten als „an“ bei Wert > 0. `coCan…` = 0 sperrt den jeweiligen Knopf.
