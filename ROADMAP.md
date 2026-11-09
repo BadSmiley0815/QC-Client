@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -29,7 +29,8 @@ Stand: v0.9.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
 - [x] Symbole aus der QC-Visu (v0.8.0)
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil
-  - [ ] Plugins in den Quadranten im Original-Stil
+  - [x] Plugins in den Quadranten im Original-Stil (Diagramm, Sonos, Kamera – v0.9.1)
+  - [ ] Farbbalken bei RGB-Zeilen, MyTouch, Notiz
 - [ ] Fernzugriff über Gira S1 testen
 - [ ] Realer HS-Neustart mit v0.5.x beobachten (Erkennung, Countdown, Wiederverbinden)
 

@@ -67,6 +67,25 @@ button{font:inherit;color:inherit}
 .cl-tab.act{background:#2b2b2b!important;border-radius:4px 4px 0 0}
 .cl-qa{top:0;height:42px;width:57px;display:grid;place-items:center}.cl-qa svg{width:20px;height:20px}.cl-qa:disabled{color:#444!important}
 .cl-qb{position:absolute;left:0;top:42px;width:680px;height:274px;overflow:auto;background:#1c1c1c;padding:8px}
+#classic .chip{border:1px solid #444;padding:6px 12px;border-radius:16px;background:#222}
+#classic .cl-camv .btns button{border:1px solid #444;padding:8px 16px;background:#222c;border-radius:6px}#classic .cl-camv .btns button.act{color:#BEDC00}
+.cl-qb.cl-raw{padding:0;overflow:hidden;background:#1a1a1a}
+.cl-sub{position:absolute;left:0;top:0;width:680px;height:42px;background:#151515;border-bottom:1px solid #000}
+.cl-sa{position:absolute!important;top:0;width:57px;height:42px;display:grid;place-items:center;color:#e6e6e6!important;border-right:1px solid #000!important}.cl-sa svg{width:20px;height:20px}.cl-sa:disabled{color:#3a3a3a!important}
+.cl-st{position:absolute;left:114px;width:452px;top:11px;text-align:center;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-chart{position:absolute;left:0;top:42px;width:680px;height:232px}.cl-chart svg{position:absolute;left:0;top:0;font-family:Arial,sans-serif}
+.cl-leg{position:absolute;top:6px;font-size:12px;line-height:1.35}
+.cl-sonos{position:absolute;left:0;top:42px;width:680px;height:232px}
+.cl-cover{position:absolute;left:30px;top:14px;width:200px;height:200px;border:2px solid #000;background:#141414;display:grid;place-items:center;color:#e6e6e6;overflow:hidden}.cl-cover svg{width:70px;height:70px}.cl-cover img{width:100%;height:100%;object-fit:cover}
+.cl-sinfo{position:absolute;left:262px;top:0;width:418px;height:92px;border-bottom:2px solid #111;padding:14px 18px;font-size:15px;color:#ccc}.cl-sinfo div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-sdot{position:absolute;right:22px;top:14px;width:12px;height:12px;border-radius:50%;background:#666}.cl-sdot.on{background:#BEDC00}
+.cl-srow{position:absolute;left:262px;top:94px;width:418px;height:54px;display:flex;align-items:center;justify-content:center;gap:16px;border-bottom:2px solid #111}
+.cl-sb{width:46px;height:46px;display:grid;place-items:center;color:#e6e6e6!important}.cl-sb svg{width:30px;height:30px}.cl-sb:disabled{color:#555!important}.cl-sb.act{color:#BEDC00!important}
+.cl-vol{width:60px;height:8px;background:#444;position:relative}.cl-vol i{position:absolute;left:0;top:0;bottom:0;background:#e6e6e6}
+.cl-camv{position:absolute;left:0;top:42px;width:680px;height:232px;overflow:hidden}.cl-camv .carch img{max-height:none;height:232px;width:680px;object-fit:cover;border-radius:0}
+.cl-camv .btns{position:absolute;right:8px;bottom:8px;margin:0}.cl-camv .cerr{height:232px;border-radius:0}
+.cl-camg{position:absolute;left:0;top:42px;width:680px;height:232px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:#000}
+.cl-camc{overflow:hidden;min-height:0}.cl-camc .camgrid{display:block}.cl-camc .camimg{aspect-ratio:auto;height:115px;border-radius:0}.cl-camc .camcap{display:none}.cl-camc .cerr{height:115px;min-height:0;padding:6px;font-size:11px}
 .cl-qmsg{display:flex;flex-direction:column;gap:6px;padding:14px;color:#bbb;font-size:15px}
 #cl-nav{position:absolute;left:0;top:726px;width:1366px;height:42px;display:flex;background:#000}
 #cl-nav button{flex:1;font-size:17px;color:#fff;border-left:1px solid #222}#cl-nav button.act{background:#1e1e1e}#cl-nav button:disabled{color:#555}
@@ -334,7 +353,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.0";
+const VERSION = "0.9.1";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -376,7 +395,7 @@ const P = {
   shuffle:'<path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/>', repeat:'<path d="M4 11V9a3 3 0 0 1 3-3h13M17 3l3 3-3 3M20 13v2a3 3 0 0 1-3 3H4M7 21l-3-3 3-3"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
   power:'<path d="M12 3v8M7 6.5a7 7 0 1 0 10 0"/>', group:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19a5 5 0 0 1 10 0M11 19a5 5 0 0 1 10 0"/>',
-  left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
+  minus2:'<path d="M4 12h16"/>', plus2:'<path d="M4 12h16M12 4v16"/>', left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
   up:'<path d="M6 15l6-6 6 6"/>', down:'<path d="M6 9l6 6 6-6"/>', stop:'<rect x="7" y="7" width="10" height="10" rx="1.5"/>'
 };
 const svg = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${P[k] || P.info}</svg>`;
@@ -1175,7 +1194,12 @@ const HOSTS = []; let RBODY = null;
 const hostOfData = d => HOSTS.find(h => h.plug && h.plug.data === d);
 const hostOfEl = el => HOSTS.find(h => h.body.contains(el));
 const plugAlive = d => !!hostOfData(d);
-function renderHost(h) { if (!h || !h.plug || !h.plug.data) return; RBODY = h.body; PLUG = h.plug; h.body.innerHTML = PLUGIN_TYPES[h.plug.cls].html(h.plug.data); }
+function renderHost(h) { if (!h || !h.plug || !h.plug.data) return; RBODY = h.body; PLUG = h.plug;
+  const T = PLUGIN_TYPES[h.plug.cls], cl = h.classic && T.htmlClassic; h.body.classList.toggle("cl-raw", !!cl);
+  h.body.innerHTML = cl ? T.htmlClassic(h.plug.data) : T.html(h.plug.data); }
+/* Unterleiste im Quadranten (Original: quad_sub_control) */
+const clSub = (prev, title, next, mid = "") => `<div class="cl-sub"><button data-pa="${prev[0]}" ${prev[1] === undefined ? "disabled" : ""} data-d="${prev[1] ?? ""}" class="cl-sa" style="left:0">${svg("left")}</button>${mid}
+  <div class="cl-st">${title}</div><button data-pa="${next[0]}" ${next[1] === undefined ? "disabled" : ""} data-d="${next[1] ?? ""}" class="cl-sa" style="left:623px">${svg("right")}</button></div>`;
 async function hsGet(path) {
   const r = await fetch("https://" + cfg.host + path + "?" + sid);
   if (!r.ok) throw new Error(path.split("/").pop() + ": HTTP " + r.status);
@@ -1203,7 +1227,7 @@ async function openPlugin(title, id, host) {
   try {
     const x = new DOMParser().parseFromString(await hsGet("/quad/plugins/project/" + pi.project), "text/xml");
     if (h.plug !== P0) return;
-    P0.data = T.read(x); P0.tags = new Set(T.tags(P0.data).filter(k => k && k !== "0"));
+    P0.data = T.read(x); P0.tags = new Set(T.tags(P0.data).filter(k => k && k !== "0")); if (T.start) T.start(P0.data, h);
     renderHost(h);
     if (T.load) { await T.load(P0.data); if (h.plug === P0) renderHost(h); }
   } catch (e) { h.body.innerHTML = `<p class="note">Plugin konnte nicht geladen werden: ${esc(e.message)}</p>`; log("··", "Plugin " + id + ": " + e.message); }
@@ -1266,7 +1290,23 @@ PLUGIN_TYPES["1-25"] = {
         ${has("coRepeat") ? btn("rep", "repeat", can("coCanRepeat"), on("coRepeatRM"), "Wiederholen") : ""}
         ${has("coSlaveMode") ? btn("grp", "group", true, slave, "Gruppe") : ""}</div></div>`;
   }).join("") + "</div>",
+  /* Original-Stil: ein Player, ◀ Name ▶, Cover links, Knopfreihe, Lautstärke − ▬ + */
+  htmlClassic: d => {
+    const i = Math.min(d.sel || 0, d.length - 1), p = d[i]; if (!p) return '<div class="cl-qmsg">Keine Player eingerichtet.</div>';
+    const on = k => p[k] && p[k] !== "0" && (num(p[k]) || 0) > 0, has = k => p[k] && p[k] !== "0", can = k => !has(k) || on(k), txt = k => has(k) ? (V.get(p[k]) || "").trim() : "";
+    const playing = on("coIsPlaying"), cov = txt("coCoverArtURL");
+    const sub = clSub(["psel", i > 0 ? -1 : undefined], esc(p.name || "Player") + (txt("coPlaylistName") ? "&nbsp;&nbsp;[ " + esc(txt("coPlaylistName")) + " ]" : "&nbsp;&nbsp;[ ]"), ["psel", i < d.length - 1 ? 1 : undefined]);
+    const B = (a, ic, ok = true, act = false) => `<button data-pa="${a}" data-i="${i}" class="cl-sb${act ? " act" : ""}" ${ok ? "" : "disabled"}>${svg(ic)}</button>`;
+    return sub + `<div class="cl-sonos"><div class="cl-cover">${/^https?:\/\//.test(cov) ? `<img src="${esc(cov)}" alt="" referrerpolicy="no-referrer">` : svg("music")}</div>
+      <div class="cl-sinfo"><div>${esc(txt("coTitle"))}</div><div>${esc([txt("coArtist"), txt("coAlbum")].filter(Boolean).join(" · "))}</div>
+        <span class="cl-sdot${has("coConnected") && !on("coConnected") ? "" : " on"}" title="${has("coConnected") && !on("coConnected") ? "nicht verbunden" : "verbunden"}"></span></div>
+      <div class="cl-srow">${has("coRandom") ? B("rnd", "shuffle", can("coCanRandom"), on("coRandomRM")) : ""}${has("coPrevious") ? B("prev", "prev", can("coCanPrevious")) : ""}${p.useStopButton === "True" && has("coStop") ? B("stop", "stop", can("coCanStop")) : ""}
+        ${B("play", playing ? "pause" : "play", playing ? can("coCanPause") : can("coCanPlay"), playing)}${has("coNext") ? B("next", "next", can("coCanNext")) : ""}${has("coRepeat") ? B("rep", "repeat", can("coCanRepeat"), on("coRepeatRM")) : ""}</div>
+      <div class="cl-srow" style="top:150px">${p.useMuteOption === "True" && has("coMute") ? B("mute", on("coMuteRM") ? "mute" : "volup", true, on("coMuteRM")) : ""}${has("coVolumeDown") ? B("vdn", "minus2") : ""}
+        <div class="cl-vol"><i style="width:${Math.max(0, Math.min(100, num(p.coVolumeRM) || 0))}%"></i></div>${has("coVolumeUp") ? B("vup", "plus2") : ""}</div></div>`;
+  },
   act: (d, b) => {
+    if (b.dataset.pa === "psel") { d.sel = Math.max(0, Math.min(d.length - 1, (d.sel || 0) + +b.dataset.d)); return; }
     const p = d[+b.dataset.i]; if (!p) return;
     const on = k => p[k] && p[k] !== "0" && (num(p[k]) || 0) > 0, tog = (ko, rm) => send(p[ko], on(rm) ? 0 : 1);
     switch (b.dataset.pa) {
@@ -1406,8 +1446,38 @@ PLUGIN_TYPES["0-3"] = {
     return tabs + legend + (d.err ? `<p class="note">Archiv konnte nicht geladen werden: ${esc(d.err)}</p>` : "") + panels + tip +
       `<p class="note" style="margin:6px 0 0">Werte je ${rg.size >= 60 ? fmt(rg.size / 60, 2).replace(/,00$/, "") + " h" : rg.size + " min"}${d.at ? " · Stand " + d.at.toLocaleTimeString("de-DE") : ""}</p>`;
   },
+  /* Original-Stil: eine Grafik, zwei Achsen rechts, Farben Rot/Grün/Blau, Pfeilmarken, Zeitraum mit ◀ ▶ */
+  htmlClassic: d => {
+    const i = d.ranges.findIndex(r => r.k === d.cur), rg = CHART_RANGES.find(r => r.k === d.cur) || CHART_RANGES[1];
+    const sub = clSub(["rg", (d.ranges[i - 1] || {}).k], esc(rg.t), ["rg", (d.ranges[i + 1] || {}).k]);
+    if (!d.ranges.length) return sub + '<div class="cl-qmsg">Keine Archive eingerichtet.</div>';
+    if (!d.vals) return sub + '<div class="cl-qmsg">Lade Archivdaten …</div>';
+    const COL = ["#DC0000", "#00C800", "#40BBFF"], W = 680, H = 232, L = 14, PR = 545, T = 46, B = 30, ph = H - T - B;
+    const axes = [0, 1].filter(a => d.lines.some(l => l.axis === a)), sc = {};
+    axes.forEach(a => { const s0 = d.sc[a], all = d.lines.map((l, k) => l.axis === a ? (d.vals[k] || []) : []).flat().filter(v => v !== null);
+      let lo = isFinite(s0.min) ? s0.min : Math.min(...all), hi = isFinite(s0.max) ? s0.max : Math.max(...all);
+      if (all.length) { lo = Math.min(lo, ...all); hi = Math.max(hi, ...all); } if (!isFinite(lo) || !isFinite(hi) || hi <= lo) { lo = 0; hi = 1; }
+      sc[a] = { lo, hi, y: v => T + ph - (v - lo) / (hi - lo) * ph }; });
+    const x = k => L + (k + 0.5) / rg.count * (PR - L);
+    let g = "";
+    [0, .25, .5, .75, 1].forEach((f, j) => { const yy = T + ph - f * ph; g += `<line x1="${L}" x2="${PR}" y1="${yy}" y2="${yy}" stroke="#333" stroke-width="1"/>`;
+      axes.forEach((a, n) => { const s0 = d.sc[a], v = sc[a].lo + f * (sc[a].hi - sc[a].lo), ax = PR + 22 + n * 78;
+        g += `<line x1="${ax}" x2="${ax + 6}" y1="${yy}" y2="${yy}" stroke="#666"/><text x="${ax + 10}" y="${yy + 4}" fill="#e6e6e6" font-size="12">${esc(fmt(v, s0.prec))}</text>`; }); });
+    axes.forEach((a, n) => { const ax = PR + 22 + n * 78; g += `<line x1="${ax}" x2="${ax}" y1="${T}" y2="${T + ph}" stroke="#666"/><text x="${ax + 10}" y="${T - 22}" fill="#e6e6e6" font-size="12">${esc(d.sc[a].unit)}</text>`; });
+    g += `<line x1="${L}" x2="${PR}" y1="${T + ph}" y2="${T + ph}" stroke="#666"/>`;
+    const fx = rg.unit === "d" ? { day: "2-digit", month: "2-digit", year: "2-digit" } : rg.fmt;
+    chartXTicks(rg, d.start, false).forEach(([k, t0]) => { const xx = L + k / rg.count * (PR - L), tt = new Date(d.start.getTime() + k * rg.size * 60000);
+      g += `<line x1="${xx}" x2="${xx}" y1="${T + ph}" y2="${T + ph + 5}" stroke="#666"/><text x="${xx}" y="${H - 8}" text-anchor="middle" fill="#e6e6e6" font-size="12">${esc(tt.toLocaleString("de-DE", fx))}</text>`; });
+    d.lines.forEach((l, k) => { const v = d.vals[k] || [], s1 = sc[l.axis]; let p = "", pen = false, last = null;
+      v.forEach((y, j) => { if (y === null) { pen = false; return; } p += (pen ? "L" : "M") + x(j).toFixed(1) + " " + s1.y(y).toFixed(1); pen = true; last = y; });
+      g += `<path d="${p}" fill="none" stroke="${COL[l.color]}" stroke-width="1.5"/>`;
+      if (last !== null) { const ax = PR + 22 + axes.indexOf(l.axis) * 78, yy = s1.y(last); g += `<path d="M${ax - 12} ${yy}l8 -5v10z" fill="${COL[l.color]}"/>`; } });
+    const leg = [0, 1].map(a => d.lines.filter(l => l.axis === a).map(l => `<div style="color:${COL[l.color]}">${esc(l.title)}</div>`).join("")).map((h, n) => `<div class="cl-leg" style="left:${18 + n * 240}px">${h}</div>`).join("");
+    return sub + `<div class="cl-chart">${leg}<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(d.lines.map(l => l.title).join(", "))}">${g}</svg></div>`;
+  },
   act: async (d, b) => {
-    if (b.dataset.pa === "rg" && b.dataset.k !== d.cur) { d.cur = b.dataset.k; d.vals = null; d.hover = null; renderPlug(); await PLUGIN_TYPES["0-3"].load(d); }
+    const k = b.dataset.k || b.dataset.d;
+    if (b.dataset.pa === "rg" && k && k !== d.cur) { d.cur = k; d.vals = null; d.hover = null; renderPlug(); await PLUGIN_TYPES["0-3"].load(d); }
   }
 };
 /* Fadenkreuz: Position im Diagramm -> Block */
@@ -1534,6 +1604,7 @@ PLUGIN_TYPES["0-2"] = {
       cmds: [...c.querySelectorAll("cmd")].map(m => ({ text: m.getAttribute("text") || "", tag: m.getAttribute("tag") || "", op: m.getAttribute("op") || "set", value: +(m.getAttribute("value") || 1) })) })),
     sel: null, bad: {} }),
   tags: d => d.cams.flatMap(c => c.cmds.map(m => m.tag)),
+  start: (d, h) => { if (h && h.classic && d.cams.length) d.sel = 0; },
   load: async d => {
     const tick = () => { const H = hostOfData(d); if (!H) return;
       H.body.querySelectorAll("img[data-cam]").forEach(im => { const c = d.cams[+im.dataset.cam], live = im.dataset.live === "1";
@@ -1552,9 +1623,19 @@ PLUGIN_TYPES["0-2"] = {
     return `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><button class="chip" data-pa="all">${svg("left")} Alle Kameras</button><b>${esc(c.title)}</b></div>
       <div class="carch">${img(c, d.sel, live)}</div>${btns(c)}`;
   },
+  /* Original-Stil: ◀ ▦ Name ▶, Bild über die ganze Breite; ▦ = alle Kameras */
+  htmlClassic: d => {
+    if (!d.cams.length) return '<div class="cl-qmsg">Keine Kameras eingerichtet.</div>';
+    const i = d.sel === null ? -1 : d.sel, grid = `<button data-pa="all" class="cl-sa" style="left:57px">${svg("plugin")}</button>`;
+    const sub = clSub(["csel", i > 0 ? -1 : i === -1 ? undefined : undefined], i < 0 ? "Alle Kameras" : esc(d.cams[i].title), ["csel", i < d.cams.length - 1 ? 1 : undefined], grid);
+    if (i < 0) return sub + `<div class="cl-camg">${d.cams.slice(0, 4).map((c, k) => `<div class="cl-camc">${PLUGIN_TYPES["0-2"].html({ ...d, cams: [c], sel: null, bad: { 0: d.bad[k] } }).replace(/data-cam="0"/g, `data-cam="${k}"`).replace(/data-i="0"/g, `data-i="${k}"`)}</div>`).join("")}</div>`;
+    const c = d.cams[i];
+    return sub + `<div class="cl-camv">${PLUGIN_TYPES["0-2"].html({ ...d, cams: d.cams, sel: i }).replace(/^[\s\S]*?<div class="carch">/, '<div class="carch">')}</div>`;
+  },
   act: async (d, b) => {
     const i = +b.dataset.i;
     switch (b.dataset.pa) {
+      case "csel": d.sel = Math.max(0, Math.min(d.cams.length - 1, (d.sel === null ? -1 : d.sel) + +b.dataset.d)); break;
       case "sel": d.sel = i; break;
       case "all": d.sel = null; break;
       case "retry": delete d.bad[i]; break;
@@ -1954,7 +2035,7 @@ function clShow(on) {
   $("app").classList.toggle("cl-hide", !!show);
   clearInterval(clTimer);
   if (!show) return;
-  if (!CL.hosts[1]) { CL.hosts[1] = plugHost($("cl-q1b")); CL.hosts[2] = plugHost($("cl-q2b")); hoverHooks($("cl-q1b")); hoverHooks($("cl-q2b")); }
+  if (!CL.hosts[1]) { CL.hosts[1] = plugHost($("cl-q1b")); CL.hosts[2] = plugHost($("cl-q2b")); CL.hosts[1].classic = CL.hosts[2].classic = true; hoverHooks($("cl-q1b")); hoverHooks($("cl-q2b")); }
   clScale(); clHead(); clTimer = setInterval(clHead, 10000);
   clLoad().then(() => clRender());
   clRender();
