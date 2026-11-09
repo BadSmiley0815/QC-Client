@@ -14,7 +14,7 @@ Stand: v0.7.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
 ## 2 · Funktionen (Stufe 1 „QC-Ersatz“)
 
 - [ ] **Plugins** aus dem Menü
-  - [x] Wertanzeige (v0.6.0)
+  - [x] Wertanzeige (v0.6.0, am HS bestätigt)
   - [x] Sonos (v0.6.1)
   - [ ] Kamera live
   - [x] Kamera-Archiv (v0.6.2, am HS bestätigt)
