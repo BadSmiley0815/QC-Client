@@ -16,10 +16,11 @@ async function start(b, user, extra = []) {
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
     if (n === "0-2_901.xml") camFetch = true;
     if (u.includes("/quad/camarch/list/71?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="3"><pic date="20261108101500" id="5"/><pic date="20261109183012" id="7"/><pic date="20261109090000" id="6"/></camarch>' });
+    if (u.includes("/quad/msg/81/1000?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<msgarch count="3"><msg date="20261107080000" text="Pumpe Störung"/><msg date="20261109120500" text="Fenster Bad offen &amp; Regen"/><msg date="20261108200000" text="Pumpe wieder OK"/></msgarch>' });
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml" }[n];
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -91,6 +92,15 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   await pg.selectOption('#pbody select[data-pa="pick"]', "2"); await pg.waitForTimeout(200); ok("Auswahl → ältestes Bild 5", picFetch.at(-1) === "71/5");
   await pg.click('#pbody [data-pa="cam"][data-i="1"]'); await pg.waitForTimeout(300);
   ok("zweite Kamera: leeres Archiv", (await pg.textContent("#pbody")).includes("Keine Bilder"));
+  await pg.click("#pclose");
+  console.log("Plugin Meldungsarchiv (0-4)");
+  await pg.click('#grid .mcard:has-text("Meldungen")'); await pg.waitForTimeout(400);
+  const rows = await pg.locator("#pbody .mrow span").allTextContents();
+  ok("neueste zuerst, Sonderzeichen korrekt", rows[0] === "Fenster Bad offen & Regen" && rows.length === 3, JSON.stringify(rows));
+  ok("Datum lesbar", (await pg.textContent("#pbody .mrow time")).includes("09.11.2026, 12:05:00"));
+  await pg.fill('#pbody input[data-pa="q"]', "pumpe"); await pg.waitForTimeout(100);
+  ok("Suche filtert", (await pg.locator("#pbody .mrow").count()) === 2 && (await pg.textContent("#pbody")).includes("2 von 3"));
+  ok("Suchfeld behält Fokus", await pg.evaluate(() => document.activeElement.matches('#pbody input[data-pa="q"]')));
   await pg.click("#pclose");
 
   console.log("Taster (1-118, Mitschnitt flows3/flows4)");

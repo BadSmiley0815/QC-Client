@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.6.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.6.3 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -18,7 +18,7 @@ Stand: v0.6.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [x] Sonos (v0.6.1)
   - [ ] Kamera live
   - [x] Kamera-Archiv (v0.6.2)
-  - [ ] Meldungsarchiv
+  - [x] Meldungsarchiv (v0.6.3)
   - [ ] Diagramme
   - [ ] Sprechanlage, Energieverbrauch
   - [ ] Wetter

@@ -7,5 +7,6 @@
     <plugin_instance id="901" class="0-2" master_id="" title="Kamera" group="3" project="0-2_901.xml" userdef="userdef901.dat" visibleinqc="1" />
     <plugin_instance id="902" class="1-25" master_id="" title="Musik" group="3" project="1-25_902.xml" userdef="userdef902.dat" visibleinqc="1" />
     <plugin_instance id="903" class="0-7" master_id="" title="Klingelbilder" group="3" project="0-7_903.xml" userdef="userdef903.dat" visibleinqc="1" />
+    <plugin_instance id="904" class="0-4" master_id="" title="Meldungen" group="3" project="0-4_904.xml" userdef="userdef904.dat" visibleinqc="1" />
   </instances>
 </plugins>
