@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 qc_probe.py – prüft, ob ein Browser sich am QC-WebSocket des HS anmelden könnte.
 Schaltet nichts, liest nur.

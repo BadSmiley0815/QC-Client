@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 qc_test.py – Machbarkeitstest: spricht ohne Gira QuadClient direkt mit dem HomeServer
 über dieselbe Schnittstelle (wss://<HS>/quad/ws) und lädt die QC-Visu vom HS.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 qc2json – liest die vom Gira QuadClient zwischengespeicherte Visu-Konfiguration
 (client_project.xml) und erzeugt daraus eine schlanke JSON-Datei für einen

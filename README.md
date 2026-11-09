@@ -60,6 +60,11 @@ node test/run-tests.js
 - `qc_probe.py` – prüft, welche Anmeldeart der HS akzeptiert
 - `qc2json.py` – wandelt eine `client_project.xml` in eine schlanke JSON-Datei
 
+## Lizenz
+
+GNU General Public License v3.0 – siehe [`LICENSE`](LICENSE). Jeder darf den Client nutzen,
+ändern und weitergeben; geänderte Fassungen müssen ebenfalls unter der GPL-3.0 offen bleiben.
+
 ## Hinweise
 
 - Unabhängiges Projekt, **nicht von Gira** und nicht von Gira unterstützt. „Gira“,
