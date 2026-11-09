@@ -206,3 +206,19 @@ enthält alle QuadClient-Symbole als XAML (`Canvas`, `Path` mit `Figures`/`Data`
 Verläufe). **Das ZIP nutzt ZIP64** – die echten Größen stehen im Zusatzfeld (ID 1).
 Menü: `ico`, Elemente: `symbol`. Räume, Etagen und Gewerke haben kein eigenes Symbol;
 der Client nimmt das des Menüeintrags, der dorthin führt.
+
+## Ansicht „Klassisch“ – Vorlagensprache
+
+Der Windows-QuadClient zeichnet jede Funktionszeile aus `design_4/client_templates.xml`
+(Vorlage = `template id="<Vorlage>[_<Variante>]"`) und `design_4/client_design.xml` (Layouts):
+
+- `panel pos="1..3" layout click used_param used_on` – Feld 1–3 rechts neben dem Namen (bei 343/455/567 px, 110 × 40)
+- `icon`, `icon_dyn` (mit `content case_slot` → `case on_value | from/to ico`), `text`, `text_dyn` (`value`, `def_value`, `content value_slot`, `prec`, `unit`)
+- `group` mit Bedingung, `width slot min_value max_value` (Balken)
+- Bedingungen: `visible_slot` + `on_value` (ohne `on_value`: „wenn wahr“), `visible from/to` (Typ 2 = einschließlich)
+- `logic operation="and|or|sum" type="bit" inverse` mit `slot compare` und `fix value`
+- Aktionen: `action_down`, `action_up`, `action_repeat` mit `click` (Zone 1 = ganzes Feld, 2/3 = linke/rechte Hälfte),
+  `from_time`/`to_time` in ms (z. B. kurz = schalten, ab 501 ms = dimmen), `type="set|toggle|step_up|step_down|popup|…"`
+- Werte in der Visu wie `False`/`True` gelten als 0/1.
+
+Der Client setzt diese Sprache direkt um; Popups öffnen vorerst die moderne Kachel der Funktion.

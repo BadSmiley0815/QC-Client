@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erfundenes Mini-Design für die Tests (Aufbau wie client_design.xml) -->
+<design><templates><layouts>
+  <layout name="pan_doublebtn">
+    <cell name="down2" left="1" top="1" width="55" height="40" /><cell name="down3" left="55" top="1" width="55" height="40" />
+    <cell name="leftbg" left="1" top="0" width="54" height="40" />
+    <cell name="txt1" left="0" top="11" width="55" height="16" font_id="500" align="1" /><cell name="txt2" left="55" top="11" width="55" height="16" font_id="500" align="1" />
+  </layout>
+  <layout name="pan_dimbar"><cell name="down1" left="1" top="1" width="110" height="40" /><cell name="text" left="67" top="13" width="38" height="16" align="2" font_id="501" /></layout>
+</layouts></templates></design>

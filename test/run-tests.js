@@ -24,6 +24,7 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
       "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml" }[n];
+    if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (n === "client_icons.xaml.zip") return r.fulfill({ status: u.includes("/quad/client/design_0/") ? 200 : 404, contentType: "application/zip", body: T("demo_icons.xaml.zip") });
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
@@ -210,6 +211,28 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   const n0 = await pg.evaluate(() => WSN); await pg.click("#bnow"); await pg.waitForTimeout(300);
   ok("„Jetzt verbinden“ verbindet sofort", (await pg.evaluate(() => WSN)) === n0 + 1);
   ok("nach Verbindung kein Hinweis", !(await pg.isVisible("#banner")));
+  await pg.close();
+  console.log("Ansicht Klassisch (Vorlagen-Übersetzer)");
+  pg = await start(b, "Demo", ["2|111|1.0|0", "2|116|42.0|0"]);
+  await pg.selectOption("#uisel", "classic"); await pg.waitForTimeout(700);
+  ok("klassische Ansicht sichtbar, moderne versteckt", await pg.isVisible("#classic") && !(await pg.isVisible("#app main")));
+  ok("Menü mit 3 Spalten", (await pg.locator("#cl-left .cl-mt").count()) > 5 && (await pg.textContent("#cl-title")) === "Menü");
+  await pg.click('#cl-left .cl-mt:has-text("Wohnen")'); await pg.waitForTimeout(300);
+  const rowTxt = n => pg.locator(`#cl-left .cl-row:has(.cl-name:text-is("${n}"))`);
+  ok("Raumzeile aus der Vorlage: Texte, logic, group", (await rowTxt("Deckenlicht").textContent()).replace(/\s+/g, "").includes("EINAUSANeinzeln"), await rowTxt("Deckenlicht").textContent());
+  ok("Wertanzeige aus value_slot mit Einheit", (await rowTxt("Leselampe").textContent()).includes("42%"), await rowTxt("Leselampe").textContent());
+  await sent(pg);
+  await rowTxt("Deckenlicht").locator('.cl-p[data-pos="1"] .cl-z[data-z="3"]').click(); s = await sent(pg);
+  ok("Klick rechts = AUS (action_up click 3)", s[0] === "1|110|0", JSON.stringify(s));
+  const zb = await rowTxt("Leselampe").locator('.cl-p[data-pos="1"] .cl-z[data-z="2"]').boundingBox();
+  await pg.mouse.move(zb.x + 5, zb.y + 5); await pg.mouse.down(); await pg.waitForTimeout(80); await pg.mouse.up(); s = await sent(pg);
+  ok("kurz (≤ 500 ms) = Aus", JSON.stringify(s) === JSON.stringify(["1|115|0"]), JSON.stringify(s));
+  await pg.mouse.down(); await pg.waitForTimeout(700); await pg.mouse.up(); s = await sent(pg);
+  ok("halten (> 500 ms) = dimmen, loslassen = stopp", JSON.stringify(s) === JSON.stringify(["1|117|1", "1|117|0"]), JSON.stringify(s));
+  await rowTxt("Leselampe").locator('.cl-p[data-pos="2"] .cl-z').click(); await pg.waitForTimeout(200);
+  ok("Popup der Vorlage -> Einstellungsfenster", await pg.isVisible("#clcard") && (await pg.textContent("#clcardg")).includes("Leselampe"));
+  await pg.click("#clcardx"); await pg.click('#cl-nav [data-sys]'); await pg.click('#cl-sys [data-sysa="modern"]'); await pg.waitForTimeout(200);
+  ok("zurück auf Modern", !(await pg.isVisible("#classic")) && await pg.isVisible("#app main"));
   await pg.close();
   console.log("Rechte");
   pg = await start(b, "Gast");

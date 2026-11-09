@@ -2,4 +2,32 @@
 <!-- Erfundene Minimal-Vorlagen nur für die Tests (Aktionsliste der Schaltuhr). Keine Gira-Dateien. -->
 <templates>
   <template id="1-118_2"><timer pin_slot="slot_pin"><action text="#demo_on"/><action text="#demo_off"/></timer></template>
+  <!-- Erfundene Vorlagen für die Tests der Ansicht „Klassisch“ (Aufbau wie die QuadClient-Vorlagensprache) -->
+  <template id="1-101_2">
+    <logic id="logic_on" operation="and"><slot id="switch_rm" /><fix value="1" /></logic>
+    <panel pos="1" click="4" layout="pan_doublebtn">
+      <icon_dyn cell="leftbg" ico="demo_grey">
+        <content case_slot="switch_rm"><case on_value="1" ico="$par_switch_on" /></content>
+      </icon_dyn>
+      <text cell="txt1" value="$par_on" def_value="#ON" />
+      <text cell="txt2" value="$par_off" def_value="#OFF" />
+      <action_up click="2" type="set" slot="switch" value="1" />
+      <action_up click="3" type="set" slot="switch" value="0" />
+    </panel>
+    <panel pos="2" click="0" layout="pan_doublebtn">
+      <text cell="txt1" value="AN" visible_slot="logic_on" />
+      <group visible_slot="$par_combined_state" on_value="0"><text cell="txt2" value="einzeln" /></group>
+    </panel>
+  </template>
+  <template id="1-102">
+    <panel pos="1" click="4" layout="pan_doublebtn" used_param="$par_mode" used_on="2">
+      <action_up click="2" type="set" slot="dim_s" value="0" to_time="500" />
+      <action_down click="2" type="set" slot="slot_dim" value="1" from_time="501" />
+      <action_up click="2" type="set" slot="slot_dim" value="0" from_time="501" />
+    </panel>
+    <panel pos="2" click="1" layout="pan_dimbar">
+      <text_dyn cell="text" prec="0" unit="$par_unit"><content value_slot="dim_val" /></text_dyn>
+      <action_up click="1" type="popup" id="1" />
+    </panel>
+  </template>
 </templates>

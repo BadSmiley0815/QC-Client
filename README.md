@@ -19,7 +19,7 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
 - Erweiterungen über eine eigene WebApp, das KO-Gateway und eigene HSL3-Logikbausteine –
   z. B. moderne Kameras (ONVIF), eigene Kacheln, eigene Seiten.
 
-## Stand (v0.8.0)
+## Stand (v0.9.0)
 
 - Menü als Startseite, Räume nach Etagen, Gewerke, Favoriten – mit den Symbolen aus der QC-Visu
 - Schalten, Dimmen, Rollo, Heizung, RGB, Tunable White, Taster (alle Varianten), Szenen
@@ -27,6 +27,7 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
 - Schaltuhren anzeigen, anlegen, ändern, löschen (Uhrzeit, Zufall, Sonnenauf-/-untergang,
   Wochentage, Sondertage)
 - Webseiten aus dem Menü eingebettet, Plugins „Wertanzeige“, „Sonos“, „Kamera“, „Kamera-Archiv“, „Meldungsarchiv“, „Diagramm“ und „Balkendiagramme“ (weitere folgen)
+- Zwei Ansichten: „Modern“ und „Klassisch“ (wie der Windows-QuadClient, Zeilen aus den Vorlagen des HS)
 - Neustart-Erkennung, automatisches Wiederverbinden mit „Jetzt verbinden“, Hell/Dunkel, Handy-tauglich
 
 Alle Details: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
