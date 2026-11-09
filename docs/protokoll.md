@@ -122,7 +122,7 @@ Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Dat
 |---|---|---|
 | 1-2 | Wertanzeige („Wetterstation“): `<station_item caption>` mit `<value title dpt=KO format unit>` | umgesetzt (v0.6.0), am echten HS bestätigt |
 | 1-25 | Sonos / Universal-Player: `<item>` mit `co…`-KOs | umgesetzt (v0.6.1), siehe unten |
-| 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
+| 0-2 | Kamera: `<cam titel url-jpg url-mjpg codec auth-type usr pwd refreshrate-*>`, `<cmd text tag op=set/toggle value>` – **Zugangsdaten im Klartext** | umgesetzt (v0.7.2): Zugangsdaten werden nicht übernommen, Adressen nie angezeigt/geloggt |
 | 0-3 | Diagramm: `<scale_1/2 prec min max unit>`, `<line color title calc tag axis>` mit `archiv_hour…year id` | umgesetzt (v0.7.0), am echten HS bestätigt |
 | 1-16 | Balkendiagramme: `<item type=ChartItem1/2 co1/2 archive1/2 unit format aggregation_series use_chart_*>` | umgesetzt (v0.7.1), siehe unten |
 | 1-4 | Energieverbrauch (Archive) | offen |
@@ -190,3 +190,11 @@ Ermittelt aus dem QuadClient-Rahmen (`BarChartFrame`, `ArchiveDataSource`):
 
 Genauigkeit immer 2. Wert je Block: `MIN` = min, `AVERAGE` = sum/count (count 0 → 0),
 alles andere (auch „Maximum“) = max. Statistik: Min, Max, Mittel der Balken.
+
+### Kamera (0-2)
+
+Das Original holt Bilder direkt von der Kamera (eigene HTTP-Anfragen mit Digest-Anmeldung).
+Ein Browser kann das nicht nachbauen: keine fremden Zugangsdaten für Bilder, kein http auf
+einer https-Seite, selbst signierte Kamera-Zertifikate müssen einmal bestätigt werden.
+Zuverlässig ist ein Bild, das **über den HS** kommt (z. B. KO-Gateway-Endpunkt `get_picture_raw`).
+Knöpfe: `op="set"` sendet `value`, `op="toggle"` sendet 0, wenn das KO ≠ 0 ist, sonst `value`.

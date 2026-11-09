@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0, camFetch = false, s, picFetch = [], archFetch = [];
+let fails = 0, camPics = 0, s, picFetch = [], archFetch = [];
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -14,8 +14,8 @@ async function start(b, user, extra = []) {
     const u = r.request().url(), n = u.split("/").pop().split("?")[0];
     if (n === "qc.html") return r.fulfill({ status: 200, contentType: "text/html", body: T("../qc.html") });
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
-    if (n === "0-2_901.xml") camFetch = true;
     if (u.includes("/quad/camarch/list/71?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="3"><pic date="20261108101500" id="5"/><pic date="20261109183012" id="7"/><pic date="20261109090000" id="6"/></camarch>' });
+    if (u.includes("/endpoints/call?key=CP@CAM")) { camPics++; return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     if (u.includes("/quad/arch/")) { const q = u.split("/quad/arch/")[1].split("?")[0].split("/"); archFetch.push(q);
       const n = +q[3], rows = []; for (let i = 0; i < n; i++) rows.push(i === 5 ? '<row count="0" sum="0" min="0" max="0"/>' : `<row count="2" sum="${40 + i % 10}" min="${i % 7}" max="${50 + i % 20}"/>`);
       return r.fulfill({ status: 200, contentType: "text/xml", body: `<arch>${rows.join("")}</arch>` }); }
@@ -23,7 +23,7 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml" }[n];
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -68,15 +68,25 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("Webseite eingebettet, Höhe an Inhalt (fest positioniert)", parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)) >= 500 && parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)) < 560);
   ok("Adresse nicht angezeigt", !(await pg.textContent("#frame .fbar")).includes("http"));
   console.log("Plugin Wertanzeige (1-2)");
-  ok("Kamera-Plugin noch nicht verfügbar", (await pg.textContent('#grid .mcard:has-text("Kamera")')).includes("nicht verfügbar"));
+
   await pg.click('#grid .mcard:has-text("Zähler")'); await pg.waitForTimeout(300);
   ok("Wertanzeige öffnet, Webseite zu", await pg.isVisible("#plug") && !(await pg.isVisible("#frame")));
   ok("Werte formatiert", (await pg.textContent("#pbody")).includes("8.450kWh") && (await pg.textContent("#pbody")).includes("47.503,78kWh"), await pg.textContent("#pbody"));
   await pg.evaluate(() => WSI.onmessage({ data: "1|9003|6600.0|0" })); await pg.waitForTimeout(50);
   ok("Wert aktualisiert sich live", (await pg.textContent("#pbody")).includes("6.600kWh"));
   await pg.click("#pclose"); ok("Schließen", !(await pg.isVisible("#plug")));
-  await pg.click('#grid .mcard:has-text("Kamera")'); await pg.waitForTimeout(200);
-  ok("Kamera-Einstellungen (mit Zugangsdaten) werden nicht abgerufen", !camFetch);
+  console.log("Plugin Kamera (0-2)");
+  await pg.route("http://10.9.9.9/**", r => r.abort());
+  await pg.click('#grid .mcard:has-text("Kamera")'); await pg.waitForTimeout(600);
+  ok("Bild über den HS wird geladen", camPics >= 1 && await pg.locator('#pbody img[data-cam="0"]').count() === 1, String(camPics));
+  ok("nicht erreichbare Kamera: Hinweis statt kaputtem Bild", (await pg.textContent("#pbody")).includes("Garten") && (await pg.locator("#pbody .cerr").count()) === 1, await pg.textContent("#pbody"));
+  const html = await pg.content(), logTxt = await pg.textContent("#log");
+  ok("Kamera-Passwort nirgends auf der Seite", !html.includes("GeheimesKameraPasswort") && !logTxt.includes("GeheimesKameraPasswort"));
+  ok("Kamera-Adressen nicht im Log", !logTxt.includes("endpoints/call") && !logTxt.includes("10.9.9.9"));
+  await pg.click('#pbody [data-pa="sel"][data-i="0"]'); await pg.waitForTimeout(200);
+  await pg.click('#pbody [data-pa="cmd"]'); s = await sent(pg); ok("Licht-Knopf (toggle) sendet 1", s[0] === "1|9401|1", JSON.stringify(s));
+  await pg.click('#pbody [data-pa="cmd"]'); s = await sent(pg); ok("nochmal → 0", s[0] === "1|9401|0", JSON.stringify(s));
+  await pg.click("#pclose");
   console.log("Plugin Sonos (1-25, Sendewerte aus dem Original-Plugin)");
   await pg.click('#grid .mcard:has-text("Musik")'); await pg.waitForTimeout(300);
   ok("Titel und Interpret", (await pg.textContent("#pbody")).includes("Testlied") && (await pg.textContent("#pbody")).includes("Testband"));

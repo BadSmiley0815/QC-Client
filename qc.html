@@ -53,6 +53,13 @@ button{font:inherit;color:inherit}
 .mrow time{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px;min-width:12.5em}
 .mrow span{min-width:0;overflow-wrap:anywhere}
 @media (max-width:560px){.mrow{flex-direction:column;gap:2px}.mrow time{min-width:0}}
+.camgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.camtile{min-width:0}.camcap{font-size:13px;color:var(--muted);margin-top:4px}
+.camimg{display:block;width:100%;padding:0;border:0;background:#000;border-radius:10px;overflow:hidden;cursor:pointer;aspect-ratio:16/9}
+.camimg img{width:100%;height:100%;object-fit:cover;display:block}
+.cerr{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:center;padding:12px;min-height:120px;height:100%;background:var(--bg);color:var(--ink);border:1px dashed var(--line);border-radius:10px;font-size:13px;text-align:left}
+.cerr span{color:var(--muted)}
+.camtile .cerr{min-height:0;height:100%;overflow:auto}.camtile .cerr b{display:none}
 .carch img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000;border-radius:10px}
 .chip svg{width:16px;height:16px;vertical-align:middle;display:inline-block}
 .chip.act{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
@@ -262,7 +269,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.7.1";
+const VERSION = "0.7.2";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1329,6 +1336,56 @@ function barHover(e) {
 ["mousemove", "mouseleave"].forEach(t => $("pbody").addEventListener(t, barHover));
 ["touchstart", "touchmove"].forEach(t => $("pbody").addEventListener(t, barHover, { passive: true }));
 window.addEventListener("resize", () => { if (PLUG && PLUG.cls === "1-16") renderPlug(); });
+
+/* 0-2 Kamera (Original: hs_client_camera.QuadCamera). Das Original holt die Bilder direkt von der Kamera (Digest-Anmeldung).
+   Im Browser klappt das nur, wenn die Kamera ohne Anmeldung per https erreichbar ist oder das Bild über den HS kommt
+   (z. B. KO-Gateway-Endpunkt). Zugangsdaten (usr/pwd) werden nicht übernommen; Adressen werden nie angezeigt oder geloggt.
+   Mehrfachansicht: url-jpg alle refreshrate-multiview ms · Einzelansicht: MJPEG-Strom (codec MJPEG) bzw. url-jpg alle refreshrate-fullscreen ms
+   <cmd text tag op value>: op „set“ = Wert senden, „toggle“ = aktuell ≠ 0 -> 0, sonst Wert */
+const camSrc = (u, bust) => u ? u + (bust ? (u.includes("?") ? "&" : "?") + "_t=" + Date.now() : "") : "";
+const camLocal = u => { try { const x = new URL(u, location.href); return x.hostname === cfg.host && x.protocol === "https:"; } catch (e) { return false; } };
+PLUGIN_TYPES["0-2"] = {
+  name: "Kamera",
+  read: x => ({ cams: [...x.querySelectorAll("cam")].map(c => ({ title: c.getAttribute("titel") || c.getAttribute("title") || "Kamera",
+      jpg: c.getAttribute("url-jpg") || "", mjpg: c.getAttribute("url-mjpg") || "", codec: (c.getAttribute("codec") || "").toUpperCase(),
+      auth: (c.getAttribute("auth-type") || "None"), rf: +(c.getAttribute("refreshrate-fullscreen") || 1000), rm: +(c.getAttribute("refreshrate-multiview") || 10000),
+      cmds: [...c.querySelectorAll("cmd")].map(m => ({ text: m.getAttribute("text") || "", tag: m.getAttribute("tag") || "", op: m.getAttribute("op") || "set", value: +(m.getAttribute("value") || 1) })) })),
+    sel: null, bad: {} }),
+  tags: d => d.cams.flatMap(c => c.cmds.map(m => m.tag)),
+  load: async d => {
+    const tick = () => { if (!PLUG || PLUG.data !== d) return;
+      document.querySelectorAll("#pbody img[data-cam]").forEach(im => { const c = d.cams[+im.dataset.cam], live = im.dataset.live === "1";
+        if (!live && im.complete) im.src = camSrc(c.jpg, true); });
+      d.timer = setTimeout(tick, d.sel === null ? Math.min(...d.cams.map(c => c.rm || 10000), 10000) : Math.max(250, d.cams[d.sel].rf || 1000)); };
+    clearTimeout(d.timer); d.timer = setTimeout(tick, 1000);
+  },
+  html: d => {
+    const hint = c => c.jpg.startsWith("http:") && location.protocol === "https:" ? "Kamera nur per http erreichbar – der Browser blockiert das auf der https-Seite."
+      : c.auth !== "None" && !camLocal(c.jpg) ? "Kamera verlangt eine Anmeldung (" + c.auth + ") – im Browser nur nach einmaliger Anmeldung direkt an der Kamera." : "Bild nicht erreichbar.";
+    const btns = c => c.cmds.length ? `<div class="btns" style="margin-top:8px">${c.cmds.map((m, j) => `<button data-pa="cmd" data-j="${j}" class="${num(m.tag) ? "act" : ""}">${esc(m.text || "Schalten")}</button>`).join("")}</div>` : "";
+    const img = (c, i, live) => d.bad[i] ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(hint(c))}</span>${!camLocal(c.jpg) && /^https:/.test(c.jpg) ? `<button class="chip" data-pa="login" data-i="${i}">Kamera einmal öffnen und anmelden</button>` : ""}<button class="chip" data-pa="retry" data-i="${i}">Erneut versuchen</button></div>`
+      : `<img data-cam="${i}" data-live="${live ? 1 : 0}" src="${esc(live ? camSrc(c.mjpg, false) : camSrc(c.jpg, true))}" alt="${esc(c.title)}" referrerpolicy="no-referrer">`;
+    if (d.sel === null) return `<div class="camgrid">${d.cams.map((c, i) => `<div class="camtile">${d.bad[i] ? `<div class="camimg" style="cursor:default;background:none">${img(c, i, false)}</div>` : `<button data-pa="sel" data-i="${i}" class="camimg">${img(c, i, false)}</button>`}<div class="camcap">${esc(c.title)}</div></div>`).join("")}</div>`;
+    const c = d.cams[d.sel], live = c.codec === "MJPEG" && !!c.mjpg && c.mjpg.startsWith("https:") && c.jpg.startsWith("https:");
+    return `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><button class="chip" data-pa="all">${svg("left")} Alle Kameras</button><b>${esc(c.title)}</b></div>
+      <div class="carch">${img(c, d.sel, live)}</div>${btns(c)}`;
+  },
+  act: async (d, b) => {
+    const i = +b.dataset.i;
+    switch (b.dataset.pa) {
+      case "sel": d.sel = i; break;
+      case "all": d.sel = null; break;
+      case "retry": delete d.bad[i]; break;
+      case "login": window.open(d.cams[i].jpg, "_blank", "noopener"); delete d.bad[i]; break;
+      case "cmd": { const m = d.cams[d.sel].cmds[+b.dataset.j]; if (!m || !m.tag) break;
+        send(m.tag, m.op === "toggle" ? (num(m.tag) ? 0 : m.value) : m.value); break; }
+    }
+  }
+};
+$("pbody").addEventListener("error", e => {                      // Kamerabild nicht ladbar -> Hinweis statt kaputtem Bild
+  const im = e.target; if (!(im instanceof HTMLImageElement) || !im.dataset.cam || !PLUG || PLUG.cls !== "0-2") return;
+  PLUG.data.bad[+im.dataset.cam] = true; renderPlug();
+}, true);
 
 /* 0-4 Meldungsarchiv. Abruf wie das Original (CMsgArchiv.checkReload / CDownloadMsgArchiv):
    /quad/msg/<archid>/1000?<sid> -> <msgarch><msg date="yyyyMMddHHmmss" text="…"/>…   Projekt: <archive reload="s"><msgarchiv title archid/> */

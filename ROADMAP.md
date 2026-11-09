@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.7.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.7.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -16,12 +16,13 @@ Stand: v0.7.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
 - [ ] **Plugins** aus dem Menü
   - [x] Wertanzeige (v0.6.0, am HS bestätigt)
   - [x] Sonos (v0.6.1)
-  - [ ] Kamera live
+  - [x] Kamera live (v0.7.2) – Bilder über den HS (KO-Gateway-Endpunkt) oder Kameras ohne Anmeldung per https; Digest/http nur eingeschränkt
   - [x] Kamera-Archiv (v0.6.2, am HS bestätigt)
   - [x] Meldungsarchiv (v0.6.3)
   - [x] Diagramme (v0.7.0, am HS bestätigt)
   - [x] Balkendiagramme (v0.7.1)
-  - [ ] Energieverbrauch (1-4)
+  - [ ] Energieverbrauch (1-4) – zurückgestellt. Im Original ein Kostenrechner (Tarif, Abschlag, Prognose),
+        der Einstellungen auf den HS zurückschreibt. Erster Schritt: reine Verbrauchsansicht mit Vorjahresvergleich, ohne Schreiben.
   - [ ] Sprechanlage
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
@@ -42,7 +43,7 @@ Status, Text, Zustandssymbol, Pegel, Müll, Link, Platzhalter, Zeitschaltuhren).
 ## 4 · Stufe 2 „extended“ (optional)
 
 - [ ] Erweiterungen über eigene WebApp / KO-Gateway
-- [ ] Eigene HSL3-Bausteine einbinden (z. B. ONVIF-Kameras)
+- [ ] Eigene HSL3-Bausteine einbinden (z. B. ONVIF-Kameras; Kamerabilder über den HS bereitstellen, damit sie im Browser ohne Anmeldung an der Kamera laufen)
 - [ ] Experte-Schnittstelle (MCP-Server): Projekte ändern und übertragen ohne Mausklicks
 
 ## 5 · Zum Schluss: als App installierbar (PWA)
