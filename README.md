@@ -19,9 +19,9 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
 - Erweiterungen über eine eigene WebApp, das KO-Gateway und eigene HSL3-Logikbausteine –
   z. B. moderne Kameras (ONVIF), eigene Kacheln, eigene Seiten.
 
-## Stand (v0.7.2)
+## Stand (v0.8.0)
 
-- Menü als Startseite, Räume nach Etagen, Gewerke, Favoriten
+- Menü als Startseite, Räume nach Etagen, Gewerke, Favoriten – mit den Symbolen aus der QC-Visu
 - Schalten, Dimmen, Rollo, Heizung, RGB, Tunable White, Taster (alle Varianten), Szenen
   (abrufen/lernen), Schalten mit PIN, Werteingabe, Müll, Anzeigen
 - Schaltuhren anzeigen, anlegen, ändern, löschen (Uhrzeit, Zufall, Sonnenauf-/-untergang,

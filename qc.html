@@ -113,6 +113,7 @@ main{padding:20px 24px 70px;min-width:0}
 .card:has(.tbtn) .head{padding-right:48px}.card .head{padding-right:22px}
 .ic{width:36px;height:36px;border-radius:10px;background:var(--bg);display:grid;place-items:center;flex:none;color:var(--muted)}
 .ic svg{width:20px;height:20px}
+.ic svg.qci{width:26px;height:26px}
 .card.is-on .ic{background:var(--acc-soft);color:var(--on)}
 .name{font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .sub{font-size:12px;color:var(--muted)}
@@ -269,7 +270,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.7.2";
+const VERSION = "0.8.0";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -320,6 +321,110 @@ const svg = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? "currentColor"
 const KIND = {"1-101":"switch","1-106":"switch_pin","1-114":"switch_value","1-118":"button","1-102":"dimmer","32-300":"dimmer",
   "1-107":"blind","1-103":"thermostat","1-109":"scene","1-120":"rgb","1-128":"tunable_white","1-125":"value","1-112":"status",
   "1-116":"text","1-117":"state_icon","79-01":"level","0-7":"waste","1-129":"link","5-21":"spacer"};
+/* ---------------- Symbole aus der QC-Visu ----------------
+   Der HS liefert die QuadClient-Symbole als XAML-Vektorgrafiken: /quad/client/design_0/client_icons.xaml.zip?<sid>.
+   Der Client lädt das Paket von diesem HS, entpackt es im Browser, wandelt nur die benötigten Symbole in SVG um und
+   merkt sie sich (localStorage). Helle Grautöne werden zu „currentColor“ (passt zu Hell/Dunkel), farbige Teile bleiben.
+   Fehlt ein Symbol oder ist es nicht umwandelbar, bleibt das eigene Ersatzsymbol. Gira-Grafiken liegen nicht im Repository. */
+const QCI = new Map();
+const icoKey = n => (n || "").toLowerCase().replace(/\.xaml$/, "").replace(/^w\./, "");
+function qi(name, fallback, fill) { const k = icoKey(name); return (k && QCI.get(k)) || svg(fallback, fill); }
+async function unzipPick(buf, want) {                    // nur die gewünschten Einträge (Name klein, ohne Pfad) entpacken
+  const dv = new DataView(buf), u8 = new Uint8Array(buf), out = new Map(), td = new TextDecoder("utf-8");
+  let e = -1; for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 66000); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error("kein ZIP");
+  let p = dv.getUint32(e + 16, true); const n = dv.getUint16(e + 10, true);
+  for (let k = 0; k < n && dv.getUint32(p, true) === 0x02014b50; k++) {
+    const meth = dv.getUint16(p + 10, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+    let csz = dv.getUint32(p + 20, true), usz = dv.getUint32(p + 24, true), lo = dv.getUint32(p + 42, true);
+    for (let x = p + 46 + nl; x + 4 <= p + 46 + nl + xl;) {                           // ZIP64: echte Größen/Offset im Zusatzfeld (der HS nutzt das)
+      const id = dv.getUint16(x, true), sz = dv.getUint16(x + 2, true);
+      if (id === 1) { let q = x + 4; const big = () => { const v = Number(dv.getBigUint64(q, true)); q += 8; return v; };
+        if (usz === 0xFFFFFFFF) usz = big(); if (csz === 0xFFFFFFFF) csz = big(); if (lo === 0xFFFFFFFF) lo = big(); }
+      x += 4 + sz;
+    }
+    const name = td.decode(u8.subarray(p + 46, p + 46 + nl)), key = icoKey(name.split("/").pop()); p += 46 + nl + xl + cl;
+    if (!want.has(key) || out.has(key)) continue;
+    const ds = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true), raw = u8.subarray(ds, ds + csz);
+    try {
+      const data = meth === 0 ? raw : meth === 8 ? new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer()) : null;
+      if (data) out.set(key, td.decode(data).replace(/^\uFEFF/, ""));
+    } catch (err) { /* einzelnes Symbol defekt -> Ersatzsymbol */ }
+  }
+  return out;
+}
+function xamlToSvg(txt) {
+  const doc = new DOMParser().parseFromString(txt, "text/xml"), root = doc.documentElement;
+  if (!root || root.getElementsByTagName("parsererror").length) return null;
+  let ok = true;
+  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const paint = c => { if (!c || !/^#[0-9a-f]{6,8}$/i.test(c.trim())) return null; let h = c.trim().slice(1), a = 1;
+    if (h.length === 8) { a = parseInt(h.slice(0, 2), 16) / 255; h = h.slice(2); }
+    if (a < 0.02) return { v: "none" };
+    const [r, g, b] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)), mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    return { v: mx - mn < 16 && mx > 150 ? "currentColor" : "#" + h, a: a < 0.99 ? +a.toFixed(2) : null }; };
+  const brush = (el, prop) => { let c = el.getAttribute(prop);
+    if (!c) { const pe = [...el.children].find(x => x.localName === el.localName + "." + prop); const st = pe && pe.querySelector("GradientStop, SolidColorBrush");
+      if (pe && !st && pe.children.length) ok = false; c = st && (st.getAttribute("Color")); }
+    return paint(c); };
+  const mtx = v => { const a = (v || "").split(/[\s,]+/).map(Number); return a.length === 6 && a.every(isFinite) ? `matrix(${a.join(" ")})` : ""; };
+  const tf = (el, stretch) => { const t = []; const L = el.getAttribute("Canvas.Left"), T = el.getAttribute("Canvas.Top");
+    if (!stretch && (L || T)) t.push(`translate(${num(L)} ${num(T)})`); const rt = mtx(el.getAttribute("RenderTransform")); if (rt) t.push(rt);
+    const rp = [...el.children].find(x => x.localName === el.localName + ".RenderTransform");
+    if (rp) { const m = rp.querySelector("MatrixTransform"), tr = rp.querySelector("TranslateTransform"), ro = rp.querySelector("RotateTransform"), sc = rp.querySelector("ScaleTransform");
+      if (m) t.push(mtx(m.getAttribute("Matrix"))); if (tr) t.push(`translate(${num(tr.getAttribute("X"))} ${num(tr.getAttribute("Y"))})`);
+      if (ro) t.push(`rotate(${num(ro.getAttribute("Angle"))} ${num(ro.getAttribute("CenterX"))} ${num(ro.getAttribute("CenterY"))})`);
+      if (sc) t.push(`scale(${num(sc.getAttribute("ScaleX") || 1)} ${num(sc.getAttribute("ScaleY") || 1)})`); }
+    return t.length ? ` transform="${t.join(" ")}"` : ""; };
+  const common = el => { const o = el.getAttribute("Opacity"); return o && num(o) < 1 ? ` opacity="${num(o)}"` : ""; };
+  const fs = (el, attr) => { const f = brush(el, "Fill"), s = brush(el, "Stroke"), sw = el.getAttribute("StrokeThickness");
+    const cap = { Round: "round", Square: "square", Flat: "butt" }[el.getAttribute("StrokeStartLineCap") || ""], join = { Round: "round", Bevel: "bevel", Miter: "miter" }[el.getAttribute("StrokeLineJoin") || ""];
+    return ` fill="${f ? f.v : "none"}"${f && f.a ? ` fill-opacity="${f.a}"` : ""}${s && s.v !== "none" ? ` stroke="${s.v}" stroke-width="${num(sw) || 1}"${s.a ? ` stroke-opacity="${s.a}"` : ""}${cap ? ` stroke-linecap="${cap}"` : ""}${join ? ` stroke-linejoin="${join}"` : ""}` : ""}${attr || ""}`; };
+  const walk = el => {
+    const n = el.localName;
+    if (n.includes(".")) return "";                                  // Eigenschafts-Elemente behandelt der Elternteil
+    if (n === "Canvas" || n === "Grid") return `<g${tf(el)}${common(el)}>${[...el.children].map(walk).join("")}</g>`;
+    if (n === "Path") {
+      let d = el.getAttribute("Data"), rule = "evenodd";
+      if (d) { const m = /^\s*F([01])\s*/.exec(d); if (m) { rule = m[1] === "1" ? "nonzero" : "evenodd"; d = d.slice(m[0].length); } }
+      else { const g = el.querySelector("PathGeometry"); if (!g) { ok = false; return ""; } d = g.getAttribute("Figures") || ""; if ((g.getAttribute("FillRule") || "EvenOdd") === "Nonzero") rule = "nonzero"; }
+      if (!d) return "";
+      const str = /^(Fill|Uniform|UniformToFill)$/.test(el.getAttribute("Stretch") || "");
+      return `<path d="${d.replace(/"/g, "")}" fill-rule="${rule}"${fs(el)}${tf(el, str)}${common(el)}/>`;
+    }
+    if (n === "Rectangle") return `<rect x="0" y="0" width="${num(el.getAttribute("Width"))}" height="${num(el.getAttribute("Height"))}" rx="${num(el.getAttribute("RadiusX"))}" ry="${num(el.getAttribute("RadiusY"))}"${fs(el)}${tf(el)}${common(el)}/>`;
+    if (n === "Ellipse") { const w = num(el.getAttribute("Width")), h = num(el.getAttribute("Height")); return `<ellipse cx="${w / 2}" cy="${h / 2}" rx="${w / 2}" ry="${h / 2}"${fs(el)}${tf(el)}${common(el)}/>`; }
+    if (/^(Resources|TextBlock)$/.test(n)) return "";
+    ok = false; return "";                                            // Viewbox, DrawingGroup … -> Ersatzsymbol
+  };
+  const body = walk(root); if (!ok || !body) return null;
+  const tmp = document.createElementNS("http://www.w3.org/2000/svg", "svg"); tmp.setAttribute("style", "position:absolute;left:-9999px;width:10px;height:10px");
+  tmp.innerHTML = body; document.body.appendChild(tmp);
+  let bb; try { bb = tmp.firstChild.getBBox(); } catch (e) { bb = null; } tmp.remove();
+  if (!bb || !(bb.width > 0) || !(bb.height > 0)) return null;
+  const side = Math.max(bb.width, bb.height) * 1.06, x = bb.x + bb.width / 2 - side / 2, y = bb.y + bb.height / 2 - side / 2;
+  return `<svg viewBox="${[x, y, side, side].map(v => +v.toFixed(2)).join(" ")}" class="qci" aria-hidden="true">${body}</svg>`;
+}
+let iconsLoading = false;
+async function loadIcons() {
+  if (!P_ || iconsLoading) return;
+  const want = new Set([...P_.menu.map(m => icoKey(m.ico)), ...Object.values(P_.els).map(e => icoKey(e.symbol))].filter(k => k && k !== "blank"));
+  const ck = "icons." + cfg.host, cache = store.get(ck, null);
+  if (cache && cache.p === projId) { Object.entries(cache.m).forEach(([k, v]) => v && QCI.set(k, v)); if ([...want].every(k => k in cache.m)) { renderView(); return; } }
+  iconsLoading = true;
+  try {
+    const r = await fetch("https://" + cfg.host + "/quad/client/design_0/client_icons.xaml.zip?" + sid); if (!r.ok) throw new Error("HTTP " + r.status);
+    const files = await unzipPick(await r.arrayBuffer(), want), m = {};
+    for (const k of want) { const t = files.get(k); const v = t ? xamlToSvg(t) : null; m[k] = v || ""; if (v) QCI.set(k, v); }
+    store.set(ck, { p: projId, m });
+    log("··", "Symbole: " + Object.values(m).filter(Boolean).length + " von " + want.size + " aus der QC-Visu");
+    renderView();
+  } catch (e) { log("··", "Symbole nicht geladen (" + e.message + ") – eigene Symbole bleiben"); }
+  finally { iconsLoading = false; }
+}
+/* Räume, Etagen und Gewerke haben in der Visu kein eigenes Symbol – das des Menüeintrags, der dorthin führt */
+function navIco(type, key, id) { const m = P_.menu && P_.menu.find(x => x.cmds[0] && x.cmds[0].type === type && x.cmds[0][key] === id && x.ico); return m ? m.ico : ""; }
+
 function iconFor(el) {
   const s = (el.symbol || "").toLowerCase();
   for (const [k, v] of [["blind","blind"],["jalou","blind"],["roll","blind"],["heat","temp"],["temp","temp"],["clima","fan"],["fan","fan"],
@@ -454,6 +559,7 @@ async function onMsg(ev) {
       showApp();
       setState("on");
       if (!PLUGS) loadPlugins().then(() => { if (cur.startsWith("m:")) renderView(); });
+      loadIcons();
       break;
     }
     case "2": case "1": {
@@ -635,7 +741,7 @@ function tile(ref, el, label) {
   return `<div class="${cls}" data-ref="${esc(ref)}">
     <button class="fav ${favOn ? "on" : ""}" data-act="fav" aria-label="Favorit">${svg("star", favOn)}</button>
     ${el.timer && TIMERS.has(el.timer) ? `<button class="tbtn ${TIMERS.get(el.timer).active ? "on" : ""}" data-act="timer" title="Zeitschaltuhr">${svg("clock")}</button>` : ""}
-    <div class="head"><div class="ic">${svg(iconFor(el))}</div><div style="min-width:0"><div class="name">${name}</div><div class="sub">${esc(sub)}</div></div></div>${body}</div>`;
+    <div class="head"><div class="ic">${qi(el.symbol, iconFor(el))}</div><div style="min-width:0"><div class="name">${name}</div><div class="sub">${esc(sub)}</div></div></div>${body}</div>`;
 }
 const pct255 = v => Math.round((v ?? 0) * 2.55);
 const hex = (r, g, b) => "#" + [r, g, b].map(v => pct255(v).toString(16).padStart(2, "0")).join("");
@@ -933,7 +1039,7 @@ function menuTile(m) {
   if (on) cls += " is-on"; if (plug) cls += " off";
   const icon = m.isPage ? "plugin" : c.type === "6" ? "web" : menuIcon(m.ico);
   return `<button class="${cls}" data-m="${esc(m.id)}" ${plug ? 'title="Im Client nicht verfügbar"' : ""}>${badge}
-    <div class="head"><div class="ic">${svg(icon)}</div><div style="min-width:0"><div class="name">${esc(m.t1 || "–")}</div>
+    <div class="head"><div class="ic">${m.isPage || c.type === "6" ? svg(icon) : qi(m.ico, icon)}</div><div style="min-width:0"><div class="name">${esc(m.t1 || "–")}</div>
     <div class="t2">${esc(plug ? "im Client nicht verfügbar" : m.t2)}</div></div></div></button>`;
 }
 function menuAct(id) {
@@ -1544,7 +1650,7 @@ function renderView() {
     return;
   }
   if (v.rooms) {
-    $("grid").innerHTML = v.rooms.map(r => `<button class="card mcard" data-mv="r:${esc(r.id)}"><div class="head"><div class="ic">${svg("home")}</div>
+    $("grid").innerHTML = v.rooms.map(r => `<button class="card mcard" data-mv="r:${esc(r.id)}"><div class="head"><div class="ic">${qi(navIco("3", "room", r.id), "home")}</div>
       <div style="min-width:0"><div class="name">${esc(r.name)}</div><div class="t2">${count(r.items)} Elemente</div></div></div></button>`).join("");
     return;
   }

@@ -198,3 +198,11 @@ Ein Browser kann das nicht nachbauen: keine fremden Zugangsdaten für Bilder, ke
 einer https-Seite, selbst signierte Kamera-Zertifikate müssen einmal bestätigt werden.
 Zuverlässig ist ein Bild, das **über den HS** kommt (z. B. KO-Gateway-Endpunkt `get_picture_raw`).
 Knöpfe: `op="set"` sendet `value`, `op="toggle"` sendet 0, wenn das KO ≠ 0 ist, sonst `value`.
+
+## Symbole
+
+`/quad/client/design_0/client_icons.xaml.zip?<sid>` (helle Variante: `w.client_icons.xaml.zip`)
+enthält alle QuadClient-Symbole als XAML (`Canvas`, `Path` mit `Figures`/`Data`, `Rectangle`, selten
+Verläufe). **Das ZIP nutzt ZIP64** – die echten Größen stehen im Zusatzfeld (ID 1).
+Menü: `ico`, Elemente: `symbol`. Räume, Etagen und Gewerke haben kein eigenes Symbol;
+der Client nimmt das des Menüeintrags, der dorthin führt.

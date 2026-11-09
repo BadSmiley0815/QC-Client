@@ -24,6 +24,7 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
       "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml" }[n];
+    if (n === "client_icons.xaml.zip") return r.fulfill({ status: u.includes("/quad/client/design_0/") ? 200 : 404, contentType: "application/zip", body: T("demo_icons.xaml.zip") });
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -60,6 +61,10 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`, "2|9001|8450.0|0", "2|9002|47503.779|0", "2|9003|6554.0|0",
     "2|9113|0.0|0", "2|9201|21.48|0", "2|9301|123.44|0", "2|9116|Testband|0", "2|9117|Testlied|0", "2|9118|1.0|0", "2|9115|25.0|0", "2|9112|1.0|0"]);
 
+  console.log("Symbole aus der QC-Visu");
+  ok("XAML-Symbol im Menü (ZIP64 wie vom HS)", await pg.locator('#grid .mcard:has-text("Wohnen") svg.qci').count() === 1);
+  ok("helle Grautöne folgen dem Farbschema, Farben bleiben", await pg.evaluate(() => { const h = document.querySelector("#grid svg.qci").innerHTML; return h.includes('fill="currentColor"') && h.includes("#DC3C3C"); }));
+  ok("ohne passendes Symbol: eigenes Ersatzsymbol", await pg.locator('#grid .mcard:has-text("Küche") svg.qci').count() === 0 && await pg.locator('#grid .mcard:has-text("Küche") .ic svg').count() === 1);
   console.log("Menü");
   ok("Startseite ist das Menü", (await pg.textContent("#title")) === "Menü");
   ok("Eintrag nur für Gruppe 1 sichtbar (Garten)", await pg.locator("#grid .mcard", { hasText: "Garten" }).count() === 1);

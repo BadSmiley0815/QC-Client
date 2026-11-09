@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.7.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.8.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -26,7 +26,8 @@ Stand: v0.7.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [ ] Sprechanlage
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
-- [ ] Raum- und Gewerkesymbole aus der QC-Visu
+- [x] Symbole aus der QC-Visu (v0.8.0)
+- [ ] Ansicht „Klassisch“ wie der Windows-QuadClient (umschaltbar)
 - [ ] Fernzugriff über Gira S1 testen
 - [ ] Realer HS-Neustart mit v0.5.x beobachten (Erkennung, Countdown, Wiederverbinden)
 
