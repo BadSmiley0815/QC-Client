@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0, camFetch = false, s, picFetch = [];
+let fails = 0, camFetch = false, s, picFetch = [], archFetch = [];
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -16,11 +16,14 @@ async function start(b, user, extra = []) {
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
     if (n === "0-2_901.xml") camFetch = true;
     if (u.includes("/quad/camarch/list/71?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="3"><pic date="20261108101500" id="5"/><pic date="20261109183012" id="7"/><pic date="20261109090000" id="6"/></camarch>' });
+    if (u.includes("/quad/arch/")) { const q = u.split("/quad/arch/")[1].split("?")[0].split("/"); archFetch.push(q);
+      const n = +q[3], rows = []; for (let i = 0; i < n; i++) rows.push(i === 5 ? '<row count="0" sum="0" min="0" max="0"/>' : `<row count="2" sum="${40 + i % 10}" min="${i % 7}" max="${50 + i % 20}"/>`);
+      return r.fulfill({ status: 200, contentType: "text/xml", body: `<arch>${rows.join("")}</arch>` }); }
     if (u.includes("/quad/msg/81/1000?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<msgarch count="3"><msg date="20261107080000" text="Pumpe Störung"/><msg date="20261109120500" text="Fenster Bad offen &amp; Regen"/><msg date="20261108200000" text="Pumpe wieder OK"/></msgarch>' });
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml" }[n];
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -55,7 +58,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   const pin = await ko(pg, "Gartentor", "slot_pin"), val = await ko(pg, "Sollwert Pool", "slot_value"), mu = await ko(pg, "Restmüll", "muell_val");
   await pg.close();
   pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`, "2|9001|8450.0|0", "2|9002|47503.779|0", "2|9003|6554.0|0",
-    "2|9113|0.0|0", "2|9116|Testband|0", "2|9117|Testlied|0", "2|9118|1.0|0", "2|9115|25.0|0", "2|9112|1.0|0"]);
+    "2|9113|0.0|0", "2|9201|21.48|0", "2|9116|Testband|0", "2|9117|Testlied|0", "2|9118|1.0|0", "2|9115|25.0|0", "2|9112|1.0|0"]);
 
   console.log("Menü");
   ok("Startseite ist das Menü", (await pg.textContent("#title")) === "Menü");
@@ -101,6 +104,24 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   await pg.fill('#pbody input[data-pa="q"]', "pumpe"); await pg.waitForTimeout(100);
   ok("Suche filtert", (await pg.locator("#pbody .mrow").count()) === 2 && (await pg.textContent("#pbody")).includes("2 von 3"));
   ok("Suchfeld behält Fokus", await pg.evaluate(() => document.activeElement.matches('#pbody input[data-pa="q"]')));
+  await pg.click("#pclose");
+  console.log("Plugin Diagramm (0-3, Regeln aus dem Original-Plugin)");
+  archFetch.length = 0;
+  await pg.click('#grid .mcard:has-text("Klima")'); await pg.waitForTimeout(500);
+  const exp = await pg.evaluate(() => { const d = new Date(); d.setHours(d.getHours() - 23, 0, 0, 0); return yymm(d); });
+  ok("Tag: Abruf wie Original", JSON.stringify(archFetch.map(a => a.join("/")).sort()) === JSON.stringify([`502/${exp}/10/144/1`, `602/${exp}/10/144/0`]), JSON.stringify(archFetch));
+  ok("zwei Achsen = zwei Diagramme", (await pg.locator("#pbody svg[data-chart]").count()) === 2);
+  const v = await pg.evaluate(() => PLUG.data.vals);
+  ok("Mittelwert (calc 2) = sum/count", v[0][0] === 20 && v[0][1] === 20.5, JSON.stringify(v[0].slice(0, 3)));
+  ok("Maximum (calc 3)", v[1][0] === 50 && v[1][2] === 52);
+  ok("Block ohne Werte = Lücke", v[0][5] === null && v[1][5] === null);
+  ok("aktueller Wert in der Legende", (await pg.textContent("#pbody .clegend")).includes("21,5 °C"), await pg.textContent("#pbody .clegend"));
+  const box = await pg.locator('#pbody svg[data-chart="0"]').boundingBox();
+  await pg.mouse.move(box.x + 44 + 2, box.y + 60); await pg.waitForTimeout(50);
+  ok("Fadenkreuz zeigt Werte", (await pg.textContent("#pbody .ctip")).includes("Temperatur: 20,0 °C"), await pg.textContent("#pbody .ctip"));
+  archFetch.length = 0; await pg.click('#pbody [data-pa="rg"][data-k="week"]'); await pg.waitForTimeout(400);
+  const expW = await pg.evaluate(() => { const d = new Date(); d.setDate(d.getDate() - 6); d.setHours(0, 0, 0, 0); return yymm(d); });
+  ok("Woche: 45 min × 224 ab 00:00", archFetch.some(a => a.join("/") === `503/${expW}/45/224/1`), JSON.stringify(archFetch));
   await pg.click("#pclose");
 
   console.log("Taster (1-118, Mitschnitt flows3/flows4)");

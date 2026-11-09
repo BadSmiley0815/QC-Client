@@ -123,7 +123,8 @@ Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Dat
 | 1-2 | Wertanzeige („Wetterstation“): `<station_item caption>` mit `<value title dpt=KO format unit>` | umgesetzt (v0.6.0) |
 | 1-25 | Sonos / Universal-Player: `<item>` mit `co…`-KOs | umgesetzt (v0.6.1), siehe unten |
 | 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
-| 0-3, 1-4, 1-16 | Diagramme (Archiv-IDs) | offen – Protokoll für Archivdaten fehlt |
+| 0-3 | Diagramm: `<scale_1/2 prec min max unit>`, `<line color title calc tag axis>` mit `archiv_hour…year id` | umgesetzt (v0.7.0), siehe unten |
+| 1-4, 1-16 | Energieverbrauch, Balkendiagramme (Archive) | offen |
 | 0-7 | Kamera-Archiv: `<camarchiv title archid>` | umgesetzt (v0.6.2) |
 | 0-4 | Meldungsarchiv: `<archive reload="s"><msgarchiv title archid>` | umgesetzt (v0.6.3) |
 | 1-3 | Wetter (Gira-Dienst) | offen |
@@ -157,4 +158,20 @@ Abruf im Client noch nicht umgesetzt):
 | `/quad/camarch/pic/<Archiv-ID>/<Bild-ID>?<sid>` | Bild |
 
 Archiv-IDs stehen in den Plugin-Einstellungen (z. B. `archiv_day id=…`, `camarchiv archid=…`).
-Bedeutung von Blockgröße/Genauigkeit: noch zu prüfen.
+Blockgröße in Minuten, Genauigkeit = Nachkommastellen der Achse (siehe Diagramm).
+
+### Diagramm (0-3)
+
+Ermittelt aus dem Original-Plugin (`CChartDesignDataBase`) und `0-3_design.xml`:
+
+| Zeitraum | Block (min) | Blöcke | Start |
+|---|---|---|---|
+| Stunde | 1 | 60 | jetzt − 59 min, auf volle Minute |
+| Tag | 10 | 144 | jetzt − 23 h, auf volle Stunde |
+| Woche | 45 | 224 | heute − 6 Tage, 00:00 |
+| 4 Wochen | 180 | 224 | heute − 27 Tage, 00:00 |
+| Jahr | 2160 | 224 | heute − 335 Tage, 00:00 |
+
+Wert je Block nach `calc`: 1 = `min`, 2 = `sum/count`, 3 = `max`; `count` 0 = keine Daten.
+Ein Zeitraum ist wählbar, wenn alle Linien dafür ein Archiv haben. Neu geladen wird nach
+`<reload><archiv_… span>` Minuten. `tag` liefert den aktuellen Wert für die Legende.

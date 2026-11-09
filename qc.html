@@ -11,11 +11,12 @@
 :root{color-scheme:light;
   --bg:#f3f4f2;--panel:#fff;--ink:#1d2320;--muted:#6b736f;--line:#e2e5e1;
   --acc:#e0802c;--acc-soft:#fbeadb;--on:#e9a52d;--ok:#2f8a4f;--err:#c0392b;--cool:#3f7fbf;--r:14px;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;
   --bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
   --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df}}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
+:root[data-theme="dark"]{color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
   --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -36,6 +37,15 @@ button{font:inherit;color:inherit}
 .splay .meta{min-width:0;flex:1}.splay .meta b,.splay .meta div{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .splay .meta div{color:var(--muted);font-size:13px}
 .splay .st{font-size:12px;color:var(--muted)}.splay .st.err{color:var(--err)}
+.clegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink);margin-bottom:8px}
+.clegend i,.ctip i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.clegend b{font-variant-numeric:tabular-nums}
+.cpanel{position:relative;margin-top:6px}.cpanel svg{display:block;touch-action:pan-y}
+.cunit{position:absolute;left:0;top:-4px;font-size:11px;color:var(--muted)}
+.cg{stroke:var(--line);stroke-width:1}.cx{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.ct{font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.ctip{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg)}
+.ctip b{flex-basis:100%;font-weight:600}
 .mlist{border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:65vh}
 .mrow{display:flex;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}
 .mrow:last-child{border-bottom:0}
@@ -251,7 +261,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.6.3";
+const VERSION = "0.7.0";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1080,6 +1090,149 @@ PLUGIN_TYPES["1-25"] = {
     }
   }
 };
+
+/* 0-3 Diagramm. Regeln aus dem Original-Plugin (CChartDesignDataBase) und 0-3_design.xml:
+   Zeitraum   Block (min)  Blöcke  Start
+   Stunde          1         60    jetzt − 59 min, auf Minute
+   Tag            10        144    jetzt − 23 h, auf Stunde
+   Woche          45        224    heute − 6 Tage, 00:00
+   4 Wochen      180        224    heute − 27 Tage, 00:00
+   Jahr         2160        224    heute − 335 Tage, 00:00
+   Abruf je Linie: /quad/arch/<archiv>/<JJMMTTHHmm>/<Block>/<Blöcke>/<Nachkommastellen der Achse>?<sid> -> <row count sum min max>
+   Wert je Block nach calc: 1 = min, 2 = sum/count (Mittel), 3 = max · count 0 = Lücke · neu laden nach <reload><archiv_… span=Minuten> */
+const CHART_RANGES = [
+  { k: "hour", t: "Stunde", size: 1, count: 60, unit: "m", back: 59, fmt: { hour: "2-digit", minute: "2-digit" } },
+  { k: "day", t: "Tag", size: 10, count: 144, unit: "h", back: 23, fmt: { hour: "2-digit", minute: "2-digit" } },
+  { k: "week", t: "Woche", size: 45, count: 224, unit: "d", back: 6, fmt: { weekday: "short", day: "2-digit", month: "2-digit" } },
+  { k: "month", t: "4 Wochen", size: 180, count: 224, unit: "d", back: 27, fmt: { day: "2-digit", month: "2-digit" } },
+  { k: "year", t: "Jahr", size: 2160, count: 224, unit: "d", back: 335, fmt: { month: "short", year: "2-digit" } }];
+const CHART_COLORS = ["var(--s1)", "var(--s2)", "var(--s3)"];
+function chartStart(rg, now = new Date()) {
+  const d = new Date(now);
+  if (rg.unit === "m") { d.setMinutes(d.getMinutes() - rg.back, 0, 0); }
+  else if (rg.unit === "h") { d.setHours(d.getHours() - rg.back, 0, 0, 0); }
+  else { d.setDate(d.getDate() - rg.back); d.setHours(0, 0, 0, 0); }
+  return d;
+}
+/* Zeitachse auf runden Zeitpunkten: Stunde 10/15 min, Tag 4/6 h, Woche 1/2 Tage, 4 Wochen 7 Tage, Jahr Monatsanfang alle 2/3 Monate */
+function chartXTicks(rg, start, narrow) {
+  const end = start.getTime() + rg.count * rg.size * 60000, out = [], t = new Date(start);
+  const push = d => { const i = (d.getTime() - start.getTime()) / (rg.size * 60000); if (i >= 0.5 && i <= rg.count - 0.5) out.push([i, d.toLocaleString("de-DE", rg.fmt)]); };
+  if (rg.unit === "d" && rg.k === "year") {
+    const step = narrow ? 3 : 2; t.setDate(1); t.setHours(0, 0, 0, 0);
+    while (t.getTime() <= end) { t.setMonth(t.getMonth() + 1); if (t.getMonth() % step === 0) push(new Date(t)); }
+  } else if (rg.unit === "d") {
+    const step = rg.k === "week" ? (narrow ? 2 : 1) : 7;
+    for (t.setHours(0, 0, 0, 0); t.getTime() <= end; t.setDate(t.getDate() + step)) push(new Date(t));
+  } else {
+    const stepMin = rg.k === "hour" ? (narrow ? 15 : 10) : (narrow ? 6 : 4) * 60;
+    t.setSeconds(0, 0); const m = t.getHours() * 60 + t.getMinutes(); t.setMinutes(t.getMinutes() + (stepMin - m % stepMin) % stepMin);
+    for (; t.getTime() <= end; t.setMinutes(t.getMinutes() + stepMin)) push(new Date(t));
+  }
+  return out;
+}
+const yymm = d => [d.getFullYear() % 100, d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes()].map(n => String(n).padStart(2, "0")).join("");
+function niceTicks(lo, hi, n = 4) {
+  if (!(hi > lo)) { hi = lo + 1; }
+  const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+  const step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag;
+  const a = Math.floor(lo / step) * step, b = Math.ceil(hi / step) * step, t = [];
+  for (let v = a; v <= b + step / 2; v += step) t.push(+v.toFixed(10));
+  return t;
+}
+PLUGIN_TYPES["0-3"] = {
+  name: "Diagramm",
+  read: x => {
+    const sc = [1, 2].map(i => { const e = x.querySelector("scale_" + i); return e ? { prec: +(e.getAttribute("prec") || 0), min: parseFloat(e.getAttribute("min")), max: parseFloat(e.getAttribute("max")), unit: e.getAttribute("unit") || "" } : { prec: 0, min: NaN, max: NaN, unit: "" }; });
+    const reload = {}; CHART_RANGES.forEach(rg => { const e = x.querySelector("reload > archiv_" + rg.k); reload[rg.k] = e ? +(e.getAttribute("span") || 60) : 60; });
+    const lines = [...x.querySelectorAll("lines > line")].map(l => {
+      const arch = {}; CHART_RANGES.forEach(rg => { const e = l.querySelector("archiv_" + rg.k); arch[rg.k] = e ? e.getAttribute("id") : ""; });
+      return { title: l.getAttribute("title") || "", color: Math.min(3, Math.max(1, +(l.getAttribute("color") || 1))) - 1, calc: +(l.getAttribute("calc") || 2),
+        tag: l.getAttribute("tag") || "", axis: l.getAttribute("axis") === "2" ? 1 : 0, arch };
+    });
+    const ranges = CHART_RANGES.filter(rg => lines.length && lines.every(l => l.arch[rg.k] && l.arch[rg.k] !== "0"));
+    return { sc, reload, lines, ranges, cur: (ranges.find(rg => rg.k === "day") || ranges[0] || {}).k, vals: null, start: null, err: "", at: null, hover: null };
+  },
+  tags: d => d.lines.map(l => l.tag),
+  load: async d => {
+    const rg = CHART_RANGES.find(r => r.k === d.cur); if (!rg) return;
+    const start = chartStart(rg), key = d.cur;
+    try {
+      const vals = await Promise.all(d.lines.map(async l => {
+        const x = new DOMParser().parseFromString(await hsGet(`/quad/arch/${l.arch[rg.k]}/${yymm(start)}/${rg.size}/${rg.count}/${d.sc[l.axis].prec}`), "text/xml");
+        return [...x.querySelectorAll("row")].slice(0, rg.count).map(r => {
+          const c = +r.getAttribute("count"); if (!(c > 0)) return null;
+          const v = l.calc === 1 ? parseFloat(r.getAttribute("min")) : l.calc === 3 ? parseFloat(r.getAttribute("max")) : parseFloat(r.getAttribute("sum")) / c;
+          return isFinite(v) ? v : null;
+        });
+      }));
+      if (d.cur !== key) return;
+      d.vals = vals; d.start = start; d.err = ""; d.at = new Date();
+    } catch (e) { d.err = e.message; d.vals = d.vals || []; }
+    clearTimeout(d.timer);
+    d.timer = setTimeout(async () => { if (!PLUG || PLUG.data !== d) return; await PLUGIN_TYPES["0-3"].load(d); if (PLUG && PLUG.data === d) renderPlug(); }, Math.max(1, d.reload[d.cur] || 60) * 60000);
+  },
+  html: d => {
+    const tabs = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${d.ranges.map(rg =>
+      `<button class="chip${rg.k === d.cur ? " act" : ""}" data-pa="rg" data-k="${rg.k}">${rg.t}</button>`).join("")}</div>`;
+    if (!d.ranges.length) return '<p class="note">Für dieses Diagramm sind keine Archive eingerichtet.</p>';
+    const legend = `<div class="clegend">${d.lines.map(l => { const n = num(l.tag), sc = d.sc[l.axis];
+      return `<span><i style="background:${CHART_COLORS[l.color]}"></i>${esc(l.title)}${l.calc === 1 ? " (Min.)" : l.calc === 3 ? " (Max.)" : ""}${l.tag && n !== undefined ? ` <b>${esc(fmt(n, sc.prec))} ${esc(sc.unit)}</b>` : ""}</span>`; }).join("")}</div>`;
+    if (!d.vals) return tabs + legend + '<p class="note">Lade Archivdaten …</p>';
+    const rg = CHART_RANGES.find(r => r.k === d.cur);
+    const W = Math.max(280, ($("pbody").clientWidth || 600) - 24), H = 190, L = 44, R = 10, T = 8, B = 24, pw = W - L - R, ph = H - T - B;
+    const x = i => L + (i + 0.5) / rg.count * pw;
+    const panels = [0, 1].filter(a => d.lines.some(l => l.axis === a)).map(a => {
+      const sc = d.sc[a], ls = d.lines.map((l, i) => ({ l, v: d.vals[i] || [] })).filter(o => o.l.axis === a);
+      const all = ls.flatMap(o => o.v).filter(v => v !== null);
+      let lo = isFinite(sc.min) ? sc.min : Math.min(...all), hi = isFinite(sc.max) ? sc.max : Math.max(...all);
+      if (all.length) { lo = Math.min(lo, ...all); hi = Math.max(hi, ...all); }
+      if (!isFinite(lo) || !isFinite(hi)) { lo = 0; hi = 1; }
+      const ticks = niceTicks(lo, hi); lo = ticks[0]; hi = ticks[ticks.length - 1];
+      const y = v => T + ph - (v - lo) / (hi - lo || 1) * ph;
+      const grid = ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" class="cg"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" class="ct">${esc(fmt(t, Math.abs(hi - lo) < 5 ? sc.prec : 0))}</text>`).join("");
+      const xt = chartXTicks(rg, d.start, W < 500).map(([i, t]) => { const px = L + i / rg.count * pw;
+        return `<line x1="${px}" x2="${px}" y1="${T + ph}" y2="${T + ph + 4}" class="cg"/><text x="${px}" y="${H - 6}" text-anchor="middle" class="ct">${esc(t)}</text>`; });
+      const paths = ls.map(o => { let p = "", pen = false;
+        o.v.forEach((v, i) => { if (v === null) { pen = false; return; } p += (pen ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); pen = true; });
+        const single = o.v.map((v, i) => v !== null && (i === 0 || o.v[i - 1] === null) && (i === o.v.length - 1 || o.v[i + 1] === null) ? `<circle cx="${x(i)}" cy="${y(v)}" r="2" fill="${CHART_COLORS[o.l.color]}"/>` : "").join("");
+        return `<path d="${p}" fill="none" stroke="${CHART_COLORS[o.l.color]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${single}`; }).join("");
+      const hv = d.hover !== null && d.hover >= 0 ? `<line x1="${x(d.hover)}" x2="${x(d.hover)}" y1="${T}" y2="${T + ph}" class="cx"/>` +
+        ls.map(o => { const v = o.v[d.hover]; return v === null || v === undefined ? "" : `<circle cx="${x(d.hover)}" cy="${y(v)}" r="4" fill="${CHART_COLORS[o.l.color]}" stroke="var(--panel)" stroke-width="2"/>`; }).join("") : "";
+      return `<div class="cpanel"><div class="cunit">${esc(sc.unit || "")}</div><svg data-chart="${a}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(ls.map(o => o.l.title).join(", "))}">${grid}${xt.join("")}${paths}${hv}
+        <rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent" data-hit="1"/></svg></div>`;
+    }).join("");
+    let tip = "";
+    if (d.hover !== null && d.hover >= 0) {
+      const t = new Date(d.start.getTime() + d.hover * rg.size * 60000), t2 = new Date(t.getTime() + rg.size * 60000);
+      const tf = rg.unit === "d" ? { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" } : { hour: "2-digit", minute: "2-digit" };
+      tip = `<div class="ctip"><b>${esc(t.toLocaleString("de-DE", tf))}${rg.size > 1 ? " – " + esc(t2.toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" })) : ""}</b>${d.lines.map((l, i) => { const v = (d.vals[i] || [])[d.hover];
+        return `<span><i style="background:${CHART_COLORS[l.color]}"></i>${esc(l.title)}: ${v === null || v === undefined ? "–" : esc(fmt(v, d.sc[l.axis].prec)) + " " + esc(d.sc[l.axis].unit)}</span>`; }).join("")}</div>`;
+    }
+    return tabs + legend + (d.err ? `<p class="note">Archiv konnte nicht geladen werden: ${esc(d.err)}</p>` : "") + panels + tip +
+      `<p class="note" style="margin:6px 0 0">Werte je ${rg.size >= 60 ? fmt(rg.size / 60, 2).replace(/,00$/, "") + " h" : rg.size + " min"}${d.at ? " · Stand " + d.at.toLocaleTimeString("de-DE") : ""}</p>`;
+  },
+  act: async (d, b) => {
+    if (b.dataset.pa === "rg" && b.dataset.k !== d.cur) { d.cur = b.dataset.k; d.vals = null; d.hover = null; renderPlug(); await PLUGIN_TYPES["0-3"].load(d); }
+  }
+};
+/* Fadenkreuz: Position im Diagramm -> Block */
+function chartHover(e) {
+  if (!PLUG || PLUG.cls !== "0-3" || !PLUG.data.vals) return;
+  const svgEl = e.target.closest && e.target.closest("svg[data-chart]"), d = PLUG.data;
+  let h = null;
+  if (svgEl && e.type !== "mouseleave") {
+    const rg = CHART_RANGES.find(r => r.k === d.cur), bx = svgEl.getBoundingClientRect(), L = 44, R = 10, pw = bx.width - L - R;
+    const px = (e.touches ? e.touches[0].clientX : e.clientX) - bx.left - L;
+    h = px < 0 || px > pw ? null : Math.min(rg.count - 1, Math.max(0, Math.floor(px / pw * rg.count)));
+  }
+  if (h !== d.hover) { d.hover = h; renderPlug(); }
+}
+$("pbody").addEventListener("mousemove", chartHover);
+$("pbody").addEventListener("mouseleave", chartHover);
+$("pbody").addEventListener("touchstart", chartHover, { passive: true });
+$("pbody").addEventListener("touchmove", chartHover, { passive: true });
+window.addEventListener("resize", () => { if (PLUG && PLUG.cls === "0-3") renderPlug(); });
 
 /* 0-4 Meldungsarchiv. Abruf wie das Original (CMsgArchiv.checkReload / CDownloadMsgArchiv):
    /quad/msg/<archid>/1000?<sid> -> <msgarch><msg date="yyyyMMddHHmmss" text="…"/>…   Projekt: <archive reload="s"><msgarchiv title archid/> */

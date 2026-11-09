@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.6.3 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.7.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -19,8 +19,9 @@ Stand: v0.6.3 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [ ] Kamera live
   - [x] Kamera-Archiv (v0.6.2)
   - [x] Meldungsarchiv (v0.6.3)
-  - [ ] Diagramme
-  - [ ] Sprechanlage, Energieverbrauch
+  - [x] Diagramme (v0.7.0)
+  - [ ] Energieverbrauch (1-4), Balkendiagramme (1-16)
+  - [ ] Sprechanlage
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [ ] Raum- und Gewerkesymbole aus der QC-Visu
