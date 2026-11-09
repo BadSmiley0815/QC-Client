@@ -22,7 +22,7 @@ async function start(b, user, extra = []) {
   await pg.addInitScript(([uhr, extra]) => {
     window.SENT = [];
     window.WebSocket = class {
-      constructor() { this.readyState = 1; const me = this; window.WSI = me;
+      constructor() { this.readyState = 1; const me = this; window.WSI = me; window.WSN = (window.WSN || 0) + 1;
         setTimeout(() => { me.onmessage({ data: "93|SID|PROJ" });
           [...extra, `10|${uhr}|0|0|0`].forEach(l => me.onmessage({ data: l })); me.onmessage({ data: "95||" }); }, 20); }
       send(s) { SENT.push(s); const p = s.split("|"), me = this;      // HS bestätigt wie das Original
@@ -100,6 +100,12 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("SA − 00:20", conv[2] === "11111111000001000200000002", conv[2]);
   ok("Zufall 00:15 / 05:00", conv[3] === "11111111000000200150500002", conv[3]);
   ok("SU + 00:30, Mo Mi Fr, Nur Urlaubstage", conv[4] === "11010100000001300300000302", conv[4]);
+  console.log("Verbindung");
+  await pg.evaluate(() => { tdlg.close(); WSI.onclose({ code: 1006 }); }); await pg.waitForTimeout(100);
+  ok("Hinweis mit Countdown und Knopf", (await pg.textContent("#btxt")).includes("neuer Versuch in") && await pg.isVisible("#bnow"));
+  const n0 = await pg.evaluate(() => WSN); await pg.click("#bnow"); await pg.waitForTimeout(300);
+  ok("„Jetzt verbinden“ verbindet sofort", (await pg.evaluate(() => WSN)) === n0 + 1);
+  ok("nach Verbindung kein Hinweis", !(await pg.isVisible("#banner")));
   await pg.close();
   console.log("Rechte");
   pg = await start(b, "Gast");

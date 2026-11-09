@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.5.5 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.5.6 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -14,7 +14,7 @@ Stand: v0.5.5 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
 ## 2 · Funktionen (Stufe 1 „QC-Ersatz“)
 
 - [ ] **Plugins / Add-ins** aus dem Menü: Kamera, Kamera-Archiv, Diagramme, Meldungsarchiv, Wettervorhersage, Value Display
-- [ ] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“
+- [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [ ] Raum- und Gewerkesymbole aus der QC-Visu
 - [ ] Fernzugriff über Gira S1 testen
 - [ ] Realer HS-Neustart mit v0.5.x beobachten (Erkennung, Countdown, Wiederverbinden)

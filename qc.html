@@ -56,7 +56,9 @@ main{padding:20px 24px 70px;min-width:0}
 .chip{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}
 .chip.on{border-color:var(--acc);color:var(--acc)}
 .menubtn{display:none}
-.banner{background:var(--acc-soft);color:var(--ink);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:13px}
+.banner{background:var(--acc-soft);color:var(--ink);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.banner #btxt{flex:1;min-width:12em}
+.banner #bnow{font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:var(--acc);color:#fff;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .sect{margin:6px 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .empty{color:var(--muted);padding:30px 0}
@@ -189,7 +191,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
         <button class="chip" id="logout">Abmelden</button>
       </div>
     </div>
-    <div id="banner" class="banner hidden"></div>
+    <div id="banner" class="banner hidden"><span id="btxt"></span><button id="bnow" type="button" class="hidden">Jetzt verbinden</button></div>
     <div id="grid" class="grid"></div>
     <div id="frame" class="hidden"><div class="fbar"><b id="ftitle"></b><button class="chip" id="fnew">In neuem Tab öffnen</button><button class="chip" id="fclose">Schließen</button></div>
       <iframe id="fifr" referrerpolicy="no-referrer" allow="fullscreen"></iframe></div>
@@ -223,7 +225,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.5.5";
+const VERSION = "0.5.6";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -333,11 +335,12 @@ function log(dir, s) {
   const l = $("log"); const line = new Date().toLocaleTimeString() + " " + dir + " " + s;
   l.textContent = line + "\n" + l.textContent.split("\n").slice(0, 300).join("\n");
 }
-function setState(s, msg) {
+function setState(s, msg, btn) {
   state = s;
   document.querySelectorAll(".dot").forEach(d => d.className = "dot" + (s === "on" ? " on" : s === "err" ? " err" : ""));
-  const b = $("banner");
-  if (msg) { b.textContent = msg; b.classList.remove("hidden"); } else b.classList.add("hidden");
+  const b = $("banner"), n = $("bnow");
+  if (msg) { $("btxt").textContent = msg; b.classList.remove("hidden"); } else b.classList.add("hidden");
+  if (btn) { n.textContent = btn.label; n.title = btn.title || ""; n.classList.remove("hidden"); } else n.classList.add("hidden");
 }
 
 /* ---------------- Verbindung ---------------- */
@@ -359,15 +362,15 @@ function connect() {
     if (gotHello) { schedule(Math.min(30, 2 ** retry++), "Verbindung unterbrochen"); return; }
     // Vor der Anmeldung gescheitert: ist der HS weg (Neustart) oder lehnt er die Anmeldung ab (Sperre)?
     reachable(cfg.host).then(up => {
-      if (up) { log("··", "HS antwortet, Anmeldung abgelehnt – warte wegen Sperre"); schedule(90, "Anmeldung abgelehnt (Sperre nach Fehlversuch?)"); }
+      if (up) { log("··", "HS antwortet, Anmeldung abgelehnt – warte wegen Sperre"); schedule(90, "Anmeldung abgelehnt (Sperre nach Fehlversuch?)", { label: "Trotzdem verbinden", title: "Während der Sperre kann ein weiterer Versuch die Wartezeit verlängern" }); }
       else { log("··", "HS nicht erreichbar"); schedule(5, "HomeServer nicht erreichbar (Neustart?)"); }
     });
   };
 }
 /* Neuer Versuch mit Rückwärtszähler im Hinweis */
-function schedule(wait, why) {
+function schedule(wait, why, btn = { label: "Jetzt verbinden" }) {
   const until = Date.now() + wait * 1000;
-  const tick = () => setState("err", why + " – neuer Versuch in " + Math.max(0, Math.ceil((until - Date.now()) / 1000)) + " s");
+  const tick = () => setState("err", why + " – neuer Versuch in " + Math.max(0, Math.ceil((until - Date.now()) / 1000)) + " s", btn);
   tick(); clearInterval(tickTimer); tickTimer = setInterval(tick, 1000);
   clearTimeout(retryTimer); retryTimer = setTimeout(connect, wait * 1000);
 }
@@ -378,6 +381,8 @@ async function reachable(host) {
   catch (e) { return false; }
   finally { clearTimeout(t); }
 }
+/* „Jetzt verbinden“: Countdown abbrechen und sofort neu verbinden */
+function connectNow() { log("··", "Neuverbindung von Hand"); retry = 0; connect(); }
 function fail(msg) {
   $("lmsg").textContent = msg; $("lmsg").className = "msg err";
   $("app").classList.add("hidden"); $("login").classList.remove("hidden");
@@ -1035,6 +1040,7 @@ $("grid").addEventListener("change", e => {
   const t = e.target; if (!t.dataset.act) return;
   act(t.closest(".card").dataset.ref, t.dataset.act, t);
 });
+$("bnow").onclick = connectNow;
 $("menubtn").onclick = () => $("nav").classList.toggle("open");
 $("logcopy").onclick = async () => {
   const txt = "HS Client v" + VERSION + " · " + cfg.host + " · " + new Date().toLocaleString("de-DE") + "\n" + $("log").textContent;
