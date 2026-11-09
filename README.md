@@ -29,7 +29,7 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
 - Webseiten aus dem Menü eingebettet
 - Neustart-Erkennung, automatisches Wiederverbinden, Hell/Dunkel, Handy-tauglich
 
-Alle Details: [`changelog.html`](changelog.html) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
+Alle Details: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
 
 ## Installation auf dem HomeServer
 
