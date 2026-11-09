@@ -141,3 +141,19 @@ Ermittelt aus dem Original-Plugin (`1-25_client.dll`, Klasse `Player`), nicht ge
 | Lautstärke direkt | `coVolume` = 0–100 |
 
 Rückmeldungen gelten als „an“ bei Wert > 0. `coCan…` = 0 sperrt den jeweiligen Knopf.
+
+## Archive (Diagramme, Meldungen, Kamera-Archiv)
+
+Plugins fragen Archive nicht selbst ab, sondern über das QuadClient-Programm. Das holt sie
+per HTTPS mit der Sitzungs-ID, ganz ohne WebSocket (ermittelt aus dem Programmaufbau,
+Abruf im Client noch nicht umgesetzt):
+
+| Abruf | Antwort (XML) |
+|---|---|
+| `/quad/arch/<Archiv-ID>/<Start JJMMTTHHmm>/<Blockgröße>/<Blockanzahl>/<Genauigkeit>?<sid>` | `<row count sum min max>` je Block (Zahlen mit Punkt) |
+| `/quad/msg/<Archiv-ID>/<Zahl>?<sid>` | `<msgarch><msg date text>…` |
+| `/quad/camarch/list/<Archiv-ID>?<sid>` | `<camarch><pic date id>…` |
+| `/quad/camarch/pic/<Archiv-ID>/<Bild-ID>?<sid>` | Bild |
+
+Archiv-IDs stehen in den Plugin-Einstellungen (z. B. `archiv_day id=…`, `camarchiv archid=…`).
+Bedeutung von Blockgröße/Genauigkeit und der zweiten Zahl bei Meldungen: noch zu prüfen.
