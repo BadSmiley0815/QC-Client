@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erfundene Minimal-Vorlagen nur für die Tests (Aktionsliste der Schaltuhr). Keine Gira-Dateien. -->
+<templates>
+  <template id="1-118_2"><timer pin_slot="slot_pin"><action text="#demo_on"/><action text="#demo_off"/></timer></template>
+</templates>

@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141716">
+<title>HS Client</title>
+<style>
+:root{color-scheme:light;
+  --bg:#f3f4f2;--panel:#fff;--ink:#1d2320;--muted:#6b736f;--line:#e2e5e1;
+  --acc:#e0802c;--acc-soft:#fbeadb;--on:#e9a52d;--ok:#2f8a4f;--err:#c0392b;--cool:#3f7fbf;--r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
+  --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
+  --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit}
+.hidden{display:none!important}
+
+/* Anmeldung */
+#login{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lbox{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+.lbox h1{margin:0 0 4px;font-size:22px}
+.lbox p{margin:0 0 16px;color:var(--muted)}
+.lbox label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+.lbox input[type=text],.lbox input[type=password]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.chk{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:13px;color:var(--muted)}
+.btn{border:0;border-radius:10px;padding:11px 16px;background:var(--acc);color:#fff;font-weight:600;cursor:pointer}
+.btn.wide{width:100%;margin-top:16px}
+.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.msg{margin-top:12px;font-size:13px;min-height:1em}
+.msg.err{color:var(--err)}
+
+/* App */
+#app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+nav{background:var(--panel);border-right:1px solid var(--line);padding:14px 10px 30px;overflow:auto;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:8px;margin:2px 8px 14px}
+.brand b{font-size:15px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.dot.on{background:var(--ok)}.dot.err{background:var(--err)}
+.fl{margin:14px 10px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+nav button{display:flex;justify-content:space-between;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:9px;cursor:pointer}
+nav button:hover{background:var(--bg)}
+nav button.act{background:var(--acc-soft);color:var(--acc);font-weight:600}
+nav button span{color:var(--muted);font-size:12px}
+main{padding:20px 24px 70px;min-width:0}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.top h2{margin:0;font-size:23px}
+.crumb{color:var(--muted)}
+.tools{margin-left:auto;display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}
+.chip.on{border-color:var(--acc);color:var(--acc)}
+.menubtn{display:none}
+.banner{background:var(--acc-soft);color:var(--ink);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.sect{margin:6px 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.empty{color:var(--muted);padding:30px 0}
+
+/* Kacheln */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px;display:flex;flex-direction:column;gap:10px;min-height:112px;position:relative}
+.card.wide{grid-column:span 2}
+.head{display:flex;gap:10px;align-items:center;min-width:0}
+.card:has(.tbtn) .head{padding-right:48px}.card .head{padding-right:22px}
+.ic{width:36px;height:36px;border-radius:10px;background:var(--bg);display:grid;place-items:center;flex:none;color:var(--muted)}
+.ic svg{width:20px;height:20px}
+.card.is-on .ic{background:var(--acc-soft);color:var(--on)}
+.name{font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sub{font-size:12px;color:var(--muted)}
+.ctl{margin-top:auto;display:flex;align-items:center;gap:8px}
+.tog{width:48px;height:28px;border-radius:14px;background:var(--line);position:relative;border:0;cursor:pointer;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px #0003}
+.is-on .tog{background:var(--acc)}
+.is-on .tog::after{left:23px}
+.busy .tog{opacity:.6}
+input[type=range]{flex:1;accent-color:var(--acc);min-width:0}
+.big{font-size:25px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.big small{font-size:14px;color:var(--muted);font-weight:400;margin-left:3px}
+.btns{display:flex;gap:6px;flex:1}
+.btns button{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 0;cursor:pointer;min-width:0}
+.btns button:active{background:var(--acc-soft)}
+.btns button.act{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+.btns button:disabled{opacity:.45;cursor:not-allowed}
+.btns button svg{width:18px;height:18px;vertical-align:middle}
+.btns.scn{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}.btns.scn button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btns.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr))}
+.btns.modes button{font-size:12px;padding:7px 4px;white-space:nowrap}
+.pct{font-size:12px;color:var(--muted);min-width:38px;text-align:right;font-variant-numeric:tabular-nums}
+[data-press]{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.btns button.down{background:var(--acc-soft);border-color:var(--acc)}
+.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line);margin-right:5px;vertical-align:middle}.led.on{background:var(--ok)}
+.valbtn{border:0;background:none;padding:0;cursor:pointer;text-align:left}
+/* Menü */
+.mcard{cursor:pointer;min-height:0;text-align:left;font:inherit;color:inherit}
+.mcard:hover{border-color:var(--acc)}
+.mcard .t2{font-size:12px;color:var(--muted)}
+.mcard .cnt{position:absolute;top:10px;right:10px;min-width:22px;height:22px;border-radius:11px;background:var(--acc);color:#fff;font-size:12px;font-weight:600;display:grid;place-items:center;padding:0 6px}
+.mcard.off{opacity:.55;cursor:default}
+.startsel{margin:0 10px 8px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.startsel select{flex:1;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px}
+#frame{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+#frame .fbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#frame .fbar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#fifr{display:block;width:100%;height:calc(100vh - 120px);min-height:120px;border:0;background:#fff}
+/* Schaltuhr */
+.tbtn{position:absolute;top:9px;right:32px;border:0;background:none;color:var(--muted);cursor:pointer;padding:2px}
+.tbtn svg{width:16px;height:16px}.tbtn.on{color:var(--acc)}
+#tdlg{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:0;width:min(460px,96vw);max-height:90vh}
+#tdlg::backdrop{background:#0007}
+#tdlg .th{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+#tdlg .th h3{margin:0;font-size:17px;flex:1;min-width:0}
+#tdlg .tb{padding:12px 18px 18px;overflow:auto;max-height:calc(90vh - 70px)}
+.tpt{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.tpt .tx{flex:1;min-width:0}.tpt .tx b{display:block;font-weight:600}.tpt .tx span{font-size:12px;color:var(--muted)}
+.tpt button{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:6px 10px;cursor:pointer;font-size:13px}
+.days{display:flex;gap:4px;flex-wrap:wrap}.days label{flex:1;min-width:38px;text-align:center;border:1px solid var(--line);border-radius:8px;padding:6px 0;cursor:pointer;font-size:13px;user-select:none}
+.days input{display:none}.days label:has(input:checked){background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+.fld{margin-top:12px}.fld>span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.fld select,.fld input[type=time]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit}
+/* Dialog */
+#dlg{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:20px;width:min(340px,92vw)}
+#dlg::backdrop{background:#0007}
+#dlg h3{margin:0 0 6px;font-size:18px}
+#dlg p{margin:0 0 12px;color:var(--muted);font-size:13px}
+#dlg input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:20px;text-align:center}
+#dlg .row{display:flex;gap:8px;margin-top:14px}#dlg .row .btn{flex:1}
+#dlg .err{color:var(--err);font-size:13px;min-height:1.2em;margin-top:8px}
+.badges{display:flex;gap:5px;flex-wrap:wrap}
+.badges b{font-size:11px;font-weight:500;padding:2px 7px;border-radius:9px;background:var(--bg);color:var(--muted)}
+.badges b.alarm{background:#c0392b22;color:var(--err)}
+.bar{height:6px;border-radius:3px;background:var(--line);flex:1;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}
+.fav{position:absolute;top:9px;right:9px;border:0;background:none;color:var(--muted);cursor:pointer;opacity:0;padding:2px}
+.card:hover .fav,.fav.on{opacity:1}
+.fav.on{color:var(--on)}
+.fav svg{width:16px;height:16px}
+.note{font-size:11px;color:var(--muted)}
+.swatch{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);flex:none}
+input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex:none}
+#log{font:11px ui-monospace,Consolas,monospace;white-space:pre;max-height:300px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:16px}
+
+@media (max-width:760px){
+  #app{grid-template-columns:1fr}
+  nav{position:fixed;inset:0 25% 0 0;z-index:5;transform:translateX(-100%);transition:.2s;height:100%}
+  nav.open{transform:none;box-shadow:0 0 40px #0006}
+  main{padding:12px 16px 70px}
+  .menubtn{display:inline-block}
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .top h2{font-size:20px}
+  .fav{opacity:.6}
+}
+@media (max-width:440px){.grid{grid-template-columns:1fr}.card.wide{grid-column:span 1}}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <div class="lbox">
+    <h1>HS Client</h1>
+    <p>Verbindet sich mit deinem Gira HomeServer und lädt die vorhandene QuadClient-Visu.</p>
+    <form id="lform" autocomplete="on">
+      <label for="lhost">HomeServer (IP oder Name)</label>
+      <input id="lhost" type="text" autocomplete="url" required>
+      <label for="luser">Benutzer</label>
+      <input id="luser" type="text" autocomplete="username" required>
+      <label for="lpass">Passwort</label>
+      <input id="lpass" type="password" autocomplete="current-password">
+      <div class="chk"><input type="checkbox" id="lremember"><label for="lremember" style="margin:0">Passwort auf diesem Gerät merken</label></div>
+      <button class="btn wide" type="submit">Verbinden</button>
+      <div class="msg" id="lmsg"></div>
+      <div class="note" style="margin-top:8px">Beim ersten Mal ggf. <a id="lcert" target="_blank" rel="noopener">die HS-Adresse öffnen</a> und die Zertifikatswarnung bestätigen.</div>
+    </form>
+  </div>
+</section>
+
+<section id="app" class="hidden">
+  <nav id="nav"></nav>
+  <main>
+    <div class="top">
+      <button class="chip menubtn" id="menubtn">☰ Räume</button>
+      <h2 id="title"></h2><span class="crumb" id="crumb"></span>
+      <div class="tools">
+        <button class="chip" id="logbtn" title="Protokoll">Log</button>
+        <button class="chip" id="logcopy" title="Protokoll in die Zwischenablage kopieren">Log kopieren</button>
+        <button class="chip" id="logout">Abmelden</button>
+      </div>
+    </div>
+    <div id="banner" class="banner hidden"></div>
+    <div id="grid" class="grid"></div>
+    <div id="frame" class="hidden"><div class="fbar"><b id="ftitle"></b><button class="chip" id="fnew">In neuem Tab öffnen</button><button class="chip" id="fclose">Schließen</button></div>
+      <iframe id="fifr" referrerpolicy="no-referrer" allow="fullscreen"></iframe></div>
+    <div id="log" class="hidden"></div>
+  </main>
+</section>
+
+<dialog id="tdlg"><div class="th"><h3 id="ttitle"></h3><button class="tog" id="tactive" aria-label="Zeitschaltuhr aktiv"></button><button class="chip" id="tclose">Schließen</button></div><div class="tb" id="tbody"></div></dialog>
+<dialog id="dlg"><form method="dialog" id="dform">
+  <h3 id="dtitle"></h3><p id="dtext"></p>
+  <input id="dinput" autocomplete="off">
+  <div class="err" id="derr"></div>
+  <div class="row"><button class="btn ghost" value="cancel" type="button" id="dcancel">Abbrechen</button><button class="btn" value="ok" id="dok">OK</button></div>
+</form></dialog>
+
+<script>
+"use strict";
+/* Über http aufgerufen (z. B. http://<HS>/opt/hs-client/qc.html) → auf https umleiten:
+   gleiche Herkunft wie HS-Seiten, sichere Umgebung für Zwischenablage, Anmeldedaten nicht doppelt. */
+if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.test(location.hostname))
+  location.replace("https://" + location.host + location.pathname + location.search + location.hash);
+/* ============================================================
+   HS Client – eigener Client für die QuadClient-Schnittstelle
+   des Gira HomeServers (wss://<HS>/quad/ws).
+   Protokoll (aus Mitschnitten verifiziert):
+     S→C 93|sid|projektId|…|mac|…   Begrüßung nach Anmeldung
+     C→S 94||                        Bestätigung
+     S→C 2|ko|wert|x                 Startwert,  95|| = Startwerte fertig
+     S→C 1|ko|wert|x                 Wertänderung
+     C→S 1|ko|wert                   Wert senden
+     C→S 80||  → S→C 81|zeit|        Keepalive
+   Dateien: https://<HS>/quad/client/client_project.xml?<sid>
+   ============================================================ */
+const VERSION = "0.5.5";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("hsc." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("hsc." + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem("hsc." + k); } catch (e) {} }
+};
+
+/* ---------------- Icons (eigene Zeichnungen) ---------------- */
+const P = {
+  bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+  dim:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  blind:'<rect x="4" y="3" width="16" height="3" rx="1"/><path d="M5 9h14M5 12h14M5 15h14M12 18v3"/>',
+  temp:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>',
+  scene:'<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
+  color:'<circle cx="8" cy="9" r="3.2"/><circle cx="16" cy="9" r="3.2"/><circle cx="12" cy="15.5" r="3.2"/>',
+  gauge:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  text:'<path d="M5 6h14M5 11h14M5 16h9"/>',
+  push:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  battery:'<rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M6 10v4M9 10v4"/>',
+  bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  plug:'<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/>',
+  window:'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M12 3v18M4 12h16"/>',
+  door:'<path d="M6 21V4h10v17M4 21h16M13 12h.5"/>',
+  fan:'<circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7s2 5-4 7M14 12c4 0 7 1 7 4s-5 2-7-4M12 14c0 4-1 7-4 7s-2-5 4-7M10 12c-4 0-7-1-7-4s5-2 7 4"/>',
+  star:'<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
+  home:'<path d="M3 11l9-7 9 7M5 10v10h14V10"/>',
+  bath:'<path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM6 12V6a2 2 0 0 1 4 0M7 19l-1 2M17 19l1 2"/>',
+  bed:'<path d="M3 18V8M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5M7 11.5a1.5 1.5 0 1 0 0 .01"/>',
+  tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  web:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  plugin:'<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  up:'<path d="M6 15l6-6 6 6"/>', down:'<path d="M6 9l6 6 6-6"/>', stop:'<rect x="7" y="7" width="10" height="10" rx="1.5"/>'
+};
+const svg = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${P[k] || P.info}</svg>`;
+
+/* ---------------- Vorlagen → Elementart ---------------- */
+const KIND = {"1-101":"switch","1-106":"switch_pin","1-114":"switch_value","1-118":"button","1-102":"dimmer","32-300":"dimmer",
+  "1-107":"blind","1-103":"thermostat","1-109":"scene","1-120":"rgb","1-128":"tunable_white","1-125":"value","1-112":"status",
+  "1-116":"text","1-117":"state_icon","79-01":"level","0-7":"waste","1-129":"link","5-21":"spacer"};
+function iconFor(el) {
+  const s = (el.symbol || "").toLowerCase();
+  for (const [k, v] of [["blind","blind"],["jalou","blind"],["roll","blind"],["heat","temp"],["temp","temp"],["clima","fan"],["fan","fan"],
+    ["door","door"],["window","window"],["socket","plug"],["plug","plug"],["scene","scene"],["light","bulb"],["lamp","bulb"]])
+    if (s.includes(k)) return v;
+  return {switch:"bulb",switch_pin:"lock",switch_value:"plug",button:"push",dimmer:"dim",blind:"blind",thermostat:"temp",scene:"scene",
+    rgb:"color",tunable_white:"dim",value:"gauge",status:"window",text:"text",state_icon:"info",level:"battery",waste:"bin",link:"link"}[el.kind] || "info";
+}
+
+/* ---------------- Projekt einlesen ---------------- */
+function parseProject(txt) {
+  const x = new DOMParser().parseFromString(txt, "application/xml");
+  if (x.querySelector("parsererror")) throw new Error("Visu-Datei nicht lesbar");
+  const vis = e => e.getAttribute("visibleinqc") !== "0";
+  const els = {};
+  x.querySelectorAll("devices > device").forEach(d => {
+    const tpl = d.getAttribute("template") || "", base = tpl.split("_")[0], variant = tpl.split("_")[1] || "";
+    const kos = {}, par = {};
+    d.querySelectorAll("connect").forEach(c => kos[c.getAttribute("slot")] = c.getAttribute("tag"));
+    d.querySelectorAll("set").forEach(s => par[s.getAttribute("parameter")] = s.getAttribute("value"));
+    els[d.getAttribute("id")] = { id: d.getAttribute("id"), name: d.getAttribute("txt") || "", kind: KIND[base] || "unknown",
+      tpl: base, variant, symbol: (d.getAttribute("symbol") || "").replace(".xaml", ""), kos, par, timer: d.getAttribute("uhr") || null };
+  });
+  const groups = {};
+  x.querySelectorAll("device_groups > device_group").forEach(g => {
+    groups[g.getAttribute("id")] = { title: g.getAttribute("title"),
+      items: [...g.querySelectorAll("device")].filter(vis).map(d => ({ ref: d.getAttribute("id"), label: d.getAttribute("text") || "" })) };
+  });
+  const floors = [], byUid = {}, roomDg = new Set();
+  x.querySelectorAll("rooms > *").forEach(e => {
+    if (!vis(e)) return;
+    if (e.tagName === "floor") { const f = { id: e.getAttribute("uid"), name: e.getAttribute("txt"), rooms: [] }; floors.push(f); byUid[f.id] = f; }
+    else { roomDg.add(e.getAttribute("device_group"));
+      const g = groups[e.getAttribute("device_group")] || { items: [] };
+      (byUid[e.getAttribute("parent")] || { rooms: [] }).rooms.push({ id: e.getAttribute("uid"), name: e.getAttribute("txt"), items: g.items }); }
+  });
+  const trades = Object.entries(groups).filter(([id]) => !roomDg.has(id)).map(([id, g]) => ({ id, name: g.title, items: g.items }));
+  const hdr = {}; x.querySelectorAll("header > *").forEach(e => hdr[e.tagName] = e.getAttribute("tag"));
+  // Menü (QuadConfig „Menü“): Einträge der Seite 0, Unterseiten über page_item
+  const menu = [];
+  x.querySelectorAll("menu > mnu_item, menu > page_item").forEach(m => {
+    if (m.getAttribute("visibleinqc") === "0") return;
+    const it = { id: m.getAttribute("id"), page: m.getAttribute("page") || "0", isPage: m.tagName === "page_item",
+      t1: m.getAttribute("txt1") || "", t2: m.getAttribute("txt2") || "", ico: (m.getAttribute("ico") || "").replace(".xaml", ""),
+      group: m.getAttribute("group") || "0", plugin: m.getAttribute("plugin") || "" };
+    const st = m.querySelector("state"); if (st) it.state = { type: st.getAttribute("type"), tag: st.getAttribute("tag") };
+    it.cmds = [...m.querySelectorAll("cmd")].map(c => Object.fromEntries([...c.attributes].map(a => [a.name, a.value])));
+    menu.push(it);
+  });
+  const users = {}; x.querySelectorAll("users > user").forEach(u => users[(u.getAttribute("name") || "").toLowerCase()] = u.getAttribute("group"));
+  return { els, floors: floors.filter(f => f.rooms.length), allFloors: floors, trades, header: hdr, menu, users };
+}
+
+/* ---------------- Zustand ---------------- */
+let P_ = null;            // Projekt
+const V = new Map();      // KO -> Wert (String)
+let ws = null, sid = null, projId = null, state = "off", retry = 0, retryTimer = null, kaTimer = null, gotHello = false, tickTimer = null;
+let cur = store.get("view", ""), cfg = store.get("login", {});
+let favs = new Set(store.get("favs", []));
+const TIMERS = new Map();  // Uhr-ID -> { active, pts: Map(Nr -> Ziffernkette) }
+
+function log(dir, s) {
+  const l = $("log"); const line = new Date().toLocaleTimeString() + " " + dir + " " + s;
+  l.textContent = line + "\n" + l.textContent.split("\n").slice(0, 300).join("\n");
+}
+function setState(s, msg) {
+  state = s;
+  document.querySelectorAll(".dot").forEach(d => d.className = "dot" + (s === "on" ? " on" : s === "err" ? " err" : ""));
+  const b = $("banner");
+  if (msg) { b.textContent = msg; b.classList.remove("hidden"); } else b.classList.add("hidden");
+}
+
+/* ---------------- Verbindung ---------------- */
+const b64 = s => btoa(unescape(encodeURIComponent(s)));
+function connect() {
+  clearTimeout(retryTimer); clearInterval(kaTimer); clearInterval(tickTimer);
+  if (ws) { ws.onclose = null; try { ws.close(); } catch (e) {} }
+  gotHello = false;
+  const url = "wss://" + cfg.host + "/quad/ws?authorization=" + encodeURIComponent(b64(cfg.user + ":" + cfg.pass));
+  setState("off", P_ ? "Verbinde …" : null);
+  log("··", "verbinde mit " + cfg.host);
+  try { ws = new WebSocket(url); } catch (e) { fail("Adresse ungültig"); return; }
+  ws.binaryType = "arraybuffer";
+  ws.onmessage = onMsg;
+  ws.onclose = ev => {
+    clearInterval(kaTimer);
+    log("··", "getrennt, Code " + ev.code + (gotHello ? "" : " (vor der Anmeldung)"));
+    if (!gotHello && !P_) { fail("Anmeldung fehlgeschlagen. Benutzer/Passwort prüfen. Nach einem Fehlversuch sperrt der HS kurz – 1–2 Minuten warten."); return; }
+    if (gotHello) { schedule(Math.min(30, 2 ** retry++), "Verbindung unterbrochen"); return; }
+    // Vor der Anmeldung gescheitert: ist der HS weg (Neustart) oder lehnt er die Anmeldung ab (Sperre)?
+    reachable(cfg.host).then(up => {
+      if (up) { log("··", "HS antwortet, Anmeldung abgelehnt – warte wegen Sperre"); schedule(90, "Anmeldung abgelehnt (Sperre nach Fehlversuch?)"); }
+      else { log("··", "HS nicht erreichbar"); schedule(5, "HomeServer nicht erreichbar (Neustart?)"); }
+    });
+  };
+}
+/* Neuer Versuch mit Rückwärtszähler im Hinweis */
+function schedule(wait, why) {
+  const until = Date.now() + wait * 1000;
+  const tick = () => setState("err", why + " – neuer Versuch in " + Math.max(0, Math.ceil((until - Date.now()) / 1000)) + " s");
+  tick(); clearInterval(tickTimer); tickTimer = setInterval(tick, 1000);
+  clearTimeout(retryTimer); retryTimer = setTimeout(connect, wait * 1000);
+}
+/* Antwortet der HS überhaupt? no-cors: jede HTTP-Antwort zählt, nur Netzwerkfehler/Zeitüberschreitung = nicht erreichbar */
+async function reachable(host) {
+  const ac = new AbortController(), t = setTimeout(() => ac.abort(), 4000);
+  try { await fetch("https://" + host + "/?probe=" + Date.now(), { mode: "no-cors", cache: "no-store", signal: ac.signal }); return true; }
+  catch (e) { return false; }
+  finally { clearTimeout(t); }
+}
+function fail(msg) {
+  $("lmsg").textContent = msg; $("lmsg").className = "msg err";
+  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+}
+async function onMsg(ev) {
+  const s = typeof ev.data === "string" ? ev.data : new TextDecoder("utf-8").decode(ev.data);
+  const p = s.split("|");
+  switch (p[0]) {
+    case "93": {
+      gotHello = true; retry = 0; sid = p[1];
+      const newProj = p[2];
+      log("<<", "angemeldet, Projekt " + newProj);
+      ws.send("94||");
+      kaTimer = setInterval(() => ws && ws.readyState === 1 && ws.send("80||"), 25000);
+      if (!P_ || projId !== newProj || !KOIX) {
+        try { await loadProject(newProj); }
+        catch (e) { setState("err", "Visu konnte nicht geladen werden: " + e.message); return; }
+      } else refreshProject(projId, (store.get("proj4." + cfg.host, {}) || {}).h);
+      showApp();
+      setState("on");
+      break;
+    }
+    case "2": case "1": {
+      const ko = p[1], val = p.length > 3 ? p.slice(2, -1).join("|") : p[2];
+      V.set(ko, val);
+      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); }
+      break;
+    }
+    case "10": TIMERS.set(p[1], { active: p[2] === "1", pts: new Map() }); break;                      // Uhr: aktiv|Anzahl|…
+    case "11": tmr(p[1]).pts.set(p[2], p[3]); break;                                                    // Schaltpunkt
+    case "12": tmr(p[1]).active = p[2] === "1"; log("<<", s); timerChanged(p[1]); break;              // Uhr ein/aus, Stand
+    case "13": if (p[1] === "2") tmr(p[2]).pts.set(p[3], p[4]); else if (p[1] === "3") tmr(p[2]).pts.delete(p[3]);
+      log("<<", s); timerChanged(p[2]); break;                                                          // 2 = gespeichert, 3 = gelöscht
+    case "95": renderView(); break;
+    case "81": break;
+    default: log("<<", s.slice(0, 120));
+  }
+}
+const hash = t => { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return t.length + ":" + h; };
+async function fetchProject() {
+  const r = await fetch("https://" + cfg.host + "/quad/client/client_project.xml?" + sid);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.text();
+}
+async function loadProject(id) {
+  const cached = store.get("proj4." + cfg.host, null);
+  if (cached && cached.id === id) { P_ = cached.p; projId = id; log("··", "Visu aus Zwischenspeicher"); refreshProject(id, cached.h); return; }
+  setState("off", "Lade Visu vom HomeServer …");
+  const txt = await fetchProject();
+  P_ = parseProject(txt); projId = id; KOIX = null; TMETA = null;
+  store.set("proj4." + cfg.host, { id, h: hash(txt), p: P_ });
+  log("··", "Visu geladen: " + Object.keys(P_.els).length + " Elemente");
+}
+/* Zwischenspeicher im Hintergrund prüfen: hat sich die Visu geändert (z. B. nach Übertragen), neu einlesen */
+async function refreshProject(id, h) {
+  try {
+    const txt = await fetchProject(); if (hash(txt) === h) return;
+    P_ = parseProject(txt); KOIX = null; TMETA = null; store.del("tmeta." + cfg.host + "." + id);
+    store.set("proj4." + cfg.host, { id, h: hash(txt), p: P_ });
+    log("··", "Visu hat sich geändert – neu eingelesen"); prepare(); buildNav(); renderView();
+  } catch (e) { log("··", "Visu-Prüfung fehlgeschlagen: " + e.message); }
+}
+const tmr = id => { if (!TIMERS.has(id)) TIMERS.set(id, { active: false, pts: new Map() }); return TIMERS.get(id); };
+function sendRaw(s) { if (!ws || ws.readyState !== 1) return false; ws.send(s); log(">>", s); return true; }
+function send(ko, val) {
+  if (!ws || ws.readyState !== 1 || !ko) return false;
+  const v = typeof val === "number" ? (Number.isInteger(val) ? String(val) : String(+val.toFixed(4))) : String(val);
+  ws.send("1|" + ko + "|" + v);
+  log(">>", ko + " = " + v);
+  return true;
+}
+
+/* ---------------- Werte-Hilfen ---------------- */
+const num = ko => { const v = V.get(ko); if (v === undefined || v === "") return undefined; const n = Number(v); return isNaN(n) ? undefined : n; };
+const bool = ko => { const n = num(ko); return n === undefined ? undefined : n !== 0; };
+const fmt = (n, d) => n === undefined ? "–" : Number(n).toLocaleString("de-DE", { minimumFractionDigits: d ?? 0, maximumFractionDigits: d ?? 1 });
+const pint = (v, d) => { const n = parseInt(v, 10); return isNaN(n) ? d : n; };
+const pfl = (v, d) => { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? d : n; };
+
+/* ---------------- Kacheln ---------------- */
+function tile(ref, el, label) {
+  const k = el.kos, p = el.par, name = esc((label && label !== el.name ? label : el.name || "").split("\\").pop());
+  let cls = "card", sub = "", body = "", on;
+  switch (el.kind) {
+    case "switch": case "switch_pin": case "switch_value": {
+      on = bool(k.switch_rm ?? k.switch); sub = on === undefined ? "–" : on ? (p.par_on || "Ein") : (p.par_off || "Aus");
+      body = `<div class="ctl"><button class="tog" data-act="toggle" aria-label="Schalten"></button>
+        ${el.kind === "switch_pin" ? `<span class="note">${k.slot_pin ? "PIN-geschützt" : "mit Bestätigung"}</span>` : ""}
+        ${el.kind === "switch_value" && k.slot_value ? `<span class="big" style="margin-left:auto">${fmt(num(k.slot_value), pint(p.par_prec, 0))}<small>${esc(p.par_unit || "")}</small></span>` : ""}</div>`;
+      break;
+    }
+    case "button": {
+      if (k.slot_feedback) { on = bool(k.slot_feedback); sub = on === undefined ? "" : on ? "aktiv" : "inaktiv"; }
+      const ok = BTN[el.variant || "1"];
+      body = `<div class="ctl btns"><button data-press="btn" ${ok ? "" : 'disabled title="HS-Szene/Sequenz über Taster folgt"'}>${esc(p.par_push || "Auslösen")}</button></div>
+        ${ok ? "" : '<div class="note">HS-Szene/Sequenz – folgt</div>'}`;
+      break;
+    }
+    case "dimmer": {
+      const lvl = num(k.dim_val); on = bool(k.dim_s) ?? (lvl !== undefined ? lvl > 0 : undefined);
+      sub = on === false ? "Aus" : lvl === undefined ? "–" : Math.round(lvl) + " %";
+      body = `<div class="ctl"><button class="tog" data-act="toggle" aria-label="Schalten"></button>
+        <input type="range" min="0" max="100" value="${Math.round(lvl ?? 0)}" data-act="dim" aria-label="Helligkeit"><span class="pct">${Math.round(lvl ?? 0)} %</span></div>`;
+      break;
+    }
+    case "tunable_white": {
+      const br = num(k.slot_brightness_rm ?? k.slot_brightness), kel = num(k.slot_color_temperature_2byte_rm ?? k.slot_color_temperature_rm);
+      on = bool(k.slot_switch) ?? (br !== undefined ? br > 0 : undefined);
+      sub = (on === false ? "Aus" : br === undefined ? "–" : Math.round(br) + " %") + (kel ? " · " + Math.round(kel) + " K" : "");
+      const brKo = el.internal_br, ctKo = el.internal_ct;
+      body = `<div class="ctl"><button class="tog" data-act="toggle" aria-label="Schalten"></button>
+          ${brKo ? `<input type="range" min="0" max="100" value="${Math.round(br ?? 0)}" data-act="twbr" aria-label="Helligkeit"><span class="pct">${Math.round(br ?? 0)} %</span>` : ""}</div>
+        ${ctKo ? `<div class="ctl"><span class="note">warm</span><input type="range" min="0" max="100" value="${ctPct(el, kel)}" data-act="twct" aria-label="Farbtemperatur"><span class="note">kalt</span></div>` : ""}`;
+      break;
+    }
+    case "rgb": {
+      on = bool(k.slot_switch);
+      const r = num(k.slot_red_rm), g = num(k.slot_green_rm), b = num(k.slot_blue_rm);
+      const col = r !== undefined ? `rgb(${pct255(r)},${pct255(g)},${pct255(b)})` : "transparent";
+      sub = on === undefined ? "–" : on ? (p.par_on || "Ein") : (p.par_off || "Aus");
+      const can = k.slot_4byte;
+      body = `<div class="ctl"><button class="tog" data-act="toggle" aria-label="Schalten"></button>
+        ${can ? `<input type="color" data-act="rgbw" value="${hex(r, g, b)}" aria-label="Farbe">` : `<span class="swatch" style="background:${col}"></span>`}
+        <span class="note">${can ? "" : "Farbe nur Anzeige"}</span></div>
+        ${can ? `<div class="ctl"><span class="note">Weiß</span><input type="range" min="0" max="100" value="${el._w ?? 0}" data-act="rgbw" data-w="1" aria-label="Weiß"><span class="pct">${el._w ?? 0} %</span></div>` : ""}`;
+      break;
+    }
+    case "blind": {
+      const pos = num(k.slot_position);
+      sub = pos === undefined ? "" : "Position " + Math.round(pos) + " %";
+      const bad = [["slot_wind","Wind","par_show_wind"],["slot_rain","Regen","par_show_rain"],["slot_ice","Eis","par_show_ice"]]
+        .filter(([s]) => k[s]).map(([s, l]) => `<b class="${bool(k[s]) ? "alarm" : ""}">${l}</b>`).join("");
+      body = `${bad ? `<div class="badges">${bad}</div>` : ""}
+        <div class="ctl btns"><button data-act="up" ${k.slot_long ? "" : "disabled"} aria-label="Auf">${svg("up")}</button>
+          <button data-act="stop" ${k.slot_short ? "" : "disabled"} aria-label="Stopp">${svg("stop")}</button>
+          <button data-act="down" ${k.slot_long ? "" : "disabled"} aria-label="Ab">${svg("down")}</button></div>
+        ${k.slot_position ? `<div class="ctl"><span class="note">Pos.</span><input type="range" min="0" max="100" value="${Math.round(pos ?? 0)}" data-act="pos" aria-label="Position"><span class="pct">${Math.round(pos ?? 0)} %</span></div>` : ""}`;
+      break;
+    }
+    case "thermostat": {
+      const ist = num(k.slot_temp_actual), soll = num(k.slot_temp_target ?? k.slot_adjustment), mode = num(k.slot_status ?? k.slot_mode), valve = num(k.slot_valve);
+      sub = ist === undefined ? "" : "Ist " + fmt(ist, 1) + " °C";
+      on = valve !== undefined && valve > 0;
+      const modes = [[1, "Komfort"], [2, "Standby"], [3, "Nacht"], [4, "Frost"]];
+      body = `<div class="ctl"><span class="big">${fmt(soll, 1)}<small>°C</small></span>
+          <div class="btns" style="margin-left:auto;max-width:110px"><button data-act="minus" aria-label="Kälter">−</button><button data-act="plus" aria-label="Wärmer">+</button></div></div>
+        ${k.slot_mode ? `<div class="ctl btns modes">${modes.map(([v, l]) => `<button data-act="mode" data-v="${v}" class="${mode === v ? "act" : ""}" title="${l}">${l}</button>`).join("")}</div>` : ""}
+        ${valve !== undefined ? `<div class="note">Ventil ${fmt(valve, 0)} %</div>` : ""}`;
+      break;
+    }
+    case "scene": {
+      const knx = (p.par_scene_type ?? "0") === "0";          // 0 = KNX-Szene (verifiziert), sonst HS-Szene
+      const btn = [1, 2, 3, 4].filter(i => k["slot_scene" + (i > 1 ? "_" + i : "")]);
+      body = `<div class="ctl btns scn">${btn.map(i => { const sfx = i > 1 ? "_" + i : "", st = k["slot_state" + sfx];
+        const led = st && /^true$/i.test(p.par_state || "") ? `<span class="led ${bool(st) ? "on" : ""}"></span>` : "";
+        return `<button data-press="scene" data-i="${i}" ${knx ? "" : "disabled"}>${led}${esc(p["par_push" + sfx] || "Szene " + i)}</button>`; }).join("")}</div>
+        <div class="note">${knx ? (/^true$/i.test(p.par_teachable || "") ? "Halten = Szene speichern" : "") : "HS-Szene – folgt"}</div>`;
+      break;
+    }
+    case "value": {
+      const big = `<span class="big">${fmt(num(k.slot_value), pint(p.par_prec, 1))}<small>${esc(p.par_unit || "")}</small></span>`;
+      body = valEditable(p) && k.slot_value
+        ? `<div class="ctl"><button class="valbtn" data-act="vedit" title="Wert eingeben">${big}</button>
+            <div class="btns" style="margin-left:auto;max-width:110px"><button data-act="vminus" aria-label="Weniger">−</button><button data-act="vplus" aria-label="Mehr">+</button></div></div>`
+        : `<div class="ctl">${big}</div>`;
+      break;
+    }
+    case "level": {
+      const v = num(k.slot_num1);
+      body = `<div class="ctl"><span class="big">${fmt(v, 0)}<small>%</small></span><div class="bar"><i style="width:${Math.max(0, Math.min(100, v ?? 0))}%"></i></div></div>`;
+      break;
+    }
+    case "status": {
+      const ko = k.slot_feedback2 ?? k.slot_feedback1; on = bool(ko);
+      const win = /win/.test((p.par_state2_open || "") + (p.par_state1_open || ""));
+      sub = on === undefined ? "–" : win ? (on ? "offen" : "geschlossen") : (on ? "aktiv" : "inaktiv");
+      break;
+    }
+    case "state_icon": on = bool(k.slot_state2); sub = on === undefined ? "–" : on ? "Ein" : "Aus"; break;
+    case "text": {
+      body = ["slot_text_1", "slot_text_2"].filter(s => k[s]).map(s => `<div>${esc(V.get(k[s]) ?? "–")}</div>`).join("");
+      break;
+    }
+    case "waste": {                                           // 0 = nichts fällig, 1 = Tonne raus
+      on = bool(k.muell_val); sub = on === undefined ? "–" : on ? "Tonne rausstellen" : "nichts fällig";
+      body = `<div class="ctl btns"><button data-act="waste">Erledigt</button></div>`;
+      break;
+    }
+    case "link": {
+      const url = p.par_url || "";
+      cls += " wide"; sub = url ? "Webseite" : "Plugin – folgt";
+      body = url ? `<div class="ctl btns"><button data-act="open">Öffnen</button></div>` : "";
+      break;
+    }
+    default: sub = el.kind;
+  }
+  if (on) cls += " is-on";
+  const favOn = favs.has(ref);
+  return `<div class="${cls}" data-ref="${esc(ref)}">
+    <button class="fav ${favOn ? "on" : ""}" data-act="fav" aria-label="Favorit">${svg("star", favOn)}</button>
+    ${el.timer && TIMERS.has(el.timer) ? `<button class="tbtn ${TIMERS.get(el.timer).active ? "on" : ""}" data-act="timer" title="Zeitschaltuhr">${svg("clock")}</button>` : ""}
+    <div class="head"><div class="ic">${svg(iconFor(el))}</div><div style="min-width:0"><div class="name">${name}</div><div class="sub">${esc(sub)}</div></div></div>${body}</div>`;
+}
+const pct255 = v => Math.round((v ?? 0) * 2.55);
+const hex = (r, g, b) => "#" + [r, g, b].map(v => pct255(v).toString(16).padStart(2, "0")).join("");
+function ctPct(el, kel) {
+  const mn = pfl(el.par.par_color_temp_min, 2700), mx = pfl(el.par.par_color_temp_max, 6500);
+  return kel ? Math.round(Math.max(0, Math.min(100, (kel - mn) / (mx - mn) * 100))) : 50;
+}
+
+const BTN = {                    // Taster 1-118: [Wert beim Drücken, Wert beim Loslassen] – verifiziert (flows3/flows4)
+  "1": [null, 1], "2": [null, 0], "3": [1, 0], "4": [0, 1] };
+const valEditable = p => /^(1|true)$/i.test(p.par_modify || "");
+const needPin = (el) => el.kos.slot_pin && (el.kind === "switch_pin" || /^true$/i.test(el.par.par_use_pin || ""));
+
+/* PIN prüfen – wie das Original: der HS liefert den PIN-Code im Klartext an den Client, geprüft wird hier. */
+async function checkPin(el) {
+  if (!needPin(el)) return true;
+  const soll = String(V.get(el.kos.slot_pin) ?? "").trim();
+  const ist = await ask({ title: "PIN eingeben", text: el.name, type: "password", mode: "numeric",
+    check: v => v === soll ? "" : "PIN falsch" });
+  return ist !== null;
+}
+
+/* Kleiner Eingabedialog. check(v) gibt "" (ok) oder Fehlertext zurück. Ergebnis: Text oder null. */
+function ask({ title, text = "", value = "", type = "text", mode = "text", check }) {
+  return new Promise(res => {
+    const d = $("dlg"), i = $("dinput");
+    $("dtitle").textContent = title; $("dtext").textContent = text; $("derr").textContent = "";
+    i.type = type; i.inputMode = mode; i.value = value;
+    const done = v => { d.close(); $("dform").onsubmit = null; $("dcancel").onclick = null; d.oncancel = null; res(v); };
+    $("dform").onsubmit = e => { e.preventDefault(); const v = i.value.trim(); const er = check ? check(v) : "";
+      if (er) { $("derr").textContent = er; i.select(); return; } done(v); };
+    $("dcancel").onclick = () => done(null);
+    d.oncancel = e => { e.preventDefault(); done(null); };
+    d.showModal(); setTimeout(() => { i.focus(); i.select(); }, 30);
+  });
+}
+function valStep(el, dir) {
+  const k = el.kos, p = el.par, step = pfl(p.par_skip, 1), mn = pfl(p.par_min, -Infinity), mx = pfl(p.par_max, Infinity), pr = pint(p.par_prec, 1);
+  const nv = Math.max(mn, Math.min(mx, +((num(k.slot_value) ?? 0) + dir * step).toFixed(pr)));
+  send(k.slot_value, nv);                                                                          // verifiziert: absoluter Wert
+}
+async function valEdit(el) {
+  const k = el.kos, p = el.par, mn = pfl(p.par_min, -Infinity), mx = pfl(p.par_max, Infinity);
+  const cur = num(k.slot_value);
+  const v = await ask({ title: p.par_caption_popup || "Wert eingeben", text: el.name + (isFinite(mn) && isFinite(mx) && mx - mn < 1e5 ? ` (${mn} … ${mx})` : ""),
+    value: cur === undefined ? "" : String(cur).replace(".", ","), mode: "decimal",
+    check: s => { const n = pfl(s, NaN); return isNaN(n) ? "Bitte eine Zahl eingeben" : n < mn || n > mx ? `Erlaubt: ${mn} … ${mx}` : ""; } });
+  if (v !== null) send(k.slot_value, pfl(v, 0));                                                  // verifiziert: Wert wie eingegeben
+}
+
+/* ---------------- Drücken/Halten (Taster, Szenen) ---------------- */
+let press = null;
+function pressStart(btn) {
+  const ref = btn.closest(".card").dataset.ref, el = P_.els[ref]; if (!el) return;
+  press = { btn, ref, el, kind: btn.dataset.press, i: +btn.dataset.i || 1, long: false, timer: null };
+  btn.classList.add("down");
+  if (press.kind === "btn") { const v = BTN[el.variant || "1"]; if (v && v[0] !== null) send(el.kos.slot_switch, v[0]); }
+  if (press.kind === "scene" && /^true$/i.test(el.par.par_teachable || "")) {
+    const pr = press; pr.timer = setTimeout(() => { pr.long = true; pr.btn.classList.remove("down"); sceneTeach(pr.el, pr.i); }, 1000);
+  }
+}
+function pressEnd(cancel) {
+  const pr = press; if (!pr) return; press = null;
+  clearTimeout(pr.timer); pr.btn.classList.remove("down");
+  if (pr.kind === "btn") { const v = BTN[pr.el.variant || "1"];
+    if (v && (!cancel || v[0] !== null)) send(pr.el.kos.slot_switch, v[1]); }                     // Loslassen immer senden, wenn Drücken etwas gesendet hat
+  if (pr.kind === "scene" && !pr.long && !cancel) sceneRecall(pr.el, pr.i);
+}
+const sceneNo = (el, i) => pint(el.par["par_scene" + (i > 1 ? "_" + i : "")], 0);
+const sceneKo = (el, i) => el.kos["slot_scene" + (i > 1 ? "_" + i : "")];
+function sceneRecall(el, i) { send(sceneKo(el, i), sceneNo(el, i)); }                              // verifiziert: Szenennummer
+async function sceneTeach(el, i) {
+  const ok = await ask({ title: "Szene speichern?", text: `${el.name} – aktuellen Zustand als Szene ${sceneNo(el, i)} speichern. Zum Bestätigen OK.`, type: "hidden" });
+  if (ok !== null) send(sceneKo(el, i), sceneNo(el, i) + 128);                                     // verifiziert: Nummer + 128 = Lernen
+}
+async function guarded(el, fn) { if (await checkPin(el)) fn(); }
+
+/* ---------------- Aktionen (nur verifizierte Befehle) ---------------- */
+function act(ref, a, target) {
+  const el = P_.els[ref]; if (!el) return;
+  const k = el.kos, p = el.par;
+  switch (a) {
+    case "timer": guarded(el, () => openTimer(ref)); return;
+    case "fav": favs.has(ref) ? favs.delete(ref) : favs.add(ref); store.set("favs", [...favs]); renderView(); return;
+    case "toggle": {
+      if (el.kind === "dimmer") { const on = bool(k.dim_s) ?? ((num(k.dim_val) ?? 0) > 0); send(k.dim_s, on ? 0 : 1); }
+      else if (el.kind === "rgb" || el.kind === "tunable_white") send(k.slot_switch, bool(k.slot_switch) ? 0 : 1);
+      else {
+        const on = bool(k.switch_rm ?? k.switch);
+        if (el.kind === "switch_pin") {
+          if (k.slot_pin) { guarded(el, () => send(k.switch, on ? 0 : 1)); return; }                // verifiziert: PIN lokal, dann 1/0
+          if (!confirm((on ? "Ausschalten" : "Einschalten") + ": " + el.name + "?")) return;
+        }
+        send(k.switch, on ? 0 : 1);
+      }
+      return;
+    }
+    case "vplus": guarded(el, () => valStep(el, +1)); return;
+    case "vminus": guarded(el, () => valStep(el, -1)); return;
+    case "vedit": guarded(el, () => valEdit(el)); return;
+    case "waste": send(k.muell_val, 0); return;                                                         // verifiziert: 0
+    case "dim": send(k.dim_val, +target.value); return;                                                 // verifiziert: Prozent
+    case "up": send(k.slot_long, 0); return;                                                            // verifiziert: 0 = Auf
+    case "down": send(k.slot_long, 1); return;                                                          // verifiziert: 1 = Ab
+    case "stop": send(k.slot_short, 0); return;                                                         // Schritt/Stopp
+    case "pos": send(k.slot_position, +target.value); return;                                           // verifiziert: Prozent
+    case "plus": case "minus": {
+      const step = pfl(p.par_steps_adjustment, 0.5), mn = pfl(p.par_min_adjustment, 7), mx = pfl(p.par_max_adjustment, 30);
+      const soll = num(k.slot_temp_target ?? k.slot_adjustment); if (soll === undefined) return;
+      const nv = Math.max(mn, Math.min(mx, Math.round((soll + (a === "plus" ? step : -step)) / step) * step));
+      send(k.slot_adjustment ?? k.slot_temp_target, nv); return;                                         // verifiziert: absoluter Sollwert
+    }
+    case "mode": send(k.slot_mode, +target.dataset.v); return;                                          // verifiziert: 1–4
+    case "twbr": send(el.internal_br, +target.value); return;                                            // verifiziert: Prozent
+    case "twct": send(el.internal_ct, +target.value); return;                                            // verifiziert: Prozent
+    case "rgbw": {                                                                                        // verifiziert: R,G,B,W je 0–100 %
+      const card = target.closest(".card"), h = card.querySelector('input[type=color]').value, wIn = card.querySelector('input[data-w]');
+      const pc = i => Math.round(parseInt(h.substr(1 + i * 2, 2), 16) / 2.55), w = wIn ? +wIn.value : 0;
+      el._w = w;
+      send(k.slot_4byte, ((pc(0) << 24) >>> 0) + (pc(1) << 16) + (pc(2) << 8) + w); return;
+    }
+    case "open": if (p.par_url) window.open(p.par_url, "_blank", "noopener"); return;
+  }
+}
+
+/* ---------------- Zeitschaltuhren ----------------
+   Protokoll (verifiziert, flows5–7):
+     S→C 10|uhr|aktiv|anz|maxNr   11|uhr|nr|punkt   12|uhr|aktiv|anz|maxNr
+     C→S 13|uhr|2|0|punkt (neu)   13|uhr|3|nr|punkt (ändern)   13|uhr|1|nr| (löschen)   12|uhr|1/0 (Uhr ein/aus)
+     S→C 13|2|uhr|nr|punkt (gespeichert)   13|3|uhr|nr|punkt (gelöscht)
+   Schaltpunkt (26 Stellen): [0]=1 · [1–7] Mo…So · [8–12] ? · [13] Astro · [14] Art · [15–18] Zeit/Offset · [19–22] Zeit 2 · [23] Sondertage · [24–25] Aktion (2-stellig)
+   Ältere Punkte haben 27 Stellen (Aktion 3-stellig); der QC schreibt sie beim Ändern ins 26er-Format um (verifiziert flows8).
+   Art [14]: ohne Astro 1 = Uhrzeit, 2 = Zufall (Zeit [15–18], Zufallsspanne [19–22]);
+             mit Astro 0 = SA −, 1 = SA +, 3 = SU + (verifiziert), 2 = vermutlich SU − (noch nicht geprüft). */
+const KINDS = [   // Auswahl im Editor: [Schlüssel, Text, astro, art]
+  ["t", "Feste Uhrzeit", false, 1], ["r", "Zufall", false, 2],
+  ["sa+", "Sonnenaufgang plus Offset", true, 1], ["sa-", "Sonnenaufgang minus Offset", true, 0], ["su+", "Sonnenuntergang plus Offset", true, 3]];
+const kindOf = p => (KINDS.find(k => k[2] === p.astro && k[3] === p.mode) || [null])[0];
+const WD = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const FILTER = ["Alle Tage", "Ohne Sondertage", "Nur Feiertage", "Nur Urlaubstage"];        // verifiziert 0–3
+const hm = s => s.slice(0, 2) + ":" + s.slice(2, 4);
+function tpParse(r) {
+  return { raw: r, days: r.slice(1, 8), astro: r[13] === "1", mode: +r[14], t1: r.slice(15, 19), t2: r.slice(19, 23),
+    filter: +r[23], action: +r.slice(24), legacy: r.length !== 26 };
+}
+function tpWhen(t) {
+  if (t.astro) return ({ 0: "SA − ", 1: "SA + ", 3: "SU + " }[t.mode] ?? (t.mode === 2 ? "SU − (?) " : "Astro " + t.mode + " (?) ")) + hm(t.t1);
+  if (t.mode === 1) return hm(t.t1) + " Uhr";
+  if (t.mode === 2) return "Zeit " + hm(t.t1) + " / Zufall " + hm(t.t2);
+  return "Art " + t.mode + " (?)";
+}
+function tpDays(d) {
+  if (d === "1111111") return "täglich"; if (d === "1111100") return "Mo–Fr"; if (d === "0000011") return "Sa, So";
+  const l = WD.filter((_, i) => d[i] === "1"); return l.length ? l.join(", ") : "keine Tage";
+}
+function tpBuild(base, f) {     // base: vorhandene 26er-Kette oder null (neu)
+  const b = base && base.length >= 26 ? base : "1" + "0000000" + "00000";        // alte 27er: Anfang bleibt, Rest neu (wie QC)
+  return b[0] + f.days + b.slice(8, 13) + (f.astro ? "1" : "0") + f.mode + f.t1 + f.t2 + f.filter + String(f.action).padStart(2, "0");
+}
+
+/* Aktionsnamen je Vorlage: aus client_templates.xml + client_language.xml (einmal laden, dann zwischenspeichern) */
+let TMETA = null;
+async function timerMeta() {
+  if (TMETA) return TMETA;
+  const key = "tmeta." + cfg.host + "." + projId, c = store.get(key, null);
+  if (c) return TMETA = c;
+  const get = async n => { const r = await fetch("https://" + cfg.host + "/quad/client/" + n + "?" + sid); if (!r.ok) throw new Error(n + ": HTTP " + r.status); return r.text(); };
+  // Vorlagen liegen je Design in einem Unterordner; der Original-QC holt design_4 (verifiziert). Andere Designs als Rückfall.
+  const tpl = async () => { let err; for (const d of ["design_4", "design_0", "design_1", "design_2", "design_3", "design_5"])
+    try { return await get(d + "/client_templates.xml"); } catch (e) { err = e; } throw err; };
+  const [tx, lx] = await Promise.all([tpl(), get("client_language.xml")]);
+  const T = new DOMParser().parseFromString(tx, "application/xml"), L = new DOMParser().parseFromString(lx, "application/xml");
+  const acts = {}, need = new Set();
+  T.querySelectorAll("template").forEach(t => { const tm = t.querySelector(":scope > timer"); if (!tm) return;
+    acts[t.getAttribute("id")] = { pin: tm.getAttribute("pin_slot") || "", list: [...tm.querySelectorAll("action")].map(a => {
+      const x = { text: a.getAttribute("text") || "", p: (a.getAttribute("used_param") || "").replace(/^\$/, ""), on: a.getAttribute("used_on") };
+      if (x.text.startsWith("#")) need.add(x.text); return x; }) }; });
+  const lang = {};
+  L.querySelectorAll("text").forEach(t => { const k = t.getAttribute("key"); if (!need.has(k)) return;
+    const de = t.querySelector('lang[id="de"]'); lang[k] = de ? de.getAttribute("value") : t.getAttribute("default") || k; });
+  TMETA = { acts, lang }; store.set(key, TMETA); return TMETA;
+}
+/* Aktionsliste wie im QC: Einträge mit used_param nur, wenn der Parameter passt.
+   Nummer n zählt in der gefilterten Liste (Annahme). Eindeutig ist n nur, wenn bis n kein Eintrag weggefiltert wurde. */
+function timerActions(el) {
+  const a = TMETA.acts[el.tpl + (el.variant ? "_" + el.variant : "")] || TMETA.acts[el.tpl]; if (!a) return [];
+  const norm = v => /^true$/i.test(v) ? "1" : /^false$/i.test(v) ? "0" : String(v ?? "");
+  const res = []; let clean = true;
+  for (const x of a.list) {
+    if (x.p && norm(el.par[x.p]) !== x.on) { clean = false; continue; }
+    res.push({ n: res.length + 1, sure: clean,
+      label: x.text.startsWith("$") ? (el.par[x.text.slice(1)] || x.text) : (TMETA.lang[x.text] || x.text) });
+  }
+  return res;
+}
+let TREF = null, TEDIT = null;
+async function openTimer(ref) {
+  const el = P_.els[ref]; TREF = ref; TEDIT = null;
+  $("ttitle").textContent = el.name + " – Zeitschaltuhr";
+  $("tbody").innerHTML = '<div class="note">Lade …</div>';
+  if (!$("tdlg").open) $("tdlg").showModal();
+  try { await timerMeta(); } catch (e) { $("tbody").innerHTML = '<div class="msg err">Aktionen konnten nicht geladen werden: ' + esc(e.message) + "</div>"; return; }
+  renderTimer();
+}
+function timerChanged(id) {
+  if (TREF && P_.els[TREF] && P_.els[TREF].timer === id && $("tdlg").open && !TEDIT) renderTimer();
+  for (const [ref, el] of Object.entries(P_ ? P_.els : {})) if (el.timer === id) {
+    const b = $("grid").querySelector(`.card[data-ref="${CSS.escape(ref)}"] .tbtn`); if (b) b.classList.toggle("on", tmr(id).active); }
+}
+function renderTimer() {
+  const el = P_.els[TREF], t = tmr(el.timer), acts = timerActions(el);
+  $("tactive").closest(".th").classList.toggle("is-on", t.active);
+  $("tactive").title = t.active ? "Zeitschaltuhr aktiv" : "Zeitschaltuhr inaktiv";
+  const pts = [...t.pts.entries()].sort((a, b) => +a[0] - +b[0]).map(([n, r]) => [n, tpParse(r)]);
+  const al = n => { const a = acts.find(x => x.n === n); return a ? a.label + (a.sure ? "" : " (?)") : "Aktion " + n; };
+  $("tbody").innerHTML = `<div class="note" style="margin-bottom:6px">${t.active ? "Zeitschaltuhr aktiv" : "Zeitschaltuhr inaktiv – Schaltpunkte werden nicht ausgeführt"}</div>
+    ${pts.map(([n, p]) => `<div class="tpt"><div class="tx"><b>${esc(al(p.action))}</b>
+      <span>${esc(tpWhen(p))} · ${esc(tpDays(p.days))}${p.filter ? " · " + esc(FILTER[p.filter] || "Sondertage " + p.filter + " (?)") : ""}${""}</span></div>
+      ${kindOf(p) ? `<button data-t="edit" data-n="${n}">Ändern</button>` : ""}
+      <button data-t="del" data-n="${n}" aria-label="Löschen">✕</button></div>`).join("") || '<div class="empty">Keine Schaltpunkte.</div>'}
+    <div class="row" style="margin-top:14px"><button class="btn" data-t="new" ${acts.some(a => a.sure) ? "" : "disabled"}>Neues Ereignis</button></div>
+    ${acts.some(a => a.sure) ? "" : '<div class="note">Für diese Vorlage ist die Zuordnung der Aktionen noch nicht geprüft.</div>'}`;
+}
+function renderTimerEdit() {
+  const el = P_.els[TREF], acts = timerActions(el).filter(a => a.sure), e = TEDIT;
+  const k0 = kindOf(e) || "t";
+  $("tbody").innerHTML = `<div class="fld"><span>Art</span><select id="tmode">
+      ${KINDS.map(k => `<option value="${k[0]}" ${k[0] === k0 ? "selected" : ""}>${k[1]}</option>`).join("")}</select></div>
+    <div class="fld"><span id="ttl"></span><input type="time" id="ttime" value="${hm(e.t1)}" required></div>
+    <div class="fld" id="trw"><span>Zufallsspanne (hh:mm)</span><input type="time" id="trand" value="${hm(e.t2 || "0000")}"></div>
+    <div class="fld"><span>Tage</span><div class="days">${WD.map((d, i) => `<label><input type="checkbox" data-d="${i}" ${e.days[i] === "1" ? "checked" : ""}>${d}</label>`).join("")}</div></div>
+    <div class="fld"><span>Sondertage</span><select id="tfilter">${FILTER.map((l, i) => `<option value="${i}" ${e.filter === i ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div class="fld"><span>Aktion</span><select id="taction">${acts.map(a => `<option value="${a.n}" ${e.action === a.n ? "selected" : ""}>${esc(a.label)}</option>`).join("")}</select></div>
+    <div class="msg err" id="terr"></div>
+    <div class="row" style="margin-top:14px"><button class="btn ghost" data-t="back">Abbrechen</button> <button class="btn" data-t="save">Speichern</button></div>`;
+  const upd = () => { const v = $("tmode").value; $("ttl").textContent = v === "t" || v === "r" ? "Uhrzeit" : "Offset (hh:mm)"; $("trw").classList.toggle("hidden", v !== "r"); };
+  $("tmode").onchange = upd; upd();
+}
+$("tbody").addEventListener("click", async e => {
+  const b = e.target.closest("[data-t]"); if (!b) return;
+  const el = P_.els[TREF], id = el.timer, t = tmr(id);
+  switch (b.dataset.t) {
+    case "new": TEDIT = { n: null, base: null, astro: false, mode: 1, t1: "0700", days: "1111100", filter: 0, action: (timerActions(el).find(a => a.sure) || {}).n || 1 }; renderTimerEdit(); break;
+    case "edit": { const p = tpParse(t.pts.get(b.dataset.n)); TEDIT = { n: b.dataset.n, base: p.raw, ...p }; renderTimerEdit(); break; }
+    case "back": TEDIT = null; renderTimer(); break;
+    case "del": {
+      const ok = await ask({ title: "Ereignis löschen?", text: "Den Schaltpunkt wirklich löschen?", type: "hidden" });
+      if (ok !== null) sendRaw("13|" + id + "|1|" + b.dataset.n + "|"); break;                       // verifiziert
+    }
+    case "save": {
+      const tm = $("ttime").value; if (!/^\d\d:\d\d$/.test(tm)) { $("terr").textContent = "Bitte eine Zeit eingeben."; return; }
+      const days = [...document.querySelectorAll("#tbody .days input")].map(i => i.checked ? "1" : "0").join("");
+      if (!days.includes("1")) { $("terr").textContent = "Bitte mindestens einen Tag wählen."; return; }
+      const k = KINDS.find(x => x[0] === $("tmode").value), rnd = ($("trand").value || "00:00");
+      if (k[0] === "r" && !/^\d\d:\d\d$/.test(rnd)) { $("terr").textContent = "Bitte eine Zufallsspanne eingeben."; return; }
+      const rec = tpBuild(TEDIT.base, { days, astro: k[2], mode: k[3], t1: tm.replace(":", ""), t2: k[0] === "r" ? rnd.replace(":", "") : "0000",
+        filter: +$("tfilter").value, action: +$("taction").value });
+      sendRaw(TEDIT.n ? "13|" + id + "|3|" + TEDIT.n + "|" + rec : "13|" + id + "|2|0|" + rec);         // verifiziert
+      TEDIT = null; renderTimer(); break;
+    }
+  }
+});
+$("tactive").onclick = () => { const el = P_.els[TREF]; sendRaw("12|" + el.timer + "|" + (tmr(el.timer).active ? 0 : 1)); };   // verifiziert
+$("tclose").onclick = () => { TEDIT = null; $("tdlg").close(); };
+
+/* ---------------- Menü ----------------
+   cmd type: 3 = Raum, 4 = Gewerk, 7 = Etage, 6 = Webseite, 5 = KO schalten, 2 = Plugin (im Client nicht verfügbar)
+   state type: 1 = Ein/Aus-Farbe (tag), 3 = Zähler (tag)   group = Bitmaske der Benutzergruppen (Bit n-1 = Gruppe n) */
+function menuVisible(m) {
+  const g = P_.users && P_.users[(cfg.user || "").toLowerCase()]; if (!g) return true;
+  try { return ((BigInt(m.group) >> BigInt(+g - 1)) & 1n) === 1n; } catch (e) { return true; }
+}
+function menuIcon(ico) {
+  const s = ico.toLowerCase();
+  for (const [k, v] of [["bad", "bath"], ["bath", "bath"], ["wc", "bath"], ["schlaf", "bed"], ["child", "bed"], ["tv", "tv"], ["jalou", "blind"], ["roll", "blind"],
+    ["heiz", "temp"], ["licht", "bulb"], ["rgb", "color"], ["szene", "scene"], ["scene", "scene"], ["exit", "lock"], ["kamera", "plugin"], ["diagramm", "gauge"],
+    ["statist", "gauge"], ["energ", "gauge"], ["wetter", "web"], ["music", "plugin"], ["tuer", "door"], ["reception", "door"], ["garage", "home"], ["kueche", "home"]])
+    if (s.includes(k)) return v;
+  return "home";
+}
+const MENU_TAGS = new Set();
+function menuPage(page) {
+  MENU_TAGS.clear();
+  const pages = {}; P_.menu.filter(m => m.isPage).forEach(m => pages[m.page] = m);
+  const items = P_.menu.filter(m => menuVisible(m) && (page === "0" ? (m.isPage || m.page === "0") : (!m.isPage && m.page === page)));
+  return { title: page === "0" ? "Menü" : (pages[page] ? pages[page].t1 : "Menü"), crumb: page === "0" ? "" : "Menü", items };
+}
+function menuTile(m) {
+  if (!m.isPage && !m.t1 && !m.cmds.length) return "";                                                // Leerfeld
+  let cls = "card mcard", badge = "", on = false;
+  if (m.state && m.state.tag) { MENU_TAGS.add(m.state.tag);
+    if (m.state.type === "3") { const n = num(m.state.tag); if (n) badge = `<span class="cnt">${fmt(n, 0)}</span>`; }
+    if (m.state.type === "1") on = !!bool(m.state.tag); }
+  const c = m.cmds[0] || {}, plug = !m.isPage && (c.type === "2" || !m.cmds.length);
+  if (on) cls += " is-on"; if (plug) cls += " off";
+  const icon = m.isPage ? "plugin" : c.type === "6" ? "web" : menuIcon(m.ico);
+  return `<button class="${cls}" data-m="${esc(m.id)}" ${plug ? 'title="Im Client nicht verfügbar"' : ""}>${badge}
+    <div class="head"><div class="ic">${svg(icon)}</div><div style="min-width:0"><div class="name">${esc(m.t1 || "–")}</div>
+    <div class="t2">${esc(plug ? "im Client nicht verfügbar" : m.t2)}</div></div></div></button>`;
+}
+function menuAct(id) {
+  const m = P_.menu.find(x => x.id === id); if (!m) return;
+  if (m.isPage) { go("m:" + m.page); return; }
+  const c = m.cmds[0]; if (!c) return;
+  switch (c.type) {
+    case "3": go("r:" + c.room); break;
+    case "4": go("t:" + c.device_group); break;
+    case "7": go("f:" + c.floor); break;
+    case "6": if (c.url0) openFrame(m.t1, c.url0); break;
+    case "5": if (c.tag) send(c.tag, c.op === "toggle" ? (bool(c.tag) ? 0 : 1) : +c.value); break;      // Umschalten – noch gegen QC prüfen
+  }
+}
+/* Webseiten aus dem Menü eingebettet unter den Kacheln öffnen (Adresse wird nicht angezeigt) */
+let FRAME_URL = "";
+function openFrame(title, url) {
+  FRAME_URL = url; $("ftitle").textContent = title || "Webseite"; $("fifr").src = url;
+  $("frame").classList.remove("hidden"); $("frame").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+/* Höhe an den Inhalt anpassen – geht nur, wenn die Seite vom selben Server kommt (z. B. Client und Seite beide vom HS).
+   Bei fremden Seiten verbietet der Browser den Blick hinein; dann bleibt die feste Höhe. */
+let frameRO = null, frameGen = 0;
+$("fifr").addEventListener("load", () => {
+  const f = $("fifr"), gen = ++frameGen; if (frameRO) { frameRO.disconnect(); frameRO = null; }
+  f.style.height = "";
+  try {
+    const d = f.contentDocument; if (!d || !d.body || f.src === "about:blank") return;
+    let busy = false;
+    const fit = () => { if (busy || gen !== frameGen) return; busy = true;
+      const keep = window.scrollY; f.style.height = "10px";                                   // erst klein, dann Inhalt messen
+      // Inhaltshöhe = unterste Kante aller Elemente (fängt auch absolut positionierte Visu-Seiten wie die HS-Visu ab)
+      let h = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight);
+      const all = d.body.getElementsByTagName("*"), n = Math.min(all.length, 8000), sy = d.defaultView.scrollY || 0;
+      for (let i = 0; i < n; i++) { const r = all[i].getBoundingClientRect(); if (r.height > 0 && r.bottom + sy > h) h = r.bottom + sy; }
+      h = Math.ceil(h);
+      f.style.height = Math.max(120, h + 4) + "px"; window.scrollTo(0, keep); busy = false; };
+    fit(); [300, 1000, 3000].forEach(t => setTimeout(fit, t));                                  // nachladende Bilder/Inhalte
+    let tm = null; frameRO = new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(fit, 150); });
+    frameRO.observe(d.body, { childList: true, subtree: true, attributes: true });
+  } catch (e) { /* fremde Seite – feste Höhe */ }
+});
+function closeFrame() { FRAME_URL = ""; $("fifr").src = "about:blank"; $("frame").classList.add("hidden"); }
+$("fclose").onclick = closeFrame;
+$("fnew").onclick = () => { if (FRAME_URL) window.open(FRAME_URL, "_blank", "noopener"); };
+function go(v) { if (!v.startsWith("m:")) closeFrame(); cur = v; store.set("view", cur); renderView(); window.scrollTo(0, 0); }
+
+/* ---------------- Ansicht ---------------- */
+function koIndex() {          // KO -> [ref] für gezielte Aktualisierung
+  const ix = new Map();
+  for (const [ref, el] of Object.entries(P_.els)) for (const ko of Object.values(el.kos)) { if (!ix.has(ko)) ix.set(ko, new Set()); ix.get(ko).add(ref); }
+  return ix;
+}
+let KOIX = null;
+function prepare() {
+  KOIX = koIndex();
+  // interne Hilfs-KOs der Tunable-White-Vorlage (aus den Mitschnitten)
+  for (const el of Object.values(P_.els)) if (el.kind === "tunable_white") { el.internal_br = el.kos.slot_control_br; el.internal_ct = el.kos.slot_control_ct; }
+}
+let startApplied = false;
+function showApp() {
+  if (!KOIX) prepare();
+  if (!startApplied) { startApplied = true; const st = store.get("start", "m"); if (st === "m" && P_.menu && P_.menu.length) cur = "m:0"; else if (st === "fav") cur = "fav"; }
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  buildNav(); renderView();
+}
+function count(items) { return items.filter(i => P_.els[i.ref] && P_.els[i.ref].kind !== "spacer").length; }
+function buildNav() {
+  let h = `<div class="brand"><span class="dot ${state === "on" ? "on" : ""}"></span><b>${esc(cfg.host)}</b><span class="note" style="margin-left:auto">v${VERSION}</span></div>`;
+  const st = store.get("start", "m");
+  h += `<label class="startsel">Startseite <select id="startsel"><option value="m" ${st === "m" ? "selected" : ""}>Menü</option>
+    <option value="fav" ${st === "fav" ? "selected" : ""}>Favoriten</option><option value="last" ${st === "last" ? "selected" : ""}>zuletzt geöffnet</option></select></label>`;
+  if (P_.menu && P_.menu.length) h += `<button data-v="m:0">Menü<span></span></button>`;
+  h += `<button data-v="fav">Favoriten<span>${favs.size}</span></button>`;
+  for (const f of P_.floors) {
+    h += `<div class="fl">${esc(f.name)}</div>`;
+    for (const r of f.rooms) h += `<button data-v="r:${r.id}">${esc(r.name)}<span>${count(r.items)}</span></button>`;
+  }
+  if (P_.trades.length) { h += `<div class="fl">Gewerke</div>`; for (const t of P_.trades) h += `<button data-v="t:${t.id}">${esc(t.name)}<span>${count(t.items)}</span></button>`; }
+  $("nav").innerHTML = h;
+  $("startsel").onchange = e => store.set("start", e.target.value);
+}
+function viewData(v) {
+  if (v === "fav") return { title: "Favoriten", crumb: "", items: [...favs].map(ref => ({ ref })) };
+  if (v.startsWith("r:")) for (const f of P_.floors) for (const r of f.rooms) if ("r:" + r.id === v) return { title: r.name, crumb: f.name, items: r.items };
+  if (v.startsWith("t:")) for (const t of P_.trades) if ("t:" + t.id === v) return { title: t.name, crumb: "Gewerk", items: t.items };
+  if (v.startsWith("f:")) for (const f of P_.floors) if ("f:" + f.id === v) return { title: f.name, crumb: "Etage", rooms: f.rooms };
+  if (v.startsWith("m:") && P_.menu && P_.menu.length) return menuPage(v.slice(2));
+  return null;
+}
+function renderView() {
+  if (!P_) return;
+  if (!cur) cur = favs.size ? "fav" : "";
+  if (cur === "m") cur = "m:0";
+  let v = cur ? viewData(cur) : null;
+  if (!v) { cur = P_.floors[0] ? "r:" + P_.floors[0].rooms[0].id : "fav"; v = viewData(cur); }
+  $("nav").querySelectorAll("button[data-v]").forEach(b => b.classList.toggle("act", b.dataset.v === cur));
+  const favBtn = $("nav").querySelector('button[data-v="fav"] span'); if (favBtn) favBtn.textContent = favs.size;
+  $("title").textContent = v.title; $("crumb").textContent = v.crumb;
+  if (cur.startsWith("m:")) {
+    $("grid").innerHTML = (cur !== "m:0" ? `<button class="card mcard" data-mv="m:0"><div class="head"><div class="ic">${svg("up")}</div><div class="name">Zurück zum Menü</div></div></button>` : "")
+      + (v.items.map(menuTile).join("") || '<div class="empty">Keine Menüeinträge für diesen Benutzer.</div>');
+    return;
+  }
+  if (v.rooms) {
+    $("grid").innerHTML = v.rooms.map(r => `<button class="card mcard" data-mv="r:${esc(r.id)}"><div class="head"><div class="ic">${svg("home")}</div>
+      <div style="min-width:0"><div class="name">${esc(r.name)}</div><div class="t2">${count(r.items)} Elemente</div></div></div></button>`).join("");
+    return;
+  }
+  const html = v.items.map(i => { const el = P_.els[i.ref]; return !el || el.kind === "spacer" ? "" : tile(i.ref, el, i.label); }).join("");
+  $("grid").innerHTML = html || `<div class="empty">${cur === "fav" ? "Noch keine Favoriten – auf einer Kachel den Stern antippen." : "Keine Elemente."}</div>`;
+}
+function updateKo(ko) {
+  const refs = KOIX && KOIX.get(ko); if (!refs) return;
+  for (const ref of refs) {
+    const old = $("grid").querySelector(`.card[data-ref="${CSS.escape(ref)}"]`); if (!old) continue;
+    if (old.contains(document.activeElement) && document.activeElement.type === "range") continue;   // nicht beim Ziehen überschreiben
+    if (press && press.ref === ref) continue;                                                       // nicht während Taste gedrückt
+    const lbl = old.querySelector(".name").textContent;
+    const tmp = document.createElement("div"); tmp.innerHTML = tile(ref, P_.els[ref], lbl); old.replaceWith(tmp.firstElementChild);
+  }
+}
+
+/* ---------------- Ereignisse ---------------- */
+$("nav").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]"); if (!b) return;
+  if (!b.dataset.v.startsWith("m:")) closeFrame(); cur = b.dataset.v; store.set("view", cur); renderView(); $("nav").classList.remove("open");
+});
+$("grid").addEventListener("click", e => {
+  const mb = e.target.closest("[data-m],[data-mv]");
+  if (mb) { if (mb.dataset.mv) go(mb.dataset.mv); else if (!mb.classList.contains("off")) menuAct(mb.dataset.m); return; }
+  const b = e.target.closest("[data-act]"); if (!b || b.tagName === "INPUT") return;
+  act(b.closest(".card").dataset.ref, b.dataset.act, b);
+});
+$("grid").addEventListener("input", e => {               // Prozentanzeige beim Ziehen
+  const t = e.target; if (t.type !== "range") return;
+  const pc = t.parentElement.querySelector(".pct"); if (pc) pc.textContent = t.value + " %";
+});
+$("grid").addEventListener("pointerdown", e => {
+  const b = e.target.closest("[data-press]"); if (!b || b.disabled || e.button > 0) return;
+  e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {}
+  const el = P_.els[b.closest(".card").dataset.ref];
+  if (el && needPin(el)) { guarded(el, () => { pressStart(b); pressEnd(false); }); return; }   // mit PIN: als kurzer Druck
+  pressStart(b);
+});
+$("grid").addEventListener("pointerup", () => pressEnd(false));
+$("grid").addEventListener("pointercancel", () => pressEnd(true));
+$("grid").addEventListener("contextmenu", e => { if (e.target.closest("[data-press]")) e.preventDefault(); });
+$("grid").addEventListener("keydown", e => {             // Tastatur: Leertaste/Enter wie Drücken
+  const b = e.target.closest("[data-press]"); if (!b || e.repeat || (e.key !== " " && e.key !== "Enter")) return;
+  e.preventDefault(); pressStart(b);
+});
+$("grid").addEventListener("keyup", e => { if (press && (e.key === " " || e.key === "Enter")) { e.preventDefault(); pressEnd(false); } });
+$("grid").addEventListener("change", e => {
+  const t = e.target; if (!t.dataset.act) return;
+  act(t.closest(".card").dataset.ref, t.dataset.act, t);
+});
+$("menubtn").onclick = () => $("nav").classList.toggle("open");
+$("logcopy").onclick = async () => {
+  const txt = "HS Client v" + VERSION + " · " + cfg.host + " · " + new Date().toLocaleString("de-DE") + "\n" + $("log").textContent;
+  let ok = false;
+  try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {
+    const t = document.createElement("textarea"); t.value = txt; t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t); t.select(); try { ok = document.execCommand("copy"); } catch (x) {} t.remove(); }
+  const b = $("logcopy"), old = b.textContent;
+  b.textContent = ok ? "Kopiert ✓" : "Kopieren fehlgeschlagen"; setTimeout(() => b.textContent = old, 1800);
+};
+$("logbtn").onclick = () => { $("log").classList.toggle("hidden"); $("logbtn").classList.toggle("on"); };
+$("logout").onclick = () => {
+  if (ws) { ws.onclose = null; ws.close(); }
+  clearTimeout(retryTimer); clearInterval(kaTimer); clearInterval(tickTimer);
+  cfg.pass = ""; store.set("login", { host: cfg.host, user: cfg.user });
+  $("lpass").value = ""; $("app").classList.add("hidden"); $("login").classList.remove("hidden"); $("lmsg").textContent = "";
+};
+$("lhost").oninput = () => $("lcert").href = "https://" + $("lhost").value.trim() + "/";
+$("lform").onsubmit = e => {
+  e.preventDefault();
+  cfg = { host: $("lhost").value.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, ""), user: $("luser").value.trim(), pass: $("lpass").value };
+  store.set("login", $("lremember").checked ? cfg : { host: cfg.host, user: cfg.user });
+  $("lmsg").className = "msg"; $("lmsg").textContent = "Verbinde …";
+  const cached = store.get("proj4." + cfg.host, null);
+  if (cached) { P_ = cached.p; projId = cached.id; KOIX = null; }
+  connect();
+};
+document.addEventListener("visibilitychange", () => {   // nach Standby sofort neu verbinden
+  if (!document.hidden && cfg.pass && (!ws || ws.readyState > 1)) { retry = 0; connect(); }
+});
+
+/* ---------------- Start ---------------- */
+(function init() {
+  const def = location.protocol === "https:" && location.hostname ? location.hostname : "";
+  $("lhost").value = cfg.host || def; $("luser").value = cfg.user || "";
+  $("lcert").href = "https://" + ($("lhost").value || location.hostname || "homeserver") + "/";
+  if (cfg.pass) { $("lpass").value = cfg.pass; $("lremember").checked = true; $("lform").requestSubmit(); }
+})();
+</script>
+</body>
+</html>

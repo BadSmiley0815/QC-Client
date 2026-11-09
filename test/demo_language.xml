@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erfundene Minimal-Texte nur für die Tests. -->
+<language>
+  <text key="#demo_on"><lang id="de" value="Schalten: ein"/></text>
+  <text key="#demo_off"><lang id="de" value="Schalten: aus"/></text>
+</language>

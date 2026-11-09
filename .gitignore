@@ -1,0 +1,12 @@
+# Mitschnitte enthalten Zugangsdaten – nie einchecken
+flows*
+*.mitm
+# Echte Projekt- und Visu-Dateien bleiben privat
+*.hs4
+client_project.xml
+client_templates.xml
+client_language.xml
+users.xml
+export*.csv
+node_modules/
+__pycache__/

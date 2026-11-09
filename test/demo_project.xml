@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <header />
+  <users>
+    <user id="10" group="1" name="Demo" culture="" />
+    <user id="11" group="2" name="Gast" culture="" />
+  </users>
+  <rooms bg_img="">
+    <floor uid="11" parent="0" txt="Erdgeschoss" visibleinqc="1" />
+    <room uid="12" parent="11" txt="Wohnen" id="12" device_group="12" visibleinqc="1" />
+    <room uid="13" parent="11" txt="Küche" id="13" device_group="13" visibleinqc="1" />
+    <room uid="14" parent="11" txt="Flur" id="14" device_group="14" visibleinqc="1" />
+    <room uid="15" parent="11" txt="Bad" id="15" device_group="15" visibleinqc="1" />
+    <floor uid="16" parent="0" txt="Außen" visibleinqc="1" />
+    <room uid="17" parent="16" txt="Garten" id="17" device_group="17" visibleinqc="1" />
+  </rooms>
+  <device_groups>
+    <device_group id="12" title="Wohnen">
+      <device id="1002" text="Heizung" visibleinqc="1" />
+      <device id="1004" text="Deckenlicht" visibleinqc="1" />
+      <device id="1005" text="Rollladen" visibleinqc="1" />
+      <device id="1006" text="Leselampe" visibleinqc="1" />
+      <device id="1012" text="Lichtszenen" visibleinqc="1" />
+    </device_group>
+    <device_group id="13" title="Küche">
+      <device id="1007" text="LED-Streifen" visibleinqc="1" />
+      <device id="1009" text="Lichtband" visibleinqc="1" />
+    </device_group>
+    <device_group id="14" title="Flur">
+      <device id="1001" text="Taster Flanke 0" visibleinqc="1" />
+      <device id="1011" text="Gartentor" visibleinqc="1" />
+      <device id="1016" text="Hinweis" visibleinqc="1" />
+      <device id="1100" text="Taster Flanke 1" visibleinqc="1" />
+      <device id="1101" text="Taster Impuls 1" visibleinqc="1" />
+      <device id="1102" text="Taster Impuls 0" visibleinqc="1" />
+    </device_group>
+    <device_group id="15" title="Bad">
+      <device id="1008" text="Fenster Bad" visibleinqc="1" />
+      <device id="1013" text="Waschmaschine" visibleinqc="1" />
+      <device id="1015" text="Lüftung Stufe" visibleinqc="1" />
+    </device_group>
+    <device_group id="17" title="Garten">
+      <device id="1003" text="Sollwert Pool" visibleinqc="1" />
+      <device id="1010" text="Restmüll" visibleinqc="1" />
+      <device id="1014" text="Zisterne" visibleinqc="1" />
+    </device_group>
+    <device_group id="90" title="Licht">
+      <device id="1002" text="Heizung" visibleinqc="1" />
+      <device id="1004" text="Deckenlicht" visibleinqc="1" />
+      <device id="1007" text="LED-Streifen" visibleinqc="1" />
+      <device id="1009" text="Lichtband" visibleinqc="1" />
+    </device_group>
+  </device_groups>
+  <menu bg_img="">
+    <mnu_item id="501" txt1="Wohnen" txt2="EG" ico="mnu_btn_ico_living.xaml" group="3" visibleinqc="1" page="0">
+      <state type="3" tag="901" />
+      <cmd type="3" room="12" />
+    </mnu_item>
+    <mnu_item id="502" txt1="Küche" txt2="EG" ico="mnu_btn_ico_kueche.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="3" room="13" />
+    </mnu_item>
+    <mnu_item id="503" txt1="Bad" txt2="EG" ico="mnu_btn_ico_bathroom.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="3" room="15" />
+    </mnu_item>
+    <mnu_item id="504" txt1="Erdgeschoss" txt2="alle Räume" ico="mnu_btn_ico_house.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="7" floor="11" />
+    </mnu_item>
+    <mnu_item id="505" txt1="Licht" txt2="Gewerk" ico="mnu_btn_ico_licht.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="4" device_group="90" />
+    </mnu_item>
+    <mnu_item id="506" txt1="Garten" txt2="Außen" ico="mnu_btn_ico_garden.xaml" group="1" visibleinqc="1" page="0">
+      <cmd type="3" room="17" />
+    </mnu_item>
+    <mnu_item id="507" txt1="Alarm scharf" txt2="" ico="mnu_btn_ico_exit.xaml" group="1" visibleinqc="1" page="0">
+      <state type="1" tag="902" />
+      <cmd type="5" tag="902" op="toggle" value="1" />
+    </mnu_item>
+    <mnu_item id="508" txt1="Wetter" txt2="Webseite" ico="mnu_btn_ico_wetter.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="6" url0="https://example.org/" urlmode="0" />
+    </mnu_item>
+    <mnu_item id="509" txt1="Kamera" txt2="Plugin" ico="mnu_btn_ico_kamera.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="2" plugin="1" />
+    </mnu_item>
+    <page_item id="600" page="1" txt1="Extras" ico="" group="3" visibleinqc="1" />
+    <mnu_item id="510" txt1="Pool" txt2="Unterseite" ico="mnu_btn_ico_pool.xaml" group="3" visibleinqc="1" page="1">
+      <cmd type="3" room="17" />
+    </mnu_item>
+  </menu>
+  <devices>
+    <device id="1001" txt="Taster Flanke 0" symbol="tpl_ico_craft_light.xaml" template="1-118_2" uhr="2000000001">
+      <connect slot="slot_switch" tag="101" />
+      <connect slot="slot_feedback" tag="102" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_use_state" value="1" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_push_ico" value="tpl_btn_blue_bg.xaml" />
+      <set parameter="par_button_icon" value="" />
+      <set parameter="par_push" value="Taste" type="Text" />
+      <set parameter="par_timer_text" value="" type="Text" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_unit" value="" type="Text" />
+      <set parameter="par_prec" value="" />
+    </device>
+    <device id="1002" txt="Heizung" symbol="tpl_ico_craft_heating.xaml" template="1-103">
+      <connect slot="slot_mode" tag="103" />
+      <connect slot="slot_status" tag="104" />
+      <connect slot="slot_temp_target" tag="105" />
+      <connect slot="slot_temp_actual" tag="106" />
+      <connect slot="slot_adjustment" tag="107" />
+      <connect slot="slot_valve" tag="108" />
+      <set parameter="par_can_modify" value="true" />
+      <set parameter="par_pwm" value="False" />
+      <set parameter="par_use_temp_actual" value="true" />
+      <set parameter="par_steps_adjustment" value="0.5" />
+      <set parameter="par_min_adjustment" value="7" />
+      <set parameter="par_max_adjustment" value="30" />
+      <set parameter="par_use_adjustment" value="True" />
+      <set parameter="par_knx_state" value="True" />
+      <set parameter="par_caption" value="Betriebsart" type="Text" />
+      <set parameter="par_use_antifreeze" value="false" />
+      <set parameter="par_use_party" value="" />
+      <set parameter="par_use_pin" value="false" />
+    </device>
+    <device id="1003" txt="Sollwert Pool" symbol="tpl_ico_craft_value.xaml" template="1-125">
+      <connect slot="slot_value" tag="109" />
+      <set parameter="par_type" value="0" />
+      <set parameter="par_modify" value="1" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_key" value="" />
+      <set parameter="par_symbol" value="" />
+      <set parameter="par_btn_symbol" value="" />
+      <set parameter="par_key_text" value="" type="Text" />
+      <set parameter="par_rem_skip" value="" />
+      <set parameter="par_rem_min" value="" />
+      <set parameter="par_rem_max" value="" />
+      <set parameter="par_key2" value="" />
+      <set parameter="par_unit" value="°C" type="Text" />
+      <set parameter="par_prec" value="1" />
+      <set parameter="par_skip" value="0.5" />
+      <set parameter="par_min" value="10" />
+      <set parameter="par_max" value="35" />
+      <set parameter="par_caption_popup" value="" type="Text" />
+      <set parameter="par_caption_popup2" value="" type="Text" />
+      <set parameter="par_slider" value="" />
+    </device>
+    <device id="1004" txt="Deckenlicht" symbol="tpl_ico_craft_light.xaml" template="1-101_2">
+      <connect slot="switch" tag="110" />
+      <connect slot="switch_rm" tag="111" />
+      <set parameter="par_combined_state" value="false" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_state_mode" value="1" />
+      <set parameter="par_use_pin" value="3" />
+      <set parameter="par_switch_on" value="tpl_btn_green_bg.xaml" />
+      <set parameter="par_button_icon_on" value="" />
+      <set parameter="par_on" value="EIN" type="Text" />
+      <set parameter="par_timer_on" value="" type="Text" />
+      <set parameter="par_switch_off" value="tpl_btn_red_bg.xaml" />
+      <set parameter="par_button_icon_off" value="" />
+      <set parameter="par_off" value="AUS" type="Text" />
+      <set parameter="par_timer_off" value="" type="Text" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_state" value="" />
+      <set parameter="par_led1_on" value="" />
+      <set parameter="par_led1_off" value="" />
+      <set parameter="par_led2_on" value="" />
+      <set parameter="par_led2_off" value="" />
+    </device>
+    <device id="1005" txt="Rollladen" symbol="tpl_ico_craft_blind.xaml" template="1-107_1">
+      <connect slot="slot_short" tag="112" />
+      <connect slot="slot_long" tag="113" />
+      <connect slot="slot_position" tag="114" />
+      <set parameter="par_type" value="1" />
+      <set parameter="par_style" value="1" />
+      <set parameter="par_show_force" value="0" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_caption" value="" type="Text" />
+      <set parameter="par_show_wind" value="false" />
+      <set parameter="par_show_rain" value="false" />
+      <set parameter="par_show_ice" value="false" />
+      <set parameter="par_show_hand" value="false" />
+      <set parameter="par_show_drive" value="false" />
+      <set parameter="par_skip" value="1" />
+      <set parameter="par_min" value="0" />
+      <set parameter="par_max" value="100" />
+      <set parameter="par_driven_passiv" value="" type="Text" />
+      <set parameter="par_driven_open" value="" type="Text" />
+      <set parameter="par_driven_close" value="" type="Text" />
+    </device>
+    <device id="1006" txt="Leselampe" symbol="tpl_ico_craft_light.xaml" template="1-102">
+      <connect slot="dim_s" tag="115" />
+      <connect slot="dim_val" tag="116" />
+      <connect slot="slot_dim" tag="117" />
+      <set parameter="par_mode" value="2" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_switch_on" value="" />
+      <set parameter="par_button_icon_on" value="" />
+      <set parameter="par_on" value="" type="Text" />
+      <set parameter="par_timer_on" value="" type="Text" />
+      <set parameter="par_switch_off" value="" />
+      <set parameter="par_button_icon_off" value="" />
+      <set parameter="par_off" value="" type="Text" />
+      <set parameter="par_timer_off" value="" type="Text" />
+      <set parameter="par_unit" value="%" type="Text" />
+      <set parameter="par_caption" value="Dimmer" type="Text" />
+      <set parameter="par_skip" value="1" />
+      <set parameter="par_min" value="0" />
+      <set parameter="par_max" value="100" />
+    </device>
+    <device id="1007" txt="LED-Streifen" symbol="tpl_ico_craft_color.xaml" template="1-120">
+      <connect slot="slot_switch" tag="118" />
+      <connect slot="slot_red" tag="119" />
+      <connect slot="slot_red_rm" tag="120" />
+      <connect slot="slot_green" tag="121" />
+      <connect slot="slot_green_rm" tag="122" />
+      <connect slot="slot_blue" tag="123" />
+      <connect slot="slot_blue_rm" tag="124" />
+      <connect slot="slot_white" tag="125" />
+      <connect slot="slot_white_rm" tag="126" />
+      <connect slot="slot_recall" tag="127" />
+      <connect slot="slot_save" tag="128" />
+      <connect slot="slot_4byte" tag="129" />
+      <connect slot="slot_4byte_rm" tag="130" />
+      <connect slot="slot_color" tag="131" />
+      <connect slot="slot_color_rm" tag="132" />
+      <connect slot="slot_control_ct" tag="133" />
+      <connect slot="slot_control_br" tag="134" />
+      <connect slot="slot_ct2ui" tag="135" />
+      <connect slot="slot_br2ui" tag="136" />
+      <connect slot="slot_dim2warm" tag="137" />
+      <set parameter="par_switch" value="true" />
+      <set parameter="par_knx3byte" value="2" />
+      <set parameter="par_white" value="true" />
+      <set parameter="par_on" value="EIN" type="Text" />
+      <set parameter="par_off" value="AUS" type="Text" />
+      <set parameter="par_lightsource" value="1" />
+      <set parameter="par_colorspace" value="0" />
+      <set parameter="par_slidermode" value="0" />
+      <set parameter="par_modify" value="false" />
+    </device>
+    <device id="1008" txt="Fenster Bad" symbol="tpl_ico_craft_window2.xaml" template="1-112">
+      <connect slot="slot_feedback2" tag="138" />
+      <set parameter="par_operation" value="1" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_push_ico_left" value="" />
+      <set parameter="par_action_close" value="" />
+      <set parameter="par_state1_closed" value="" />
+      <set parameter="par_push_ico_right" value="" />
+      <set parameter="par_action_open" value="" />
+      <set parameter="par_state1_open" value="" />
+      <set parameter="par_state2_closed" value="tpl_ico_state_win_closed.xaml" />
+      <set parameter="par_state2_open" value="tpl_ico_state_win_open.xaml" />
+    </device>
+    <device id="1009" txt="Lichtband" symbol="tpl_ico_craft_color.xaml" template="1-128">
+      <connect slot="slot_switch" tag="139" />
+      <connect slot="slot_color_temperature_2byte" tag="140" />
+      <connect slot="slot_brightness" tag="141" />
+      <connect slot="slot_color_temperature_2byte_rm" tag="142" />
+      <connect slot="slot_brightness_rm" tag="143" />
+      <connect slot="slot_recall" tag="144" />
+      <connect slot="slot_save" tag="145" />
+      <connect slot="slot_color" tag="146" />
+      <connect slot="slot_color_rm" tag="147" />
+      <connect slot="slot_control_ct" tag="148" />
+      <connect slot="slot_control_br" tag="149" />
+      <connect slot="slot_ct2ui" tag="150" />
+      <connect slot="slot_br2ui" tag="151" />
+      <connect slot="slot_dim2warm" tag="152" />
+      <connect slot="node_ctbr_in" tag="153" />
+      <connect slot="node_ctbr_out" tag="154" />
+      <set parameter="tw_mode" value="1" />
+      <set parameter="par_modify" value="false" />
+      <set parameter="par_dim2warm" value="false" />
+      <set parameter="par_on" value="EIN" type="Text" />
+      <set parameter="par_off" value="AUS" type="Text" />
+      <set parameter="par_color_temp_min" value="2700" />
+      <set parameter="par_color_temp_max" value="4000" />
+    </device>
+    <device id="1010" txt="Restmüll" symbol="tpl_ico_craft_general.xaml" template="0-7">
+      <connect slot="muell_val" tag="155" />
+      <set parameter="par_colour" value="tpl_ico_trash_blue.xaml" />
+    </device>
+    <device id="1011" txt="Gartentor" symbol="tpl_ico_craft_light.xaml" template="1-106_1">
+      <connect slot="switch" tag="156" />
+      <connect slot="switch_rm" tag="157" />
+      <connect slot="slot_pin" tag="158" />
+      <set parameter="par_on" value="EIN" type="Text" />
+      <set parameter="par_off" value="AUS" type="Text" />
+      <set parameter="par_switch_on" value="tpl_btn_green_bg.xaml" />
+      <set parameter="par_switch_off" value="tpl_btn_red_bg.xaml" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_use_state" value="true" />
+    </device>
+    <device id="1012" txt="Lichtszenen" symbol="tpl_ico_craft_blind.xaml" template="1-109_4">
+      <connect slot="slot_scene" tag="159" />
+      <connect slot="slot_state" tag="160" />
+      <connect slot="slot_scene_2" tag="161" />
+      <connect slot="slot_state_2" tag="162" />
+      <connect slot="slot_scene_3" tag="163" />
+      <connect slot="slot_state_3" tag="164" />
+      <connect slot="slot_scene_4" tag="165" />
+      <connect slot="slot_state_4" tag="166" />
+      <set parameter="par_scene_type" value="0" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_state" value="true" />
+      <set parameter="par_teachable" value="True" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_push_ico" value="tpl_btn_darkgrey_bg.xaml" />
+      <set parameter="par_button_icon" value="" />
+      <set parameter="par_push" value="Lesen" type="Text" />
+      <set parameter="par_timer_text" value="" type="Text" />
+      <set parameter="par_scene" value="5" />
+      <set parameter="par_led_on" value="tpl_badge_ico_led_green.xaml" />
+      <set parameter="par_led_off" value="tpl_badge_ico_led_off.xaml" />
+      <set parameter="par_push_ico_2" value="tpl_btn_darkgrey_bg.xaml" />
+      <set parameter="par_button_icon_2" value="" />
+      <set parameter="par_push_2" value="Kino" type="Text" />
+      <set parameter="par_timer_text_2" value="" type="Text" />
+      <set parameter="par_scene_2" value="6" />
+      <set parameter="par_led_on_2" value="tpl_badge_ico_led_orange.xaml" />
+      <set parameter="par_led_off_2" value="tpl_badge_ico_led_off.xaml" />
+      <set parameter="par_push_ico_3" value="tpl_btn_darkgrey_bg.xaml" />
+      <set parameter="par_button_icon_3" value="" />
+      <set parameter="par_push_3" value="Essen" type="Text" />
+      <set parameter="par_timer_text_3" value="" type="Text" />
+      <set parameter="par_scene_3" value="7" />
+      <set parameter="par_led_on_3" value="tpl_badge_ico_led_green.xaml" />
+      <set parameter="par_led_off_3" value="tpl_badge_ico_led_off.xaml" />
+      <set parameter="par_push_ico_4" value="tpl_btn_darkgrey_bg.xaml" />
+      <set parameter="par_button_icon_4" value="" />
+      <set parameter="par_push_4" value="Aus" type="Text" />
+      <set parameter="par_timer_text_4" value="" type="Text" />
+      <set parameter="par_scene_4" value="8" />
+      <set parameter="par_led_on_4" value="tpl_badge_ico_led_red.xaml" />
+      <set parameter="par_led_off_4" value="tpl_badge_ico_led_off.xaml" />
+    </device>
+    <device id="1013" txt="Waschmaschine" symbol="tpl_ico_craft_light.xaml" template="1-117">
+      <connect slot="slot_state2" tag="167" />
+      <set parameter="par_panel1" value="false" />
+      <set parameter="par_panel2" value="true" />
+      <set parameter="par_state1_on" value="" />
+      <set parameter="par_state1_off" value="" />
+      <set parameter="par_state2_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state2_off" value="tpl_ico_state_off.xaml" />
+    </device>
+    <device id="1014" txt="Zisterne" symbol="tpl_ico_battery03.xaml" template="79-01">
+      <connect slot="slot_num1" tag="168" />
+      <set parameter="par_ko" value="1" />
+      <set parameter="par_ko1_type" value="2" />
+      <set parameter="par_pos_1" value="4" />
+      <set parameter="par_unit1" value="%" type="Text" />
+      <set parameter="par_prec1" value="0" />
+      <set parameter="par_fix1" value="" type="Text" />
+      <set parameter="par_prefix_1_yesno" value="1" />
+      <set parameter="par_prefix_1_txt" value="" type="Text" />
+      <set parameter="par_ko1_icon_yesno" value="1" />
+      <set parameter="par_ko1_icon" value="" />
+      <set parameter="par_ko2_type" value="0" />
+      <set parameter="par_pos_2" value="0" />
+      <set parameter="par_unit2" value="" type="Text" />
+      <set parameter="par_prec2" value="" />
+      <set parameter="par_fix2" value="" type="Text" />
+      <set parameter="par_prefix_2_yesno" value="1" />
+      <set parameter="par_prefix_2_txt" value="" type="Text" />
+      <set parameter="par_ko2_icon_yesno" value="1" />
+      <set parameter="par_ko2_icon" value="" />
+      <set parameter="par_ko3_type" value="0" />
+      <set parameter="par_pos_3" value="0" />
+      <set parameter="par_unit3" value="" type="Text" />
+      <set parameter="par_prec3" value="" />
+      <set parameter="par_fix3" value="" type="Text" />
+      <set parameter="par_prefix_3_yesno" value="1" />
+      <set parameter="par_prefix_3_txt" value="" type="Text" />
+      <set parameter="par_ko3_icon_yesno" value="1" />
+      <set parameter="par_ko3_icon" value="" />
+      <set parameter="par_ko4_type" value="0" />
+      <set parameter="par_pos_4" value="0" />
+      <set parameter="par_unit4" value="" type="Text" />
+      <set parameter="par_prec4" value="" />
+      <set parameter="par_fix4" value="" type="Text" />
+      <set parameter="par_prefix_4_yesno" value="1" />
+      <set parameter="par_prefix_4_txt" value="" type="Text" />
+      <set parameter="par_ko4_icon_yesno" value="1" />
+      <set parameter="par_ko4_icon" value="" />
+    </device>
+    <device id="1015" txt="Lüftung Stufe" symbol="tpl_ico_val_electric.xaml" template="1-114">
+      <connect slot="switch" tag="169" />
+      <connect slot="switch_rm" tag="170" />
+      <connect slot="slot_value" tag="171" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="true" />
+      <set parameter="par_plugin" value="False" />
+      <set parameter="par_switch_on" value="tpl_btn_green_bg.xaml" />
+      <set parameter="par_button_icon_on" value="" />
+      <set parameter="par_on" value="EIN" type="Text" />
+      <set parameter="par_timer_on" value="EIN" type="Text" />
+      <set parameter="par_switch_off" value="tpl_btn_red_bg.xaml" />
+      <set parameter="par_button_icon_off" value="" />
+      <set parameter="par_off" value="AUS" type="Text" />
+      <set parameter="par_timer_off" value="AUS" type="Text" />
+      <set parameter="par_state_button" value="" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_unit" value="kWh" type="Text" />
+    </device>
+    <device id="1016" txt="Hinweis" symbol="tpl_ico_craft_info.xaml" template="1-116">
+      <connect slot="slot_text_1" tag="172" />
+      <set parameter="par_type" value="1" />
+      <set parameter="par_info1" value="" type="Text" />
+      <set parameter="par_info2" value="" type="Text" />
+      <set parameter="par_symbol" value="" />
+    </device>
+    <device id="1100" txt="Taster Flanke 1" symbol="tpl_ico_craft_light.xaml" template="1-118_1">
+      <connect slot="slot_switch" tag="173" />
+      <connect slot="slot_feedback" tag="174" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_use_state" value="1" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_push_ico" value="tpl_btn_blue_bg.xaml" />
+      <set parameter="par_button_icon" value="" />
+      <set parameter="par_push" value="Taste" type="Text" />
+      <set parameter="par_timer_text" value="" type="Text" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_unit" value="" type="Text" />
+      <set parameter="par_prec" value="" />
+    </device>
+    <device id="1101" txt="Taster Impuls 1" symbol="tpl_ico_craft_light.xaml" template="1-118_3">
+      <connect slot="slot_switch" tag="175" />
+      <connect slot="slot_feedback" tag="176" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_use_state" value="1" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_push_ico" value="tpl_btn_blue_bg.xaml" />
+      <set parameter="par_button_icon" value="" />
+      <set parameter="par_push" value="Taste" type="Text" />
+      <set parameter="par_timer_text" value="" type="Text" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_unit" value="" type="Text" />
+      <set parameter="par_prec" value="" />
+    </device>
+    <device id="1102" txt="Taster Impuls 0" symbol="tpl_ico_craft_light.xaml" template="1-118_4">
+      <connect slot="slot_switch" tag="177" />
+      <connect slot="slot_feedback" tag="178" />
+      <set parameter="par_button_mode" value="0" />
+      <set parameter="par_timer" value="false" />
+      <set parameter="par_use_state" value="1" />
+      <set parameter="par_use_pin" value="false" />
+      <set parameter="par_push_ico" value="tpl_btn_blue_bg.xaml" />
+      <set parameter="par_button_icon" value="" />
+      <set parameter="par_push" value="Taste" type="Text" />
+      <set parameter="par_timer_text" value="" type="Text" />
+      <set parameter="par_state_on" value="tpl_ico_state_on.xaml" />
+      <set parameter="par_state_off" value="tpl_ico_state_off.xaml" />
+      <set parameter="par_unit" value="" type="Text" />
+      <set parameter="par_prec" value="" />
+    </device>
+  </devices>
+</project>
