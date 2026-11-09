@@ -11,12 +11,12 @@
 :root{color-scheme:light;
   --bg:#f3f4f2;--panel:#fff;--ink:#1d2320;--muted:#6b736f;--line:#e2e5e1;
   --acc:#e0802c;--acc-soft:#fbeadb;--on:#e9a52d;--ok:#2f8a4f;--err:#c0392b;--cool:#3f7fbf;--r:14px;
-  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;
   --bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
   --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df}}
-:root[data-theme="dark"]{color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
+:root[data-theme="dark"]{color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
   --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -39,6 +39,7 @@ button{font:inherit;color:inherit}
 .splay .st{font-size:12px;color:var(--muted)}.splay .st.err{color:var(--err)}
 .clegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink);margin-bottom:8px}
 .clegend i,.ctip i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.pval .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .clegend b{font-variant-numeric:tabular-nums}
 .cpanel{position:relative;margin-top:6px}.cpanel svg{display:block;touch-action:pan-y}
 .cunit{position:absolute;left:0;top:-4px;font-size:11px;color:var(--muted)}
@@ -261,7 +262,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.7.0";
+const VERSION = "0.7.1";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1233,6 +1234,101 @@ $("pbody").addEventListener("mouseleave", chartHover);
 $("pbody").addEventListener("touchstart", chartHover, { passive: true });
 $("pbody").addEventListener("touchmove", chartHover, { passive: true });
 window.addEventListener("resize", () => { if (PLUG && PLUG.cls === "0-3") renderPlug(); });
+
+/* 1-16 Balkendiagramme (Original: hs_client_framework BarChartFrame / ArchiveDataSource):
+   24 h:  60-min-Blöcke × 24, Start = volle Stunde − 1 Tag          7 Tage / 28 Tage: 1440 × 7 / 28, Start heute − 6 / − 27, 00:00
+   52 Wo: 1440 × (51·7 + Tage seit Montag), Start heute − (Anzahl − 1); je 7 Tageswerte = eine Woche (Summe), angefangene Woche entfällt
+   Abruf mit Genauigkeit 2. Wert je Block: aggregation „MIN“ = min, „AVERAGE“ = sum/count (count 0 -> 0), sonst max (auch „Maximum“).
+   Statistik: Min, Max, Mittel der angezeigten Balken. co1/co2 = aktueller Wert. */
+const BAR_RANGES = [
+  { k: "24h", t: "24 h", size: 60, use: "use_chart_24h" }, { k: "7d", t: "7 Tage", size: 1440, n: 7, use: "use_chart_7d" },
+  { k: "28d", t: "28 Tage", size: 1440, n: 28, use: "use_chart_28d" }, { k: "52w", t: "52 Wochen", size: 1440, use: "use_chart_52w" }];
+const BAR_COLORS = { yellow: "var(--s4)", blue: "var(--s1)", orange: "var(--s2)", green: "var(--s3)" };
+const fdec = f => { const m = /^F(\d+)$/i.exec(f || ""); return m ? +m[1] : 0; };
+function barPlan(rg, now = new Date()) {
+  if (rg.k === "24h") { const s = new Date(now); s.setMinutes(0, 0, 0); s.setDate(s.getDate() - 1); return { start: s, size: 60, count: 24 }; }
+  const day0 = new Date(now); day0.setHours(0, 0, 0, 0);
+  const count = rg.k === "52w" ? 51 * 7 + (now.getDay() + 6) % 7 : rg.n;
+  const s = new Date(day0); s.setDate(s.getDate() - (count - 1)); return { start: s, size: 1440, count };
+}
+const isoWeek = d => { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const n = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - n);
+  return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 864e5 + 1) / 7); };
+PLUGIN_TYPES["1-16"] = {
+  name: "Balkendiagramme",
+  read: x => ({ items: [...x.querySelectorAll("items > item")].map(attrs).map(a => {
+      const ser = [1, 2].filter(n => a["archive" + n] && a["archive" + n] !== "0" && (n === 1 || a.type === "ChartItem2" || a.type === "CBarChartItemDouble"))
+        .map(n => ({ arch: a["archive" + n], ko: a["co" + n] || "", unit: a["unit" + n] || "", d: fdec(a["format" + n]), label: a["label" + n] || "",
+          agg: (a["aggregation_series" + n] || "").toUpperCase(), max: parseFloat(a["maxval" + n]) || 0 }));
+      return { name: a.name || "", color: (a.colorScheme || "").toLowerCase(), stats: a.useStatistics !== "False", ser,
+        ranges: BAR_RANGES.filter(rg => a[rg.use] !== "False") };
+    }).filter(i => i.ser.length), open: null, cur: null, vals: null, plan: null, err: "", hover: null }),
+  tags: d => d.items.flatMap(i => i.ser.map(s => s.ko)),
+  load: async d => {
+    const it = d.items[d.open]; if (!it) return;
+    const rg = BAR_RANGES.find(r => r.k === d.cur), plan = barPlan(rg), key = d.open + rg.k;
+    try {
+      const vals = await Promise.all(it.ser.map(async s => {
+        const x = new DOMParser().parseFromString(await hsGet(`/quad/arch/${s.arch}/${yymm(plan.start)}/${plan.size}/${plan.count}/2`), "text/xml");
+        const v = [...x.querySelectorAll("row")].slice(0, plan.count).map(r => { const c = +r.getAttribute("count") || 0, g = n => parseFloat(r.getAttribute(n)) || 0;
+          return s.agg === "MIN" ? g("min") : s.agg === "AVERAGE" ? (c ? g("sum") / c : 0) : g("max"); });
+        if (rg.k !== "52w") return v;
+        const w = []; for (let i = 0; i + 7 <= v.length; i += 7) w.push(v.slice(i, i + 7).reduce((a, b) => a + b, 0)); return w;
+      }));
+      if (d.open + d.cur !== key) return;
+      d.vals = vals; d.plan = plan; d.err = "";
+    } catch (e) { d.err = e.message; d.vals = []; }
+  },
+  html: d => {
+    const col = it => BAR_COLORS[it.color] || "var(--s1)", col2 = it => (it.color === "blue" ? "var(--s2)" : "var(--s1)");
+    const cur = s => { const n = num(s.ko); return s.ko && n !== undefined ? `${fmt(n, s.d)} ${s.unit}` : "–"; };
+    if (d.open === null) return '<div class="pgrid">' + d.items.map((it, i) => `<button class="pval" data-pa="open" data-i="${i}" style="text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;justify-content:flex-start">
+        <div class="cap">${esc(it.name)}</div>${it.ser.map((s, j) => `${it.ser.length > 1 ? `<div class="cap" style="margin:6px 0 0"><i class="sw" style="background:${j ? col2(it) : col(it)}"></i>${esc(s.label || "Reihe " + (j + 1))}</div>` : ""}<div class="big" style="font-size:19px">${esc(cur(s).replace(/ [^ ]+.*$/, ""))}<u>${esc(cur(s) === "–" ? "" : s.unit)}</u></div>`).join("")}</button>`).join("") + "</div>";
+    const it = d.items[d.open], rg = BAR_RANGES.find(r => r.k === d.cur);
+    const head = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><button class="chip" data-pa="back">${svg("left")} Übersicht</button>
+      <b style="margin-right:auto">${esc(it.name)}</b>${it.ranges.map(r => `<button class="chip${r.k === d.cur ? " act" : ""}" data-pa="rg" data-k="${r.k}">${r.t}</button>`).join("")}</div>`;
+    const legend = `<div class="clegend">${it.ser.map((s, j) => `<span><i style="background:${j ? col2(it) : col(it)}"></i>${esc(s.label || it.name)} <b>${esc(cur(s))}</b></span>`).join("")}</div>`;
+    if (!d.vals) return head + legend + '<p class="note">Lade Archivdaten …</p>';
+    if (d.err) return head + `<p class="note">Archiv konnte nicht geladen werden: ${esc(d.err)}</p>`;
+    const n = Math.max(...d.vals.map(v => v.length), 0); if (!n) return head + legend + '<p class="note">Keine Daten.</p>';
+    const lab = i => { const p = d.plan;
+      if (rg.k === "24h") return new Date(p.start.getTime() + i * 3600000).toLocaleTimeString("de-DE", { hour: "2-digit" });
+      if (rg.k === "52w") { const e = new Date(p.start); e.setDate(e.getDate() + i * 7 + 6); return "KW " + isoWeek(e); }
+      const t = new Date(p.start); t.setDate(t.getDate() + i); return t.toLocaleDateString("de-DE", rg.k === "7d" ? { weekday: "short", day: "2-digit", month: "2-digit" } : { day: "2-digit", month: "2-digit" }); };
+    const W = Math.max(280, ($("pbody").clientWidth || 600) - 24), H = 230, L = 52, R = 8, T = 8, B = 24, pw = W - L - R, ph = H - T - B;
+    const fixed = it.ser.map(s => s.max).filter(m => m > 0), all = d.vals.flat();
+    const ticks = niceTicks(0, Math.max(fixed.length ? Math.max(...fixed) : 0, ...all, 0) || 1), hi = ticks[ticks.length - 1];
+    const y = v => T + ph - v / hi * ph, slot = pw / n, gap = 2, bw = Math.max(1, (slot - gap * (it.ser.length + 1)) / it.ser.length);
+    const dec = Math.max(...it.ser.map(s => s.d)), every = Math.ceil(n / Math.max(4, Math.floor(pw / 56)));
+    let g = ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" class="cg"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" class="ct">${esc(fmt(t, hi < 5 ? dec : 0))}</text>`).join("");
+    for (let i = 0; i < n; i++) {
+      d.vals.forEach((v, j) => { const val = v[i] || 0, bx = L + i * slot + gap + j * (bw + gap), top = y(Math.max(0, val)), h = Math.max(0, T + ph - top);
+        const rr = Math.min(4, bw / 2, h); g += h > 0 ? `<path d="M${bx} ${T + ph}V${top + rr}q0 ${-rr} ${rr} ${-rr}h${bw - 2 * rr}q${rr} 0 ${rr} ${rr}V${T + ph}z" fill="${j ? col2(it) : col(it)}" opacity="${d.hover === null || d.hover === i ? 1 : .45}"/>` : ""; });
+      if (i % every === 0) g += `<text x="${L + (i + .5) * slot}" y="${H - 6}" text-anchor="middle" class="ct">${esc(lab(i))}</text>`;
+    }
+    const svgH = `<div class="cpanel"><svg data-bars="1" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(it.name + " " + rg.t)}">${g}<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/></svg></div>`;
+    const tip = d.hover !== null && d.hover < n ? `<div class="ctip"><b>${esc(lab(d.hover))}</b>${it.ser.map((s, j) => `<span><i style="background:${j ? col2(it) : col(it)}"></i>${esc(s.label || it.name)}: ${esc(fmt(d.vals[j][d.hover] || 0, s.d))} ${esc(s.unit)}</span>`).join("")}</div>` : "";
+    const st = it.stats ? `<div class="pgrid" style="margin-top:10px">${it.ser.map((s, j) => { const v = d.vals[j], avg = v.reduce((a, b) => a + b, 0) / (v.length || 1);
+      return `<div class="pval"><div class="cap">${esc(s.label || it.name)} · ${rg.t}</div>${[["Minimum", Math.min(...v)], ["Maximum", Math.max(...v)], ["Mittel", avg], ["Summe", v.reduce((a, b) => a + b, 0)]].map(([t, x]) =>
+        `<div class="row"><span>${t}</span><b>${esc(fmt(x, s.d))}<u>${esc(s.unit)}</u></b></div>`).join("")}</div>`; }).join("")}</div>` : "";
+    return head + legend + svgH + tip + st;
+  },
+  act: async (d, b) => {
+    const T = PLUGIN_TYPES["1-16"];
+    if (b.dataset.pa === "open") { const it = d.items[+b.dataset.i]; d.open = +b.dataset.i; d.cur = (it.ranges.find(r => r.k === "7d") || it.ranges[0] || {}).k; d.vals = null; d.hover = null; renderPlug(); await T.load(d); }
+    else if (b.dataset.pa === "back") { d.open = null; d.vals = null; }
+    else if (b.dataset.pa === "rg" && b.dataset.k !== d.cur) { d.cur = b.dataset.k; d.vals = null; d.hover = null; renderPlug(); await T.load(d); }
+  }
+};
+function barHover(e) {
+  if (!PLUG || PLUG.cls !== "1-16" || !PLUG.data.vals || PLUG.data.open === null) return;
+  const sv = e.target.closest && e.target.closest("svg[data-bars]"), d = PLUG.data; let h = null;
+  if (sv && e.type !== "mouseleave") { const bx = sv.getBoundingClientRect(), L = 52, pw = bx.width - L - 8, n = Math.max(...d.vals.map(v => v.length));
+    const px = (e.touches ? e.touches[0].clientX : e.clientX) - bx.left - L; h = px < 0 || px > pw ? null : Math.min(n - 1, Math.floor(px / pw * n)); }
+  if (h !== d.hover) { d.hover = h; renderPlug(); }
+}
+["mousemove", "mouseleave"].forEach(t => $("pbody").addEventListener(t, barHover));
+["touchstart", "touchmove"].forEach(t => $("pbody").addEventListener(t, barHover, { passive: true }));
+window.addEventListener("resize", () => { if (PLUG && PLUG.cls === "1-16") renderPlug(); });
 
 /* 0-4 Meldungsarchiv. Abruf wie das Original (CMsgArchiv.checkReload / CDownloadMsgArchiv):
    /quad/msg/<archid>/1000?<sid> -> <msgarch><msg date="yyyyMMddHHmmss" text="…"/>…   Projekt: <archive reload="s"><msgarchiv title archid/> */

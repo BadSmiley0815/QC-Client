@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.7.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.7.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -20,7 +20,8 @@ Stand: v0.7.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [x] Kamera-Archiv (v0.6.2, am HS bestätigt)
   - [x] Meldungsarchiv (v0.6.3)
   - [x] Diagramme (v0.7.0, am HS bestätigt)
-  - [ ] Energieverbrauch (1-4), Balkendiagramme (1-16)
+  - [x] Balkendiagramme (v0.7.1)
+  - [ ] Energieverbrauch (1-4)
   - [ ] Sprechanlage
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)

@@ -23,7 +23,7 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml" }[n];
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -58,7 +58,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   const pin = await ko(pg, "Gartentor", "slot_pin"), val = await ko(pg, "Sollwert Pool", "slot_value"), mu = await ko(pg, "Restmüll", "muell_val");
   await pg.close();
   pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`, "2|9001|8450.0|0", "2|9002|47503.779|0", "2|9003|6554.0|0",
-    "2|9113|0.0|0", "2|9201|21.48|0", "2|9116|Testband|0", "2|9117|Testlied|0", "2|9118|1.0|0", "2|9115|25.0|0", "2|9112|1.0|0"]);
+    "2|9113|0.0|0", "2|9201|21.48|0", "2|9301|123.44|0", "2|9116|Testband|0", "2|9117|Testlied|0", "2|9118|1.0|0", "2|9115|25.0|0", "2|9112|1.0|0"]);
 
   console.log("Menü");
   ok("Startseite ist das Menü", (await pg.textContent("#title")) === "Menü");
@@ -122,6 +122,28 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   archFetch.length = 0; await pg.click('#pbody [data-pa="rg"][data-k="week"]'); await pg.waitForTimeout(400);
   const expW = await pg.evaluate(() => { const d = new Date(); d.setDate(d.getDate() - 6); d.setHours(0, 0, 0, 0); return yymm(d); });
   ok("Woche: 45 min × 224 ab 00:00", archFetch.some(a => a.join("/") === `503/${expW}/45/224/1`), JSON.stringify(archFetch));
+  await pg.click("#pclose");
+  console.log("Plugin Balkendiagramme (1-16, Regeln aus dem Original)");
+  await pg.click('#grid .mcard:has-text("Verbrauch")'); await pg.waitForTimeout(300);
+  ok("Übersicht mit aktuellem Wert", (await pg.textContent("#pbody")).includes("123,4l"), await pg.textContent("#pbody"));
+  archFetch.length = 0; await pg.click('#pbody [data-pa="open"][data-i="0"]'); await pg.waitForTimeout(400);
+  const e7 = await pg.evaluate(() => { const d = new Date(); d.setDate(d.getDate() - 6); d.setHours(0, 0, 0, 0); return yymm(d); });
+  ok("7 Tage: 1440 × 7, Genauigkeit 2", archFetch.length === 1 && archFetch[0].join("/") === `701/${e7}/1440/7/2`, JSON.stringify(archFetch));
+  ok("„Maximum“ = max", JSON.stringify((await pg.evaluate(() => PLUG.data.vals))[0].slice(0, 3)) === "[50,51,52]");
+  ok("28 Tage ausgeblendet (use_chart_28d=False)", (await pg.locator('#pbody [data-pa="rg"][data-k="28d"]').count()) === 0);
+  ok("Statistik", (await pg.textContent("#pbody")).includes("Minimum") && (await pg.textContent("#pbody")).includes("Summe"));
+  archFetch.length = 0; await pg.click('#pbody [data-pa="rg"][data-k="24h"]'); await pg.waitForTimeout(400);
+  const e24 = await pg.evaluate(() => { const d = new Date(); d.setMinutes(0, 0, 0); d.setDate(d.getDate() - 1); return yymm(d); });
+  ok("24 h: 60 × 24 ab volle Stunde − 1 Tag", archFetch[0] && archFetch[0].join("/") === `701/${e24}/60/24/2`, JSON.stringify(archFetch));
+  archFetch.length = 0; await pg.click('#pbody [data-pa="rg"][data-k="52w"]'); await pg.waitForTimeout(400);
+  const w = await pg.evaluate(() => { const n = 51 * 7 + (new Date().getDay() + 6) % 7, d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (n - 1)); return [n, yymm(d)]; });
+  ok("52 Wochen: Tageswerte, Anzahl wie Original", archFetch[0] && archFetch[0].join("/") === `701/${w[1]}/1440/${w[0]}/2`, JSON.stringify(archFetch));
+  const wv = await pg.evaluate(() => PLUG.data.vals[0]);
+  ok("51 volle Wochen, Wochensumme", wv.length === 51 && wv[0] === [0, 1, 2, 3, 4, 5, 6].reduce((a, i) => a + (i === 5 ? 0 : 50 + i % 20), 0), JSON.stringify(wv.slice(0, 2)));
+  await pg.click('#pbody [data-pa="back"]'); await pg.waitForTimeout(100);
+  archFetch.length = 0; await pg.click('#pbody [data-pa="open"][data-i="1"]'); await pg.waitForTimeout(400);
+  const dv = await pg.evaluate(() => PLUG.data.vals);
+  ok("Zwei Reihen: AVERAGE = sum/count, MIN = min, Block ohne Werte = 0", dv.length === 2 && dv[0][0] === 20 && dv[1][1] === 1 && dv[0][5] === 0, JSON.stringify(dv.map(v => v.slice(0, 6))));
   await pg.click("#pclose");
 
   console.log("Taster (1-118, Mitschnitt flows3/flows4)");

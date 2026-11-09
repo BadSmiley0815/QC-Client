@@ -9,5 +9,6 @@
     <plugin_instance id="903" class="0-7" master_id="" title="Klingelbilder" group="3" project="0-7_903.xml" userdef="userdef903.dat" visibleinqc="1" />
     <plugin_instance id="904" class="0-4" master_id="" title="Meldungen" group="3" project="0-4_904.xml" userdef="userdef904.dat" visibleinqc="1" />
     <plugin_instance id="905" class="0-3" master_id="" title="Klima" group="3" project="0-3_905.xml" userdef="userdef905.dat" visibleinqc="1" />
+    <plugin_instance id="906" class="1-16" master_id="" title="Verbrauch" group="3" project="1-16_906.xml" userdef="userdef906.dat" visibleinqc="1" />
   </instances>
 </plugins>

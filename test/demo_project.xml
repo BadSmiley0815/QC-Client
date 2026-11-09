@@ -96,6 +96,9 @@
     <mnu_item id="515" txt1="Klima" txt2="Plugin Diagramm" ico="mnu_btn_ico_diagramm.xaml" group="3" visibleinqc="1" page="0">
       <cmd type="2" plugin_id="905" pos="0" pluginFullSize="0" />
     </mnu_item>
+    <mnu_item id="516" txt1="Verbrauch" txt2="Plugin Balkendiagramme" ico="mnu_btn_ico_statistics.xaml" group="3" visibleinqc="1" page="0">
+      <cmd type="2" plugin_id="906" pos="0" pluginFullSize="0" />
+    </mnu_item>
     <page_item id="600" page="1" txt1="Extras" ico="" group="3" visibleinqc="1" />
     <mnu_item id="510" txt1="Pool" txt2="Unterseite" ico="mnu_btn_ico_pool.xaml" group="3" visibleinqc="1" page="1">
       <cmd type="3" room="17" />

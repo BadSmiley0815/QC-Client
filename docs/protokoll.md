@@ -124,7 +124,8 @@ Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Dat
 | 1-25 | Sonos / Universal-Player: `<item>` mit `co…`-KOs | umgesetzt (v0.6.1), siehe unten |
 | 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
 | 0-3 | Diagramm: `<scale_1/2 prec min max unit>`, `<line color title calc tag axis>` mit `archiv_hour…year id` | umgesetzt (v0.7.0), am echten HS bestätigt |
-| 1-4, 1-16 | Energieverbrauch, Balkendiagramme (Archive) | offen |
+| 1-16 | Balkendiagramme: `<item type=ChartItem1/2 co1/2 archive1/2 unit format aggregation_series use_chart_*>` | umgesetzt (v0.7.1), siehe unten |
+| 1-4 | Energieverbrauch (Archive) | offen |
 | 0-7 | Kamera-Archiv: `<camarchiv title archid>` | umgesetzt (v0.6.2), am echten HS bestätigt |
 | 0-4 | Meldungsarchiv: `<archive reload="s"><msgarchiv title archid>` | umgesetzt (v0.6.3) |
 | 1-3 | Wetter (Gira-Dienst) | offen |
@@ -175,3 +176,17 @@ Ermittelt aus dem Original-Plugin (`CChartDesignDataBase`) und `0-3_design.xml`:
 Wert je Block nach `calc`: 1 = `min`, 2 = `sum/count`, 3 = `max`; `count` 0 = keine Daten.
 Ein Zeitraum ist wählbar, wenn alle Linien dafür ein Archiv haben. Neu geladen wird nach
 `<reload><archiv_… span>` Minuten. `tag` liefert den aktuellen Wert für die Legende.
+
+### Balkendiagramme (1-16)
+
+Ermittelt aus dem QuadClient-Rahmen (`BarChartFrame`, `ArchiveDataSource`):
+
+| Zeitraum | Abruf | Start |
+|---|---|---|
+| 24 h | 60 min × 24 | volle Stunde − 1 Tag |
+| 7 Tage | 1440 min × 7 | heute − 6 Tage, 00:00 |
+| 28 Tage | 1440 min × 28 | heute − 27 Tage, 00:00 |
+| 52 Wochen | 1440 min × (51 · 7 + Tage seit Montag) | heute − (Anzahl − 1) Tage; je 7 Tageswerte = Wochensumme, angefangene Woche entfällt |
+
+Genauigkeit immer 2. Wert je Block: `MIN` = min, `AVERAGE` = sum/count (count 0 → 0),
+alles andere (auch „Maximum“) = max. Statistik: Min, Max, Mittel der Balken.
