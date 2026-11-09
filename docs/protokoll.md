@@ -29,6 +29,9 @@ Nach einer **fehlgeschlagenen** Anmeldung sperrt der HS alle Anmeldungen für ca
 | `/quad/client/client_project.xml?<sid>` | Visu aus der QuadConfig: Räume, Gewerke, Elemente, Menü, Benutzer |
 | `/quad/client/design_<n>/client_templates.xml?<sid>` | Funktionsvorlagen (u. a. Aktionen der Schaltuhren); der QC nutzt `design_4` |
 | `/quad/client/client_language.xml?<sid>` | Texte der Vorlagen |
+| `/quad/client/quad_plugin.xml?<sid>` | Plugin-Klassen und -Instanzen (`plugin_instance id class title project`) |
+| `/quad/plugins/project/<class>_<id>.xml?<sid>` | Einstellungen einer Plugin-Instanz |
+| `/quad/plugins/language/<class>_lang.xml?<sid>` | Texte eines Plugins |
 
 KO-Nummern in der Visu sind die internen KO-IDs des HS; der QuadClient braucht **keine**
 Endpunkt-Freigaben im KO-Gateway.
@@ -106,6 +109,20 @@ optional `<state type="1|3" tag="…">` (Ein/Aus-Farbe bzw. Zähler) und `<cmd>`
 | 7 | Etage (`floor`) |
 | 6 | Webseite (`url0`) |
 | 5 | KO setzen (`tag`, `op="toggle"`, `value`) – Umschalten **ungeprüft** |
-| 2 | Plugin |
+| 2 | Plugin (`plugin_id` = Instanz aus `quad_plugin.xml`) |
 
 Unterseiten: `<page_item page="n">` + Einträge mit `page="n"`.
+
+## Plugins
+
+Die Werte aller KOs, die Plugins benutzen, stehen in `<tags>` der Visu und kommen mit den
+Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Datenstrom.
+
+| Klasse | Plugin | Stand im Client |
+|---|---|---|
+| 1-2 | Wertanzeige („Wetterstation“): `<station_item caption>` mit `<value title dpt=KO format unit>` | umgesetzt (v0.6.0) |
+| 1-25 | Sonos: KOs für Play/Pause/Stop/Weiter/Lautstärke/Titel … | Sendewerte ungeprüft |
+| 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
+| 0-3, 1-4, 1-16 | Diagramme (Archiv-IDs) | offen – Protokoll für Archivdaten fehlt |
+| 0-4, 0-7 | Meldungs-/Kamera-Archiv | offen – Protokoll fehlt |
+| 1-3 | Wetter (Gira-Dienst) | offen |

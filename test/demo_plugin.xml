@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erfundene Plugin-Liste für die Tests (Aufbau wie /quad/client/quad_plugin.xml) -->
+<plugins>
+  <classes />
+  <instances>
+    <plugin_instance id="900" class="1-2" master_id="" title="Zähler" group="3" project="1-2_900.xml" userdef="userdef900.dat" visibleinqc="1" />
+    <plugin_instance id="901" class="0-2" master_id="" title="Kamera" group="3" project="0-2_901.xml" userdef="userdef901.dat" visibleinqc="1" />
+  </instances>
+</plugins>

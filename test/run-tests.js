@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0;
+let fails = 0, camFetch = false;
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -14,7 +14,10 @@ async function start(b, user, extra = []) {
     const u = r.request().url(), n = u.split("/").pop().split("?")[0];
     if (n === "qc.html") return r.fulfill({ status: 200, contentType: "text/html", body: T("../qc.html") });
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
-    const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml" }[n];
+    if (n === "0-2_901.xml") camFetch = true;
+    const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml" }[n];
+    if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
     r.fulfill({ status: f ? 200 : 404, body, headers: { "access-control-allow-origin": "*" } });
@@ -47,7 +50,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   let pg = await start(b, "Demo");
   const pin = await ko(pg, "Gartentor", "slot_pin"), val = await ko(pg, "Sollwert Pool", "slot_value"), mu = await ko(pg, "Restmüll", "muell_val");
   await pg.close();
-  pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`]);
+  pg = await start(b, "Demo", [`2|${pin}|1234|1`, `2|${val}|20.0|0`, `2|${mu}|1.0|0`, "2|9001|8450.0|0", "2|9002|47503.779|0", "2|9003|6554.0|0"]);
 
   console.log("Menü");
   ok("Startseite ist das Menü", (await pg.textContent("#title")) === "Menü");
@@ -56,6 +59,16 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   await pg.click('nav button[data-v="m:0"]'); await pg.click('#grid .mcard:has-text("Wetter")'); await pg.waitForTimeout(600);
   ok("Webseite eingebettet, Höhe an Inhalt (fest positioniert)", parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)) >= 500 && parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)) < 560);
   ok("Adresse nicht angezeigt", !(await pg.textContent("#frame .fbar")).includes("http"));
+  console.log("Plugin Wertanzeige (1-2)");
+  ok("Kamera-Plugin noch nicht verfügbar", (await pg.textContent('#grid .mcard:has-text("Kamera")')).includes("nicht verfügbar"));
+  await pg.click('#grid .mcard:has-text("Zähler")'); await pg.waitForTimeout(300);
+  ok("Wertanzeige öffnet, Webseite zu", await pg.isVisible("#plug") && !(await pg.isVisible("#frame")));
+  ok("Werte formatiert", (await pg.textContent("#pbody")).includes("8.450kWh") && (await pg.textContent("#pbody")).includes("47.503,78kWh"), await pg.textContent("#pbody"));
+  await pg.evaluate(() => WSI.onmessage({ data: "1|9003|6600.0|0" })); await pg.waitForTimeout(50);
+  ok("Wert aktualisiert sich live", (await pg.textContent("#pbody")).includes("6.600kWh"));
+  await pg.click("#pclose"); ok("Schließen", !(await pg.isVisible("#plug")));
+  await pg.click('#grid .mcard:has-text("Kamera")'); await pg.waitForTimeout(200);
+  ok("Kamera-Einstellungen (mit Zugangsdaten) werden nicht abgerufen", !camFetch);
 
   console.log("Taster (1-118, Mitschnitt flows3/flows4)");
   await pg.click('nav button:has-text("Flur")'); await pg.waitForTimeout(200);

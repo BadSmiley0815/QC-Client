@@ -21,6 +21,15 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit}
 .hidden{display:none!important}
+#pbody{padding:12px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pval{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.pval .cap{font-size:13px;color:var(--muted);margin-bottom:4px}
+.pval .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.pval .row span{color:var(--muted);font-size:13px}
+.pval .big{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
+.pval .row b{font-variant-numeric:tabular-nums}
+.pval u{text-decoration:none;font-size:13px;color:var(--muted);font-weight:400;margin-left:3px}
 
 /* Anmeldung */
 #login{min-height:100vh;display:grid;place-items:center;padding:16px}
@@ -104,9 +113,9 @@ input[type=range]{flex:1;accent-color:var(--acc);min-width:0}
 .mcard.off{opacity:.55;cursor:default}
 .startsel{margin:0 10px 8px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .startsel select{flex:1;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px}
-#frame{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
-#frame .fbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
-#frame .fbar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#frame,#plug{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+#frame .fbar,#plug .fbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#frame .fbar b,#plug .fbar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #fifr{display:block;width:100%;height:calc(100vh - 120px);min-height:120px;border:0;background:#fff}
 /* Schaltuhr */
 .tbtn{position:absolute;top:9px;right:32px;border:0;background:none;color:var(--muted);cursor:pointer;padding:2px}
@@ -195,6 +204,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
     <div id="grid" class="grid"></div>
     <div id="frame" class="hidden"><div class="fbar"><b id="ftitle"></b><button class="chip" id="fnew">In neuem Tab öffnen</button><button class="chip" id="fclose">Schließen</button></div>
       <iframe id="fifr" referrerpolicy="no-referrer" allow="fullscreen"></iframe></div>
+    <div id="plug" class="hidden"><div class="fbar"><b id="ptitle"></b><button class="chip" id="pclose">Schließen</button></div><div id="pbody"></div></div>
     <div id="log" class="hidden"></div>
   </main>
 </section>
@@ -225,7 +235,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.5.6";
+const VERSION = "0.6.0";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -403,12 +413,13 @@ async function onMsg(ev) {
       } else refreshProject(projId, (store.get("proj4." + cfg.host, {}) || {}).h);
       showApp();
       setState("on");
+      if (!PLUGS) loadPlugins().then(() => { if (cur.startsWith("m:")) renderView(); });
       break;
     }
     case "2": case "1": {
       const ko = p[1], val = p.length > 3 ? p.slice(2, -1).join("|") : p[2];
       V.set(ko, val);
-      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); }
+      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); if (PLUG && PLUG.tags.has(ko)) renderPlug(); }
       break;
     }
     case "10": TIMERS.set(p[1], { active: p[2] === "1", pts: new Map() }); break;                      // Uhr: aktiv|Anzahl|…
@@ -432,7 +443,7 @@ async function loadProject(id) {
   if (cached && cached.id === id) { P_ = cached.p; projId = id; log("··", "Visu aus Zwischenspeicher"); refreshProject(id, cached.h); return; }
   setState("off", "Lade Visu vom HomeServer …");
   const txt = await fetchProject();
-  P_ = parseProject(txt); projId = id; KOIX = null; TMETA = null;
+  P_ = parseProject(txt); projId = id; KOIX = null; TMETA = null; PLUGS = null;
   store.set("proj4." + cfg.host, { id, h: hash(txt), p: P_ });
   log("··", "Visu geladen: " + Object.keys(P_.els).length + " Elemente");
 }
@@ -440,7 +451,7 @@ async function loadProject(id) {
 async function refreshProject(id, h) {
   try {
     const txt = await fetchProject(); if (hash(txt) === h) return;
-    P_ = parseProject(txt); KOIX = null; TMETA = null; store.del("tmeta." + cfg.host + "." + id);
+    P_ = parseProject(txt); KOIX = null; TMETA = null; PLUGS = null; loadPlugins(); store.del("tmeta." + cfg.host + "." + id);
     store.set("proj4." + cfg.host, { id, h: hash(txt), p: P_ });
     log("··", "Visu hat sich geändert – neu eingelesen"); prepare(); buildNav(); renderView();
   } catch (e) { log("··", "Visu-Prüfung fehlgeschlagen: " + e.message); }
@@ -861,7 +872,7 @@ function menuIcon(ico) {
   const s = ico.toLowerCase();
   for (const [k, v] of [["bad", "bath"], ["bath", "bath"], ["wc", "bath"], ["schlaf", "bed"], ["child", "bed"], ["tv", "tv"], ["jalou", "blind"], ["roll", "blind"],
     ["heiz", "temp"], ["licht", "bulb"], ["rgb", "color"], ["szene", "scene"], ["scene", "scene"], ["exit", "lock"], ["kamera", "plugin"], ["diagramm", "gauge"],
-    ["statist", "gauge"], ["energ", "gauge"], ["wetter", "web"], ["music", "plugin"], ["tuer", "door"], ["reception", "door"], ["garage", "home"], ["kueche", "home"]])
+    ["statist", "gauge"], ["energ", "gauge"], ["accountancy", "gauge"], ["wetter", "web"], ["music", "plugin"], ["tuer", "door"], ["reception", "door"], ["garage", "home"], ["kueche", "home"]])
     if (s.includes(k)) return v;
   return "home";
 }
@@ -878,7 +889,7 @@ function menuTile(m) {
   if (m.state && m.state.tag) { MENU_TAGS.add(m.state.tag);
     if (m.state.type === "3") { const n = num(m.state.tag); if (n) badge = `<span class="cnt">${fmt(n, 0)}</span>`; }
     if (m.state.type === "1") on = !!bool(m.state.tag); }
-  const c = m.cmds[0] || {}, plug = !m.isPage && (c.type === "2" || !m.cmds.length);
+  const c = m.cmds[0] || {}, plug = !m.isPage && ((c.type === "2" && !plugSupported(c.plugin_id)) || !m.cmds.length);
   if (on) cls += " is-on"; if (plug) cls += " off";
   const icon = m.isPage ? "plugin" : c.type === "6" ? "web" : menuIcon(m.ico);
   return `<button class="${cls}" data-m="${esc(m.id)}" ${plug ? 'title="Im Client nicht verfügbar"' : ""}>${badge}
@@ -894,13 +905,14 @@ function menuAct(id) {
     case "4": go("t:" + c.device_group); break;
     case "7": go("f:" + c.floor); break;
     case "6": if (c.url0) openFrame(m.t1, c.url0); break;
+    case "2": openPlugin(m.t1, c.plugin_id); break;
     case "5": if (c.tag) send(c.tag, c.op === "toggle" ? (bool(c.tag) ? 0 : 1) : +c.value); break;      // Umschalten – noch gegen QC prüfen
   }
 }
 /* Webseiten aus dem Menü eingebettet unter den Kacheln öffnen (Adresse wird nicht angezeigt) */
 let FRAME_URL = "";
 function openFrame(title, url) {
-  FRAME_URL = url; $("ftitle").textContent = title || "Webseite"; $("fifr").src = url;
+  closePlug(); FRAME_URL = url; $("ftitle").textContent = title || "Webseite"; $("fifr").src = url;
   $("frame").classList.remove("hidden"); $("frame").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 /* Höhe an den Inhalt anpassen – geht nur, wenn die Seite vom selben Server kommt (z. B. Client und Seite beide vom HS).
@@ -928,7 +940,58 @@ $("fifr").addEventListener("load", () => {
 function closeFrame() { FRAME_URL = ""; $("fifr").src = "about:blank"; $("frame").classList.add("hidden"); }
 $("fclose").onclick = closeFrame;
 $("fnew").onclick = () => { if (FRAME_URL) window.open(FRAME_URL, "_blank", "noopener"); };
-function go(v) { if (!v.startsWith("m:")) closeFrame(); cur = v; store.set("view", cur); renderView(); window.scrollTo(0, 0); }
+function go(v) { if (!v.startsWith("m:")) { closeFrame(); closePlug(); } cur = v; store.set("view", cur); renderView(); window.scrollTo(0, 0); }
+
+/* ---------------- Plugins (Menü-Befehl type 2) ----------------
+   /quad/client/quad_plugin.xml        Instanzen: id, class, title, project
+   /quad/plugins/project/<project>     Einstellungen einer Instanz (Abruf mit ?<sid>, wie die Visu-Dateien)
+   Nur Klassen aus PLUG_OK werden geladen – andere Plugin-Dateien (z. B. Kamera mit Zugangsdaten) holt der Client gar nicht erst. */
+const PLUG_OK = { "1-2": "Wertanzeige" };
+let PLUGS = null, PLUG = null;               // PLUG = geöffnetes Plugin { id, cls, title, data, tags }
+async function hsGet(path) {
+  const r = await fetch("https://" + cfg.host + path + "?" + sid);
+  if (!r.ok) throw new Error(path.split("/").pop() + ": HTTP " + r.status);
+  return r.text();
+}
+async function loadPlugins() {
+  try {
+    const x = new DOMParser().parseFromString(await hsGet("/quad/client/quad_plugin.xml"), "text/xml"), m = {};
+    x.querySelectorAll("instances > plugin_instance").forEach(p => m[p.getAttribute("id")] =
+      { id: p.getAttribute("id"), cls: p.getAttribute("class"), title: p.getAttribute("title") || "", project: p.getAttribute("project") || "" });
+    PLUGS = m; log("··", "Plugins: " + Object.keys(m).length);
+  } catch (e) { PLUGS = {}; log("··", "Plugins nicht geladen: " + e.message); }
+}
+const plugSupported = id => !!(PLUGS && PLUGS[id] && PLUG_OK[PLUGS[id].cls]);
+const decimals = f => { const i = (f || "").indexOf("."); return i < 0 ? 0 : f.length - i - 1; };
+async function openPlugin(title, id) {
+  const pi = PLUGS && PLUGS[id]; if (!pi || !PLUG_OK[pi.cls]) return;
+  closeFrame();
+  PLUG = { id, cls: pi.cls, title: title || pi.title, data: null, tags: new Set() };
+  $("ptitle").textContent = PLUG.title; $("pbody").innerHTML = '<p class="note">Lade …</p>';
+  $("plug").classList.remove("hidden"); $("plug").scrollIntoView({ behavior: "smooth", block: "start" });
+  try {
+    const x = new DOMParser().parseFromString(await hsGet("/quad/plugins/project/" + pi.project), "text/xml");
+    if (!PLUG || PLUG.id !== id) return;
+    if (pi.cls === "1-2") {     // Wertanzeige („Wetterstation“): Gruppen mit je 1–n Werten aus KOs
+      PLUG.data = [...x.querySelectorAll("station_item")].map(it => ({ cap: it.getAttribute("caption") || "",
+        vals: [...it.querySelectorAll("value")].map(v => ({ t: v.getAttribute("title") || "", ko: v.getAttribute("dpt"),
+          d: decimals(v.getAttribute("format")), u: v.getAttribute("unit") || "" })) }));
+      PLUG.data.forEach(g => g.vals.forEach(v => PLUG.tags.add(v.ko)));
+    }
+    renderPlug();
+  } catch (e) { $("pbody").innerHTML = `<p class="note">Plugin konnte nicht geladen werden: ${esc(e.message)}</p>`; log("··", "Plugin " + id + ": " + e.message); }
+}
+function renderPlug() {
+  if (!PLUG || !PLUG.data) return;
+  const val = v => { const n = num(v.ko); return n === undefined ? (V.get(v.ko) || "–") : fmt(n, v.d); };
+  if (PLUG.cls === "1-2") $("pbody").innerHTML = '<div class="pgrid">' + PLUG.data.map(g =>
+    g.vals.length === 1 && g.vals[0].t === g.cap
+      ? `<div class="pval"><div class="cap">${esc(g.cap)}</div><div class="big">${esc(val(g.vals[0]))}<u>${esc(g.vals[0].u)}</u></div></div>`
+      : `<div class="pval"><div class="cap">${esc(g.cap)}</div>${g.vals.map(v =>
+          `<div class="row"><span>${esc(v.t)}</span><b>${esc(val(v))}<u>${esc(v.u)}</u></b></div>`).join("")}</div>`).join("") + "</div>";
+}
+function closePlug() { PLUG = null; $("plug").classList.add("hidden"); $("pbody").innerHTML = ""; }
+$("pclose").onclick = closePlug;
 
 /* ---------------- Ansicht ---------------- */
 function koIndex() {          // KO -> [ref] für gezielte Aktualisierung
