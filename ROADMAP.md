@@ -19,7 +19,7 @@ Stand: v0.7.0 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [ ] Kamera live
   - [x] Kamera-Archiv (v0.6.2)
   - [x] Meldungsarchiv (v0.6.3)
-  - [x] Diagramme (v0.7.0)
+  - [x] Diagramme (v0.7.0, am HS bestätigt)
   - [ ] Energieverbrauch (1-4), Balkendiagramme (1-16)
   - [ ] Sprechanlage
   - [ ] Wetter

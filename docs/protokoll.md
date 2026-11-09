@@ -123,7 +123,7 @@ Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Dat
 | 1-2 | Wertanzeige („Wetterstation“): `<station_item caption>` mit `<value title dpt=KO format unit>` | umgesetzt (v0.6.0) |
 | 1-25 | Sonos / Universal-Player: `<item>` mit `co…`-KOs | umgesetzt (v0.6.1), siehe unten |
 | 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
-| 0-3 | Diagramm: `<scale_1/2 prec min max unit>`, `<line color title calc tag axis>` mit `archiv_hour…year id` | umgesetzt (v0.7.0), siehe unten |
+| 0-3 | Diagramm: `<scale_1/2 prec min max unit>`, `<line color title calc tag axis>` mit `archiv_hour…year id` | umgesetzt (v0.7.0), am echten HS bestätigt |
 | 1-4, 1-16 | Energieverbrauch, Balkendiagramme (Archive) | offen |
 | 0-7 | Kamera-Archiv: `<camarchiv title archid>` | umgesetzt (v0.6.2) |
 | 0-4 | Meldungsarchiv: `<archive reload="s"><msgarchiv title archid>` | umgesetzt (v0.6.3) |
