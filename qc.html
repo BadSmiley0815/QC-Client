@@ -36,6 +36,8 @@ button{font:inherit;color:inherit}
 .splay .meta{min-width:0;flex:1}.splay .meta b,.splay .meta div{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .splay .meta div{color:var(--muted);font-size:13px}
 .splay .st{font-size:12px;color:var(--muted)}.splay .st.err{color:var(--err)}
+.carch img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000;border-radius:10px}
+.chip.act{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
 .pval u{text-decoration:none;font-size:13px;color:var(--muted);font-weight:400;margin-left:3px}
 
 /* Anmeldung */
@@ -242,7 +244,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.6.1";
+const VERSION = "0.6.2";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -284,6 +286,7 @@ const P = {
   shuffle:'<path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/>', repeat:'<path d="M4 11V9a3 3 0 0 1 3-3h13M17 3l3 3-3 3M20 13v2a3 3 0 0 1-3 3H4M7 21l-3-3 3-3"/>',
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
   power:'<path d="M12 3v8M7 6.5a7 7 0 1 0 10 0"/>', group:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19a5 5 0 0 1 10 0M11 19a5 5 0 0 1 10 0"/>',
+  left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
   up:'<path d="M6 15l6-6 6 6"/>', down:'<path d="M6 9l6 6 6-6"/>', stop:'<rect x="7" y="7" width="10" height="10" rx="1.5"/>'
 };
 const svg = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${P[k] || P.info}</svg>`;
@@ -989,13 +992,22 @@ async function openPlugin(title, id) {
     if (!PLUG || PLUG.id !== id) return;
     PLUG.data = T.read(x); PLUG.tags = new Set(T.tags(PLUG.data).filter(k => k && k !== "0"));
     renderPlug();
+    if (T.load) { await T.load(PLUG.data); if (PLUG && PLUG.id === id) renderPlug(); }
   } catch (e) { $("pbody").innerHTML = `<p class="note">Plugin konnte nicht geladen werden: ${esc(e.message)}</p>`; log("··", "Plugin " + id + ": " + e.message); }
 }
 function renderPlug() { if (PLUG && PLUG.data) $("pbody").innerHTML = PLUGIN_TYPES[PLUG.cls].html(PLUG.data); }
 $("pbody").addEventListener("click", e => {
   const b = e.target.closest("[data-pa]"); if (!b || !PLUG || !PLUG.data || b.disabled) return;
-  const T = PLUGIN_TYPES[PLUG.cls]; if (T.act) T.act(PLUG.data, b);
+  const T = PLUGIN_TYPES[PLUG.cls], id = PLUG.id; if (!T.act) return;
+  Promise.resolve(T.act(PLUG.data, b)).then(() => { if (PLUG && PLUG.id === id) renderPlug(); })
+    .catch(err => log("··", "Plugin: " + err.message));
 });
+$("pbody").addEventListener("change", e => {
+  const b = e.target.closest("select[data-pa]"); if (!b || !PLUG || !PLUG.data) return;
+  const T = PLUGIN_TYPES[PLUG.cls], id = PLUG.id; if (!T.act) return;
+  Promise.resolve(T.act(PLUG.data, b)).then(() => { if (PLUG && PLUG.id === id) renderPlug(); });
+});
+const hsUrl = path => "https://" + cfg.host + path + "?" + sid;
 
 /* 1-2 Wertanzeige („Wetterstation“): Gruppen mit je 1–n Werten aus KOs */
 PLUGIN_TYPES["1-2"] = {
@@ -1058,6 +1070,54 @@ PLUGIN_TYPES["1-25"] = {
       case "rep": tog("coRepeat", "coRepeatRM"); break;
       case "grp": tog("coSlaveMode", "coSlaveModeRM"); break;
       case "power": tog("coPower", "coPowerRM"); break;
+    }
+  }
+};
+
+/* 0-7 Kamera-Archiv. Abruf wie das Original (CDownloadCamArchiv / buildCamArchPicUrl):
+   /quad/camarch/list/<archid>?<sid> -> <camarch><pic date="yyyyMMddHHmmss" id="…"/>…   Bild: /quad/camarch/pic/<archid>/<id>?<sid> */
+const camDate = d => /^\d{14}$/.test(d || "") ? new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8), +d.slice(8, 10), +d.slice(10, 12), +d.slice(12, 14)) : null;
+const camTxt = d => { const t = camDate(d); return t ? t.toLocaleString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : (d || "–"); };
+PLUGIN_TYPES["0-7"] = {
+  name: "Kamera-Archiv",
+  read: x => ({ cams: [...x.querySelectorAll("camarchiv")].map(c => ({ title: c.getAttribute("title") || "Kamera", arch: c.getAttribute("archid") })), cur: 0, pics: null, pos: 0, err: "" }),
+  tags: () => [],
+  load: async d => {
+    const c = d.cams[d.cur]; d.pics = null; d.err = ""; if (!c) return;
+    try {
+      const x = new DOMParser().parseFromString(await hsGet("/quad/camarch/list/" + c.arch), "text/xml");
+      d.pics = [...x.querySelectorAll("pic")].map(p => ({ date: p.getAttribute("date") || "", id: p.getAttribute("id") }))
+        .filter(p => p.id).sort((a, b) => b.date.localeCompare(a.date));                      // neuestes zuerst
+      d.pos = 0;
+    } catch (e) { d.err = e.message; d.pics = []; }
+  },
+  html: d => {
+    const c = d.cams[d.cur];
+    const tabs = d.cams.length > 1 ? `<div class="chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${d.cams.map((k, i) =>
+      `<button class="chip${i === d.cur ? " act" : ""}" data-pa="cam" data-i="${i}">${esc(k.title)}</button>`).join("")}</div>` : "";
+    if (!c) return '<p class="note">Kein Archiv eingerichtet.</p>';
+    if (!d.pics) return tabs + '<p class="note">Lade Bilderliste …</p>';
+    if (d.err) return tabs + `<p class="note">Bilderliste konnte nicht geladen werden: ${esc(d.err)}</p>`;
+    if (!d.pics.length) return tabs + '<p class="note">Keine Bilder im Archiv.</p>';
+    const p = d.pics[d.pos];
+    return tabs + `<div class="carch"><img src="${esc(hsUrl("/quad/camarch/pic/" + c.arch + "/" + p.id))}" alt="${esc(c.title + " " + camTxt(p.date))}">
+      <div class="btns" style="margin-top:10px">
+        <button data-pa="first" title="Neuestes Bild" ${d.pos === 0 ? "disabled" : ""}>${svg("prev")}</button>
+        <button data-pa="newer" title="Neuer" ${d.pos === 0 ? "disabled" : ""}>${svg("left")}</button>
+        <select data-pa="pick" style="flex:3;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;padding:6px">${d.pics.map((q, i) =>
+          `<option value="${i}" ${i === d.pos ? "selected" : ""}>${esc(camTxt(q.date))}</option>`).join("")}</select>
+        <button data-pa="older" title="Älter" ${d.pos >= d.pics.length - 1 ? "disabled" : ""}>${svg("right")}</button>
+        <button data-pa="reload" title="Liste neu laden">${svg("repeat")}</button></div>
+      <p class="note" style="margin:8px 0 0">Bild ${d.pos + 1} von ${d.pics.length}</p></div>`;
+  },
+  act: async (d, b) => {
+    switch (b.dataset.pa) {
+      case "cam": d.cur = +b.dataset.i; d.pics = null; renderPlug(); await PLUGIN_TYPES["0-7"].load(d); break;
+      case "first": d.pos = 0; break;
+      case "newer": d.pos = Math.max(0, d.pos - 1); break;
+      case "older": d.pos = Math.min(d.pics.length - 1, d.pos + 1); break;
+      case "pick": d.pos = +b.value; break;
+      case "reload": d.pics = null; renderPlug(); await PLUGIN_TYPES["0-7"].load(d); break;
     }
   }
 };

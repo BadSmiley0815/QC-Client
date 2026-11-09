@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0, camFetch = false, s;
+let fails = 0, camFetch = false, s, picFetch = [];
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -15,8 +15,11 @@ async function start(b, user, extra = []) {
     if (n === "qc.html") return r.fulfill({ status: 200, contentType: "text/html", body: T("../qc.html") });
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
     if (n === "0-2_901.xml") camFetch = true;
+    if (u.includes("/quad/camarch/list/71?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="3"><pic date="20261108101500" id="5"/><pic date="20261109183012" id="7"/><pic date="20261109090000" id="6"/></camarch>' });
+    if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
+    if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml" }[n];
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
     let body = f ? T(f).toString() : ""; if (n === "client_project.xml") body = body.replace("https://example.org/", "https://hs.test/seite.html");
@@ -78,6 +81,16 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   for (const [a, exp] of sonos) { await pg.click(`#pbody [data-pa="${a}"]`); s = await sent(pg); ok(a + " sendet " + exp, s[0] === exp, JSON.stringify(s)); }
   await pg.evaluate(() => WSI.onmessage({ data: "1|9110|1.0|0" })); await pg.waitForTimeout(50);
   await pg.click('#pbody [data-pa="play"]'); s = await sent(pg); ok("spielt → Knopf sendet Pause", s[0] === "1|9102|1", JSON.stringify(s));
+  await pg.click("#pclose");
+  console.log("Plugin Kamera-Archiv (0-7)");
+  await pg.click('#grid .mcard:has-text("Klingelbilder")'); await pg.waitForTimeout(400);
+  ok("neuestes Bild zuerst", picFetch.at(-1) === "71/7", JSON.stringify(picFetch));
+  ok("Zeitstempel lesbar", (await pg.textContent('#pbody select option:checked')).includes("09.11.2026") && (await pg.textContent('#pbody select option:checked')).includes("18:30:12"));
+  await pg.click('#pbody [data-pa="older"]'); await pg.waitForTimeout(200); ok("älter → Bild 6", picFetch.at(-1) === "71/6", JSON.stringify(picFetch));
+  ok("Bild 2 von 3", (await pg.textContent("#pbody")).includes("Bild 2 von 3"));
+  await pg.selectOption('#pbody select[data-pa="pick"]', "2"); await pg.waitForTimeout(200); ok("Auswahl → ältestes Bild 5", picFetch.at(-1) === "71/5");
+  await pg.click('#pbody [data-pa="cam"][data-i="1"]'); await pg.waitForTimeout(300);
+  ok("zweite Kamera: leeres Archiv", (await pg.textContent("#pbody")).includes("Keine Bilder"));
   await pg.click("#pclose");
 
   console.log("Taster (1-118, Mitschnitt flows3/flows4)");

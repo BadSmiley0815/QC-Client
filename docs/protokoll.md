@@ -124,7 +124,8 @@ Startwerten (`2|ko|wert|x`) – ein Plugin braucht keine eigene Anmeldung am Dat
 | 1-25 | Sonos / Universal-Player: `<item>` mit `co…`-KOs | umgesetzt (v0.6.1), siehe unten |
 | 0-2 | Kamera: Bild-URLs **mit Zugangsdaten im Klartext** | offen – Datei wird vom Client nicht abgerufen |
 | 0-3, 1-4, 1-16 | Diagramme (Archiv-IDs) | offen – Protokoll für Archivdaten fehlt |
-| 0-4, 0-7 | Meldungs-/Kamera-Archiv | offen – Protokoll fehlt |
+| 0-7 | Kamera-Archiv: `<camarchiv title archid>` | umgesetzt (v0.6.2) |
+| 0-4 | Meldungsarchiv | Abruf bekannt (siehe Archive), noch nicht umgesetzt |
 | 1-3 | Wetter (Gira-Dienst) | offen |
 
 ### Sonos (1-25) – Sendewerte
@@ -152,7 +153,7 @@ Abruf im Client noch nicht umgesetzt):
 |---|---|
 | `/quad/arch/<Archiv-ID>/<Start JJMMTTHHmm>/<Blockgröße>/<Blockanzahl>/<Genauigkeit>?<sid>` | `<row count sum min max>` je Block (Zahlen mit Punkt) |
 | `/quad/msg/<Archiv-ID>/<Zahl>?<sid>` | `<msgarch><msg date text>…` |
-| `/quad/camarch/list/<Archiv-ID>?<sid>` | `<camarch><pic date id>…` |
+| `/quad/camarch/list/<Archiv-ID>?<sid>` | `<camarch><pic date="JJJJMMTTHHmmss" id>…` (im Client umgesetzt) |
 | `/quad/camarch/pic/<Archiv-ID>/<Bild-ID>?<sid>` | Bild |
 
 Archiv-IDs stehen in den Plugin-Einstellungen (z. B. `archiv_day id=…`, `camarchiv archid=…`).
