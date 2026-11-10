@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0, camPics = 0, s, picFetch = [], archFetch = [];
+let fails = 0, camPics = 0, proxyPics = [], s, picFetch = [], archFetch = [];
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -15,6 +15,8 @@ async function start(b, user, extra = []) {
     if (n === "qc.html") return r.fulfill({ status: 200, contentType: "text/html", body: T("../qc.html") });
     if (n === "seite.html") return r.fulfill({ status: 200, contentType: "text/html", body: '<body style="margin:0"><div style="position:absolute;top:300px;height:200px;width:200px">fest positioniert</div></body>' });
     if (u.includes("/quad/camarch/list/71?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="3"><pic date="20261108101500" id="5"/><pic date="20261109183012" id="7"/><pic date="20261109090000" id="6"/></camarch>' });
+    if (u.includes("/kamera/list?")) return r.fulfill({ status: u.includes("k=K1") ? 200 : 401, contentType: "application/json", body: '{"version":"0.3","cams":["garten","hof"]}' });
+    if (u.includes("/kamera/garten.")) { proxyPics.push(u.split("/kamera/")[1]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     if (u.includes("/endpoints/call?key=CP@CAM")) { camPics++; return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     if (u.includes("/quad/arch/")) { const q = u.split("/quad/arch/")[1].split("?")[0].split("/"); archFetch.push(q);
       const n = +q[3], rows = []; for (let i = 0; i < n; i++) rows.push(i === 5 ? '<row count="0" sum="0" min="0" max="0"/>' : `<row count="2" sum="${40 + i % 10}" min="${i % 7}" max="${50 + i % 20}"/>`);
@@ -97,6 +99,20 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   await pg.click('#pbody [data-pa="cmd"]'); s = await sent(pg); ok("Licht-Knopf (toggle) sendet 1", s[0] === "1|9401|1", JSON.stringify(s));
   await pg.click('#pbody [data-pa="cmd"]'); s = await sent(pg); ok("nochmal → 0", s[0] === "1|9401|0", JSON.stringify(s));
   await pg.click("#pclose");
+  console.log("Kamera-Proxy (Baustein 14783)");
+  await pg.click("#cpbtn"); ok("Einstellung vorbelegt mit https://<HS>/kamera/", (await pg.inputValue("#cpurl")) === "https://hs.test/kamera/");
+  await pg.fill("#cpkey", "falsch"); await pg.click("#cpok"); await pg.waitForTimeout(300);
+  ok("falscher Schlüssel wird gemeldet", (await pg.textContent("#cperr")).includes("Schlüssel falsch") && await pg.isVisible("#cpdlg"));
+  await pg.fill("#cpkey", "K1"); await pg.click("#cpok"); await pg.waitForTimeout(300);
+  ok("gespeichert, Navigation zeigt „eingerichtet“", !(await pg.isVisible("#cpdlg")) && (await pg.textContent("#cpbtn")).includes("eingerichtet"));
+  await pg.click('#grid .mcard:has-text("Kamera")'); await pg.waitForTimeout(600);
+  ok("Kamera „Garten“ läuft über den Proxy (kein Hinweis mehr)", proxyPics.some(x => x.startsWith("garten.jpg?k=K1")) && (await pg.locator("#pbody .cerr").count()) === 0, JSON.stringify(proxyPics));
+  ok("Kamera ohne Proxy-Namen bleibt am Endpunkt", await pg.evaluate(() => document.querySelector('#pbody img[data-cam="0"]').src.includes("endpoints/call")));
+  await pg.click('#pbody [data-pa="sel"][data-i="1"]'); await pg.waitForTimeout(300);
+  ok("Einzelansicht: Live-Strom (MJPEG) über den Proxy", proxyPics.some(x => x.startsWith("garten.mjpg?k=K1")) && await pg.evaluate(() => document.querySelector('#pbody img[data-cam="1"]').dataset.live === "1"));
+  ok("Schlüssel nicht im Log", !(await pg.textContent("#log")).includes("K1"));
+  await pg.click("#pclose");
+  await pg.click("#cpbtn"); await pg.click("#cpdel"); ok("Proxy entfernen", (await pg.textContent("#cpbtn")).includes("aus"));
   console.log("Plugin Sonos (1-25, Sendewerte aus dem Original-Plugin)");
   await pg.click('#grid .mcard:has-text("Musik")'); await pg.waitForTimeout(300);
   ok("Titel und Interpret", (await pg.textContent("#pbody")).includes("Testlied") && (await pg.textContent("#pbody")).includes("Testband"));

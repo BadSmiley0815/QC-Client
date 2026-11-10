@@ -199,7 +199,9 @@ einer https-Seite, selbst signierte Kamera-Zertifikate müssen einmal bestätigt
 Zuverlässig ist ein Bild, das **über den HS** kommt (z. B. KO-Gateway-Endpunkt `get_picture_raw`) –
 die Anmeldung an der Kamera übernimmt dann der HS. Solche Bilder lädt der Client in der Einzelansicht
 fast live nach (nächstes Bild nach dem Laden des vorigen, höchstens `CAM_FPS` = 5 pro Sekunde).
-RTSP kann kein Browser abspielen; ein echter Videostrom bräuchte einen Weiterleiter (geplant: HSL-Baustein „Kamera-Proxy“).
+RTSP kann kein Browser abspielen. Für Kameras mit Anmeldung gibt es den Logikbaustein 14783 „Kamera-Proxy“
+([HS-Logikbausteine](https://github.com/BadSmiley0815/HS-Logikbausteine)): `https://<HS>/kamera/<name>.jpg|.mjpg?k=<Schlüssel>`,
+`…/list?k=` liefert die Namen. Der Client ordnet Plugin-Kameras über den Namen zu (klein, ä→ae, nur Buchstaben/Ziffern).
 Knöpfe: `op="set"` sendet `value`, `op="toggle"` sendet 0, wenn das KO ≠ 0 ist, sonst `value`.
 
 ## Symbole
