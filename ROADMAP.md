@@ -18,7 +18,7 @@ Stand: v0.9.3 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [x] Sonos (v0.6.1)
   - [x] Kamera live (v0.7.2) – Bilder über den HS (KO-Gateway-Endpunkt) oder Kameras ohne Anmeldung per https; Digest/http nur eingeschränkt
     - [x] Endpunkt-Kameras fast live, bis 5 Bilder/s (v0.9.2)
-    - [x] Kamera-Proxy über Logikbaustein 14783 (v0.9.3, am HS bestätigt: 3 Axis-Kameras, Standbild + MJPEG-Strom)
+    - [x] Kamera-Proxy über Logikbaustein 14783 (v0.9.3; Baustein am HS bestätigt: 3 Axis-Kameras, Standbild + MJPEG-Strom)
   - [x] Kamera-Archiv (v0.6.2, am HS bestätigt)
   - [x] Meldungsarchiv (v0.6.3)
   - [x] Diagramme (v0.7.0, am HS bestätigt)
