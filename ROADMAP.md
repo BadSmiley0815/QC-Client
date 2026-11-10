@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -17,6 +17,8 @@ Stand: v0.9.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [x] Wertanzeige (v0.6.0, am HS bestätigt)
   - [x] Sonos (v0.6.1)
   - [x] Kamera live (v0.7.2) – Bilder über den HS (KO-Gateway-Endpunkt) oder Kameras ohne Anmeldung per https; Digest/http nur eingeschränkt
+    - [x] Endpunkt-Kameras fast live, bis 5 Bilder/s (v0.9.2)
+    - [ ] Stufe 2: HSL-Baustein „Kamera-Proxy“ – MJPEG-Strom der Kamera mit Digest-Anmeldung über https durchreichen
   - [x] Kamera-Archiv (v0.6.2, am HS bestätigt)
   - [x] Meldungsarchiv (v0.6.3)
   - [x] Diagramme (v0.7.0, am HS bestätigt)
@@ -27,6 +29,7 @@ Stand: v0.9.1 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [x] Symbole aus der QC-Visu (v0.8.0)
+- [ ] Eigene Symbole in Funktionsvorlagen: `tools/hsm-build.py` + Testvorlage 99-3 – Test am HS offen
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil
   - [x] Plugins in den Quadranten im Original-Stil (Diagramm, Sonos, Kamera – v0.9.1)

@@ -81,7 +81,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <header class="hero">
   <div>
     <div class="kicker"><i></i> QC-Client · qc.html</div>
-    <h1>Der QuadClient im Browser – Version 0.9.1</h1>
+    <h1>Der QuadClient im Browser – Version 0.9.2</h1>
     <p class="lead">Eigener HTML5-Client für den Gira HomeServer. Er lädt die vorhandene QC-Visu, nutzt die QC-Benutzerrechte und läuft auf jedem Gerät mit Browser – ohne App, ohne Zusatzdateien.</p>
     <div class="pills">
       <span class="pill">Aufruf: <b>https://&lt;HS-IP&gt;/opt/hs-client/qc.html</b></span>
@@ -144,6 +144,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <h2>Änderungen</h2>
 <p class="sub">Neueste Version oben. <span class="tag t-neu">neu</span> <span class="tag t-fix">korrigiert</span> <span class="tag t-offen">noch offen</span></p>
 <div class="tl">
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.2</span>Kamera über den HS fast live</h3><ul><li><span class="tag t-neu">neu</span> Kameras, deren Bild über einen Endpunkt des HomeServers kommt, laufen in der Einzelansicht fast live: nächstes Bild, sobald das vorige da ist (höchstens 5 Bilder pro Sekunde), mit Anzeige der Bilder pro Sekunde.</li><li><span class="tag t-fix">korrigiert</span> Knopf „Kamera einmal öffnen und anmelden“ entfernt – die doppelte Anmeldung hat nicht zuverlässig funktioniert. Der Hinweis nennt jetzt den Weg über einen HS-Endpunkt.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.1</span>Plugins im Original-Stil</h3><ul><li><span class="tag t-neu">neu</span> In der Ansicht „Klassisch“ sehen Diagramm (eine Grafik, zwei Achsen, Rot/Grün/Blau, Pfeilmarken, Zeitraum mit ◀ ▶), Sonos (Cover, Knopfreihe, Lautstärke) und Kameras (◀ Name ▶, Übersicht) aus wie im Windows-QuadClient.</li></ul></div></div>
 <div class="rel"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.0</span>Ansicht „Klassisch“</h3><ul><li><span class="tag t-neu">neu</span> Zweite Ansicht wie der Windows-QuadClient: Kopfzeile mit Datum, Uhrzeit, Außen-/Innentemperatur, Menü in drei Spalten mit Zählern, zwei Plugin-Quadranten mit Reitern, Leiste Menü/Favoriten/System. Umschaltbar, skaliert aufs Fenster.</li><li><span class="tag t-neu">neu</span> Raumzeilen werden aus den Vorlagen des HomeServers gezeichnet und bedient – genau wie im Original, auch eigene Funktionsvorlagen.</li><li><span class="tag t-offen">noch offen</span> Popups der Vorlagen (öffnen vorerst die moderne Kachel), Plugins im Original-Stil.</li></ul></div></div>
 <div class="rel"><span class="dot"></span><div class="card"><h3><span class="ver">v0.8.0</span>Originale Symbole</h3><ul><li><span class="tag t-neu">neu</span> Menü, Räume und Elemente zeigen die Symbole aus der QC-Visu. Der Client holt sie vom eigenen HomeServer, wandelt sie im Browser in Vektorgrafik um und merkt sie sich – passend zu Hell und Dunkel.</li><li><span class="tag t-neu">neu</span> Fehlt ein Symbol oder ist es nicht umwandelbar, bleibt das eigene Ersatzsymbol.</li></ul></div></div>

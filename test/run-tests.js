@@ -90,6 +90,10 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("Kamera-Passwort nirgends auf der Seite", !html.includes("GeheimesKameraPasswort") && !logTxt.includes("GeheimesKameraPasswort"));
   ok("Kamera-Adressen nicht im Log", !logTxt.includes("endpoints/call") && !logTxt.includes("10.9.9.9"));
   await pg.click('#pbody [data-pa="sel"][data-i="0"]'); await pg.waitForTimeout(200);
+  { const c0 = camPics; await pg.waitForTimeout(1200); const n = camPics - c0;
+    ok("Endpunkt-Kamera in der Einzelansicht fast live (3–8 Bilder in 1,2 s)", n >= 3 && n <= 8, String(n));
+    ok("Anzeige Bilder/s", /Bilder\/s/.test(await pg.textContent("#pbody .camfps")));
+    ok("kein Knopf „einmal anmelden“ mehr", !(await pg.textContent("#pbody")).includes("einmal öffnen")); }
   await pg.click('#pbody [data-pa="cmd"]'); s = await sent(pg); ok("Licht-Knopf (toggle) sendet 1", s[0] === "1|9401|1", JSON.stringify(s));
   await pg.click('#pbody [data-pa="cmd"]'); s = await sent(pg); ok("nochmal → 0", s[0] === "1|9401|0", JSON.stringify(s));
   await pg.click("#pclose");

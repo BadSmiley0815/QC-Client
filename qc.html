@@ -133,6 +133,7 @@ button{font:inherit;color:inherit}
 .cerr{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:center;padding:12px;min-height:120px;height:100%;background:var(--bg);color:var(--ink);border:1px dashed var(--line);border-radius:10px;font-size:13px;text-align:left}
 .cerr span{color:var(--muted)}
 .camtile .cerr{min-height:0;height:100%;overflow:auto}.camtile .cerr b{display:none}
+.carch{position:relative}.camfps{position:absolute;right:8px;top:8px;font-size:12px;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}
 .carch img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000;border-radius:10px}
 .chip svg{width:16px;height:16px;vertical-align:middle;display:inline-block}
 .chip.act{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
@@ -353,7 +354,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.1";
+const VERSION = "0.9.2";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1593,7 +1594,9 @@ hoverHooks($("pbody"));
    Im Browser klappt das nur, wenn die Kamera ohne Anmeldung per https erreichbar ist oder das Bild über den HS kommt
    (z. B. KO-Gateway-Endpunkt). Zugangsdaten (usr/pwd) werden nicht übernommen; Adressen werden nie angezeigt oder geloggt.
    Mehrfachansicht: url-jpg alle refreshrate-multiview ms · Einzelansicht: MJPEG-Strom (codec MJPEG) bzw. url-jpg alle refreshrate-fullscreen ms
-   <cmd text tag op value>: op „set“ = Wert senden, „toggle“ = aktuell ≠ 0 -> 0, sonst Wert */
+   <cmd text tag op value>: op „set“ = Wert senden, „toggle“ = aktuell ≠ 0 -> 0, sonst Wert
+   Bilder vom HS selbst (Endpunkt): in der Einzelansicht fast live – nächstes Bild, sobald das vorige da ist (höchstens CAM_FPS/s). */
+const CAM_FPS = 5;
 const camSrc = (u, bust) => u ? u + (bust ? (u.includes("?") ? "&" : "?") + "_t=" + Date.now() : "") : "";
 const camLocal = u => { try { const x = new URL(u, location.href); return x.hostname === cfg.host && x.protocol === "https:"; } catch (e) { return false; } };
 PLUGIN_TYPES["0-2"] = {
@@ -1608,20 +1611,23 @@ PLUGIN_TYPES["0-2"] = {
   load: async d => {
     const tick = () => { const H = hostOfData(d); if (!H) return;
       H.body.querySelectorAll("img[data-cam]").forEach(im => { const c = d.cams[+im.dataset.cam], live = im.dataset.live === "1";
-        if (!live && im.complete) im.src = camSrc(c.jpg, true); });
+        if (!live && im.dataset.fast !== "1" && im.complete) im.src = camSrc(c.jpg, true); });
       d.timer = setTimeout(tick, d.sel === null ? Math.min(...d.cams.map(c => c.rm || 10000), 10000) : Math.max(250, d.cams[d.sel].rf || 1000)); };
     clearTimeout(d.timer); d.timer = setTimeout(tick, 1000);
   },
   html: d => {
-    const hint = c => c.jpg.startsWith("http:") && location.protocol === "https:" ? "Kamera nur per http erreichbar – der Browser blockiert das auf der https-Seite."
-      : c.auth !== "None" && !camLocal(c.jpg) ? "Kamera verlangt eine Anmeldung (" + c.auth + ") – im Browser nur nach einmaliger Anmeldung direkt an der Kamera." : "Bild nicht erreichbar.";
+    const viaHs = " Abhilfe: das Bild über einen Endpunkt des HomeServers einbinden – dann meldet sich der HS an der Kamera an.";
+    const hint = c => c.jpg.startsWith("http:") && location.protocol === "https:" ? "Kamera nur per http erreichbar – der Browser blockiert das auf der https-Seite." + viaHs
+      : c.auth !== "None" && !camLocal(c.jpg) ? "Kamera verlangt eine Anmeldung (" + c.auth + ") – die kann der Browser bei Kamerabildern nicht selbst erledigen." + viaHs : "Bild nicht erreichbar.";
     const btns = c => c.cmds.length ? `<div class="btns" style="margin-top:8px">${c.cmds.map((m, j) => `<button data-pa="cmd" data-j="${j}" class="${num(m.tag) ? "act" : ""}">${esc(m.text || "Schalten")}</button>`).join("")}</div>` : "";
-    const img = (c, i, live) => d.bad[i] ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(hint(c))}</span>${!camLocal(c.jpg) && /^https:/.test(c.jpg) ? `<button class="chip" data-pa="login" data-i="${i}">Kamera einmal öffnen und anmelden</button>` : ""}<button class="chip" data-pa="retry" data-i="${i}">Erneut versuchen</button></div>`
-      : `<img data-cam="${i}" data-live="${live ? 1 : 0}" src="${esc(live ? camSrc(c.mjpg, false) : camSrc(c.jpg, true))}" alt="${esc(c.title)}" referrerpolicy="no-referrer">`;
+    const fast = (c, live) => !live && d.sel !== null && camLocal(c.jpg);
+    const img = (c, i, live) => d.bad[i] ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(hint(c))}</span><button class="chip" data-pa="retry" data-i="${i}">Erneut versuchen</button></div>`
+      : `<img data-cam="${i}" data-live="${live ? 1 : 0}" data-fast="${fast(c, live) ? 1 : 0}" src="${esc(live ? camSrc(c.mjpg, false) : camSrc(c.jpg, true))}" alt="${esc(c.title)}" referrerpolicy="no-referrer">`;
+    const fps = (c, live) => fast(c, live) ? `<div class="camfps" data-fps="${d.sel}">${d.fps ? esc(d.fps) : "…"} Bilder/s</div>` : "";
     if (d.sel === null) return `<div class="camgrid">${d.cams.map((c, i) => `<div class="camtile">${d.bad[i] ? `<div class="camimg" style="cursor:default;background:none">${img(c, i, false)}</div>` : `<button data-pa="sel" data-i="${i}" class="camimg">${img(c, i, false)}</button>`}<div class="camcap">${esc(c.title)}</div></div>`).join("")}</div>`;
     const c = d.cams[d.sel], live = c.codec === "MJPEG" && !!c.mjpg && c.mjpg.startsWith("https:") && c.jpg.startsWith("https:");
     return `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><button class="chip" data-pa="all">${svg("left")} Alle Kameras</button><b>${esc(c.title)}</b></div>
-      <div class="carch">${img(c, d.sel, live)}</div>${btns(c)}`;
+      <div class="carch">${img(c, d.sel, live)}${fps(c, live)}</div>${btns(c)}`;
   },
   /* Original-Stil: ◀ ▦ Name ▶, Bild über die ganze Breite; ▦ = alle Kameras */
   htmlClassic: d => {
@@ -1635,11 +1641,10 @@ PLUGIN_TYPES["0-2"] = {
   act: async (d, b) => {
     const i = +b.dataset.i;
     switch (b.dataset.pa) {
-      case "csel": d.sel = Math.max(0, Math.min(d.cams.length - 1, (d.sel === null ? -1 : d.sel) + +b.dataset.d)); break;
-      case "sel": d.sel = i; break;
+      case "csel": d.sel = Math.max(0, Math.min(d.cams.length - 1, (d.sel === null ? -1 : d.sel) + +b.dataset.d)); d.fps = null; break;
+      case "sel": d.sel = i; d.fps = null; break;
       case "all": d.sel = null; break;
       case "retry": delete d.bad[i]; break;
-      case "login": window.open(d.cams[i].jpg, "_blank", "noopener"); delete d.bad[i]; break;
       case "cmd": { const m = d.cams[d.sel].cmds[+b.dataset.j]; if (!m || !m.tag) break;
         send(m.tag, m.op === "toggle" ? (num(m.tag) ? 0 : m.value) : m.value); break; }
     }
@@ -1649,6 +1654,16 @@ document.addEventListener("error", e => {                       // Kamerabild ni
   const im = e.target; if (!(im instanceof HTMLImageElement) || !im.dataset.cam) return;
   const H = hostOfEl(im); if (!H || !H.plug || H.plug.cls !== "0-2" || !H.plug.data) return;
   H.plug.data.bad[+im.dataset.cam] = true; renderHost(H);
+}, true);
+document.addEventListener("load", e => {                        // Endpunkt-Kamera: nächstes Bild, sobald das vorige da ist
+  const im = e.target; if (!(im instanceof HTMLImageElement) || im.dataset.fast !== "1") return;
+  const H = hostOfEl(im); if (!H || !H.plug || H.plug.cls !== "0-2" || !H.plug.data) return;
+  const d = H.plug.data, c = d.cams[+im.dataset.cam], now = Date.now(); if (!c) return;
+  d.frames = (d.frames || []).filter(t => now - t < 3000); d.frames.push(now);
+  if (d.frames.length > 1) { d.fps = ((d.frames.length - 1) / ((now - d.frames[0]) / 1000)).toLocaleString("de-DE", { maximumFractionDigits: 1 });
+    const f = H.body.querySelector(".camfps"); if (f) f.textContent = d.fps + " Bilder/s"; }
+  const wait = Math.max(0, 1000 / CAM_FPS - (now - (d.req || 0)));          // Abstand ab Beginn der letzten Anfrage
+  clearTimeout(d.fast); d.fast = setTimeout(() => { if (im.isConnected) { d.req = Date.now(); im.src = camSrc(c.jpg, true); } }, wait);
 }, true);
 
 /* 0-4 Meldungsarchiv. Abruf wie das Original (CMsgArchiv.checkReload / CDownloadMsgArchiv):

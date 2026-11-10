@@ -196,7 +196,10 @@ alles andere (auch „Maximum“) = max. Statistik: Min, Max, Mittel der Balken.
 Das Original holt Bilder direkt von der Kamera (eigene HTTP-Anfragen mit Digest-Anmeldung).
 Ein Browser kann das nicht nachbauen: keine fremden Zugangsdaten für Bilder, kein http auf
 einer https-Seite, selbst signierte Kamera-Zertifikate müssen einmal bestätigt werden.
-Zuverlässig ist ein Bild, das **über den HS** kommt (z. B. KO-Gateway-Endpunkt `get_picture_raw`).
+Zuverlässig ist ein Bild, das **über den HS** kommt (z. B. KO-Gateway-Endpunkt `get_picture_raw`) –
+die Anmeldung an der Kamera übernimmt dann der HS. Solche Bilder lädt der Client in der Einzelansicht
+fast live nach (nächstes Bild nach dem Laden des vorigen, höchstens `CAM_FPS` = 5 pro Sekunde).
+RTSP kann kein Browser abspielen; ein echter Videostrom bräuchte einen Weiterleiter (geplant: HSL-Baustein „Kamera-Proxy“).
 Knöpfe: `op="set"` sendet `value`, `op="toggle"` sendet 0, wenn das KO ≠ 0 ist, sonst `value`.
 
 ## Symbole
