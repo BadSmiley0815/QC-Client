@@ -366,7 +366,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.3";
+const VERSION = "0.9.4";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -520,6 +520,14 @@ async function loadIcons(extra) {
   try {
     const r = await fetch("https://" + cfg.host + "/quad/client/design_0/client_icons.xaml.zip?" + sid); if (!r.ok) throw new Error("HTTP " + r.status);
     const files = await unzipPick(await r.arrayBuffer(), want), m = (cache && cache.p === projId && cache.m) || {};
+    /* Importierte Symbolpakete (.hsm, z. B. eigene Symbole von Funktionsvorlagen) legt der HS als „public“ ab –
+       der Windows-QC lädt sie aus /quad/public/design_0/public_icons.xaml.zip */
+    const rest = new Set([...want].filter(k => !files.has(k) && !m[k]));
+    if (rest.size) try {
+      const r2 = await fetch("https://" + cfg.host + "/quad/public/design_0/public_icons.xaml.zip?" + sid);
+      if (r2.ok) { const f2 = await unzipPick(await r2.arrayBuffer(), rest); f2.forEach((v, k) => files.set(k, v)); for (const k of f2.keys()) delete m[k];
+        if (f2.size) log("··", "Symbole: " + f2.size + " aus importierten Symbolpaketen"); }
+    } catch (e) {}
     for (const k of want) { if (k in m) continue; const t = files.get(k); const v = t ? xamlToSvg(t) : null; m[k] = v || ""; if (v) QCI.set(k, v); }
     store.set(ck, { p: projId, m }); store.del("icons." + cfg.host); store.del("icons2." + cfg.host);
     log("··", "Symbole: " + [...want].filter(k => m[k]).length + " von " + want.size + " aus der QC-Visu");

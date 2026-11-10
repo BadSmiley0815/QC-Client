@@ -227,3 +227,11 @@ Der Windows-QuadClient zeichnet jede Funktionszeile aus `design_4/client_templat
 - Werte in der Visu wie `False`/`True` gelten als 0/1.
 
 Der Client setzt diese Sprache direkt um; Popups öffnen vorerst die moderne Kachel der Funktion.
+
+## Importierte Symbolpakete (eigene Symbole)
+
+Eigene Funktionsvorlagen bringen ihre Symbole als Symbolpaket `<ID>.hsm` in der `.hst` mit (Aufbau wie Giras 5-13,
+Werkzeug `tools/hsm-build.py`). Der Experte übernimmt das Paket beim Import der Vorlage (am HS bestätigt mit 99-3, Windows-QC).
+Der Windows-QC lädt solche Symbole aus dem „public“-Bereich: `/quad/public/design_0/public_icons.xaml.zip` und
+`w.public_icons.xaml.zip`, für andere Designs `/quad/public/design_<n>/public_icons.zip`, dazu `public_design.xml`
+und `public/public_language.xml`. Der QC-Client sucht fehlende Symbole zusätzlich im `public_icons.xaml.zip`.

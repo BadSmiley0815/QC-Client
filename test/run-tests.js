@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
-let fails = 0, camPics = 0, proxyPics = [], s, picFetch = [], archFetch = [];
+let fails = 0, camPics = 0, proxyPics = [], publicHits = 0, s, picFetch = [], archFetch = [];
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
 async function start(b, user, extra = []) {
@@ -27,6 +27,7 @@ async function start(b, user, extra = []) {
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
       "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
+    if (u.includes("/quad/public/design_0/public_icons.xaml.zip")) { publicHits++; return r.fulfill({ status: 404, body: "" }); }
     if (n === "client_icons.xaml.zip") return r.fulfill({ status: u.includes("/quad/client/design_0/") ? 200 : 404, contentType: "application/zip", body: T("demo_icons.xaml.zip") });
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
@@ -67,6 +68,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   console.log("Symbole aus der QC-Visu");
   ok("XAML-Symbol im Menü (ZIP64 wie vom HS)", await pg.locator('#grid .mcard:has-text("Wohnen") svg.qci').count() === 1);
   ok("helle Grautöne folgen dem Farbschema, Farben bleiben", await pg.evaluate(() => { const h = document.querySelector("#grid svg.qci").innerHTML; return h.includes('fill="currentColor"') && h.includes("#DC3C3C"); }));
+  ok("fehlende Symbole werden auch in importierten Symbolpaketen (public) gesucht", publicHits >= 1, String(publicHits));
   ok("ohne passendes Symbol: eigenes Ersatzsymbol", await pg.locator('#grid .mcard:has-text("Küche") svg.qci').count() === 0 && await pg.locator('#grid .mcard:has-text("Küche") .ic svg').count() === 1);
   console.log("Menü");
   ok("Startseite ist das Menü", (await pg.textContent("#title")) === "Menü");
