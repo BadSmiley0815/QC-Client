@@ -26,6 +26,9 @@ Stand: v0.9.2 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
   - [ ] Energieverbrauch (1-4) – zurückgestellt. Im Original ein Kostenrechner (Tarif, Abschlag, Prognose),
         der Einstellungen auf den HS zurückschreibt. Erster Schritt: reine Verbrauchsansicht mit Vorjahresvergleich, ohne Schreiben.
   - [ ] Sprechanlage
+    - [ ] SIP-Client für das Gira TKS (Türkommunikation im Browser: Klingeln, Sprechen, Türöffner, Bild)
+    - [ ] Türkommunikations-Client für Gira (wie der Gira TKS-Client unter Windows)
+    - [ ] Gira System 106 (Türstation) einbinden
   - [ ] Wetter
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [x] Symbole aus der QC-Visu (v0.8.0)
