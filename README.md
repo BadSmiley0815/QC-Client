@@ -30,6 +30,23 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
 - Zwei Ansichten: „Modern“ und „Klassisch“ (wie der Windows-QuadClient, Zeilen aus den Vorlagen des HS)
 - Neustart-Erkennung, automatisches Wiederverbinden mit „Jetzt verbinden“, Hell/Dunkel, Handy-tauglich
 
+## Beispielbilder
+
+Aufgenommen mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage
+(neu erzeugen: `node test/screenshots.js`).
+
+**Ansicht „Modern“** – Raum mit Heizung, Licht, Rollladen, Dimmer und Szenen
+
+![Ansicht Modern](docs/img/modern.png)
+
+**Plugins** – hier „Diagramm“ mit Temperatur und Feuchte aus den HS-Archiven
+
+![Plugin Diagramm](docs/img/plugins.png)
+
+**Ansicht „Klassisch“** – wie der Windows-QuadClient: Zeilen links, Plugins in den Quadranten rechts
+
+![Ansicht Klassisch](docs/img/klassisch.png)
+
 Alle Details: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
 
 ## Installation auf dem HomeServer
@@ -60,6 +77,8 @@ node test/run-tests.js
 - `qc_test.py` – Anmeldung testen, Visu laden, Live-Werte anzeigen
 - `qc_probe.py` – prüft, welche Anmeldeart der HS akzeptiert
 - `qc2json.py` – wandelt eine `client_project.xml` in eine schlanke JSON-Datei
+- `hsm-build.py` – baut aus eigenen SVG-Symbolen ein Symbolpaket (`.hsm`) für Funktionsvorlagen
+  und packt es in die `.hst` (Aufbau wie bei Giras eigenen Vorlagen; braucht `rsvg-convert`)
 
 ## Lizenz
 
