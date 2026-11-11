@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.6 – Klare Meldung bei falschem Passwort
+- **Behoben:** Bei falschem Benutzer oder Passwort blieb die Anmeldung auf „Verbinde …“ stehen, weil der HomeServer die Verbindung ohne Antwort offen lässt. Jetzt bricht der Client nach 10 Sekunden ab und meldet „Benutzername oder Passwort falsch?“.
+
 ## 0.9.5 – 2026-11-11 – Seitenleiste ausblendbar, Webseiten in voller Höhe
 - **Neu:** Mit ☰ oben links lässt sich die Seitenleiste auch am großen Bildschirm aus- und einblenden; der Client merkt sich die Einstellung.
 - **Behoben:** Webseiten aus dem Menü (Typ Webseite) sind mindestens so hoch wie der Bildschirm. Seiten, die sich nach der Fensterhöhe richten (z. B. Grundriss, Szenen-Seite), wurden vorher winzig dargestellt.

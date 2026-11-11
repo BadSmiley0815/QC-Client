@@ -81,7 +81,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <header class="hero">
   <div>
     <div class="kicker"><i></i> QC-Client · qc.html</div>
-    <h1>Der QuadClient im Browser – Version 0.9.5</h1>
+    <h1>Der QuadClient im Browser – Version 0.9.6</h1>
     <p class="lead">Eigener HTML5-Client für den Gira HomeServer. Er lädt die vorhandene QC-Visu, nutzt die QC-Benutzerrechte und läuft auf jedem Gerät mit Browser – ohne App, ohne Zusatzdateien.</p>
     <div class="pills">
       <span class="pill">Aufruf: <b>https://&lt;HS-IP&gt;/opt/hs-client/qc.html</b></span>
@@ -144,6 +144,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <h2>Änderungen</h2>
 <p class="sub">Neueste Version oben. <span class="tag t-neu">neu</span> <span class="tag t-fix">korrigiert</span> <span class="tag t-offen">noch offen</span></p>
 <div class="tl">
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.6</span>Klare Meldung bei falschem Passwort</h3><ul><li><span class="tag t-fix">fix</span> Bei falschem Benutzer oder Passwort blieb die Anmeldung auf „Verbinde …“ stehen, weil der HomeServer die Verbindung ohne Antwort offen lässt. Jetzt bricht der Client nach 10 Sekunden ab und meldet „Benutzername oder Passwort falsch?“.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.5</span>Seitenleiste ausblendbar, Webseiten in voller Höhe</h3><ul><li><span class="tag t-neu">neu</span> Mit ☰ oben links lässt sich die Seitenleiste auch am großen Bildschirm aus- und einblenden; der Client merkt sich die Einstellung.</li><li><span class="tag t-fix">fix</span> Webseiten aus dem Menü (Typ Webseite) sind mindestens so hoch wie der Bildschirm. Seiten, die sich nach der Fensterhöhe richten (z. B. Grundriss, Szenen-Seite), wurden vorher winzig dargestellt.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.4</span>Eigene Symbole aus Funktionsvorlagen</h3><ul><li><span class="tag t-neu">neu</span> Symbole, die mit einer eigenen Funktionsvorlage (Symbolpaket .hsm) importiert wurden, lädt der Client wie der Windows-QC zusätzlich aus <code>/quad/public/design_0/public_icons.xaml.zip</code>.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.3</span>Kameras über den Kamera-Proxy</h3><ul><li><span class="tag t-neu">neu</span> Einstellung „Kamera-Proxy“ links in der Navigation: Adresse des Logikbausteins 14783 und Schlüssel, nur auf diesem Gerät gespeichert, beim Speichern geprüft.</li><li><span class="tag t-neu">neu</span> Kameras, deren Name zum Namen im Baustein passt, laufen über den Proxy – Kameras mit Anmeldung und reine http-Kameras zeigen Standbilder und in der Einzelansicht den Live-Strom. Im Experten bleibt das Kamera-Plugin unverändert.</li></ul></div></div>

@@ -368,7 +368,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.5";
+const VERSION = "0.9.6";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -597,7 +597,7 @@ function parseProject(txt) {
 /* ---------------- Zustand ---------------- */
 let P_ = null;            // Projekt
 const V = new Map();      // KO -> Wert (String)
-let ws = null, sid = null, projId = null, state = "off", retry = 0, retryTimer = null, kaTimer = null, gotHello = false, tickTimer = null;
+let ws = null, sid = null, projId = null, state = "off", retry = 0, retryTimer = null, kaTimer = null, gotHello = false, tickTimer = null, loginTimer = null;
 let cur = store.get("view", ""), cfg = store.get("login", {});
 let favs = new Set(store.get("favs", []));
 const TIMERS = new Map();  // Uhr-ID -> { active, pts: Map(Nr -> Ziffernkette) }
@@ -626,7 +626,18 @@ function connect() {
   try { ws = new WebSocket(url); } catch (e) { fail("Adresse ungültig"); return; }
   ws.binaryType = "arraybuffer";
   ws.onmessage = onMsg;
+  /* v0.9.6: Bei falschem Passwort lässt der HS die Verbindung oft einfach offen, ohne Antwort –
+     dann nach 10 s abbrechen und eine klare Meldung zeigen statt endlos „Verbinde …“. */
+  clearTimeout(loginTimer);
+  loginTimer = setTimeout(() => {
+    if (gotHello || !ws) return;
+    log("··", "keine Anmeldebestätigung nach 10 s");
+    const w = ws; ws = null; w.onclose = null; try { w.close(); } catch (e) {}
+    if (!P_) { fail("Keine Antwort auf die Anmeldung – Benutzername oder Passwort falsch? Nach einem Fehlversuch sperrt der HS kurz, dann 1–2 Minuten warten."); return; }
+    schedule(90, "Anmeldung nicht bestätigt (Passwort geändert?)", { label: "Jetzt verbinden" });
+  }, 10000);
   ws.onclose = ev => {
+    clearTimeout(loginTimer);
     clearInterval(kaTimer);
     log("··", "getrennt, Code " + ev.code + (gotHello ? "" : " (vor der Anmeldung)"));
     if (!gotHello && !P_) { fail("Anmeldung fehlgeschlagen. Benutzer/Passwort prüfen. Nach einem Fehlversuch sperrt der HS kurz – 1–2 Minuten warten."); return; }
@@ -663,7 +674,7 @@ async function onMsg(ev) {
   const p = s.split("|");
   switch (p[0]) {
     case "93": {
-      gotHello = true; retry = 0; sid = p[1];
+      gotHello = true; retry = 0; sid = p[1]; clearTimeout(loginTimer);
       const newProj = p[2];
       log("<<", "angemeldet, Projekt " + newProj);
       ws.send("94||");
