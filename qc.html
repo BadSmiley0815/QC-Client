@@ -172,7 +172,9 @@ main{padding:20px 24px 70px;min-width:0}
 .tools{margin-left:auto;display:flex;gap:6px}
 .chip{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}
 .chip.on{border-color:var(--acc);color:var(--acc)}
-.menubtn{display:none}
+.menubtn{display:inline-block}
+#app.navoff{grid-template-columns:1fr}
+#app.navoff nav{display:none}
 .banner{background:var(--acc-soft);color:var(--ink);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .banner #btxt{flex:1;min-width:12em}
 .banner #bnow{font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:var(--acc);color:#fff;cursor:pointer}
@@ -272,7 +274,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   nav{position:fixed;inset:0 25% 0 0;z-index:5;transform:translateX(-100%);transition:.2s;height:100%}
   nav.open{transform:none;box-shadow:0 0 40px #0006}
   main{padding:12px 16px 70px}
-  .menubtn{display:inline-block}
+  #app.navoff nav{display:block}
   .grid{grid-template-columns:1fr 1fr;gap:10px}
   .top h2{font-size:20px}
   .fav{opacity:.6}
@@ -315,7 +317,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <nav id="nav"></nav>
   <main>
     <div class="top">
-      <button class="chip menubtn" id="menubtn">☰ Räume</button>
+      <button class="chip menubtn" id="menubtn" title="Seitenleiste ein-/ausblenden">☰</button>
       <h2 id="title"></h2><span class="crumb" id="crumb"></span>
       <div class="tools">
         <button class="chip" id="logbtn" title="Protokoll">Log</button>
@@ -366,7 +368,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.4";
+const VERSION = "0.9.5";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1185,13 +1187,16 @@ $("fifr").addEventListener("load", () => {
     const d = f.contentDocument; if (!d || !d.body || f.src === "about:blank") return;
     let busy = false;
     const fit = () => { if (busy || gen !== frameGen) return; busy = true;
-      const keep = window.scrollY; f.style.height = "10px";                                   // erst klein, dann Inhalt messen
+      // Mindesthöhe = sichtbarer Bildschirm unter der Titelleiste. App-Seiten wie Grundriss oder Szenen-Seite richten sich
+      // nach der Fensterhöhe (100vh) und würden beim Messen sonst auf wenige Pixel schrumpfen.
+      const minH = Math.max(320, window.innerHeight - (f.parentElement.querySelector(".fbar")?.offsetHeight || 50) - 8);
+      const keep = window.scrollY; f.style.height = minH + "px";                              // erst Bildschirmhöhe, dann Inhalt messen
       // Inhaltshöhe = unterste Kante aller Elemente (fängt auch absolut positionierte Visu-Seiten wie die HS-Visu ab)
       let h = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight);
       const all = d.body.getElementsByTagName("*"), n = Math.min(all.length, 8000), sy = d.defaultView.scrollY || 0;
       for (let i = 0; i < n; i++) { const r = all[i].getBoundingClientRect(); if (r.height > 0 && r.bottom + sy > h) h = r.bottom + sy; }
       h = Math.ceil(h);
-      f.style.height = Math.max(120, h + 4) + "px"; window.scrollTo(0, keep); busy = false; };
+      f.style.height = Math.max(minH, h + 4) + "px"; window.scrollTo(0, keep); busy = false; };
     fit(); [300, 1000, 3000].forEach(t => setTimeout(fit, t));                                  // nachladende Bilder/Inhalte
     let tm = null; frameRO = new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(fit, 150); });
     frameRO.observe(d.body, { childList: true, subtree: true, attributes: true });
@@ -2251,7 +2256,14 @@ $("cl-left").addEventListener("click", e => { const p = e.target.closest(".cl-op
 $("clcardx").onclick = () => $("clcard").close();
 window.addEventListener("resize", () => { if (CLASSIC) { if (!clWide() !== $("classic").classList.contains("hidden")) clShow(true); else clScale(); } });
 $("bnow").onclick = connectNow;
-$("menubtn").onclick = () => $("nav").classList.toggle("open");
+/* ☰: am Handy klappt die Seitenleiste auf, am großen Bildschirm wird sie aus-/eingeblendet (wird gemerkt) */
+const navMobile = () => window.matchMedia("(max-width:760px)").matches;
+if (store.get("navoff", false)) $("app").classList.add("navoff");
+$("menubtn").onclick = () => {
+  if (navMobile()) { $("nav").classList.toggle("open"); return; }
+  const off = $("app").classList.toggle("navoff"); store.set("navoff", off);
+  if (FRAME_URL) $("fifr").dispatchEvent(new Event("load"));                                   // Höhe neu anpassen
+};
 $("logcopy").onclick = async () => {
   const txt = "HS Client v" + VERSION + " · " + cfg.host + " · " + new Date().toLocaleString("de-DE") + "\n" + $("log").textContent;
   let ok = false;
