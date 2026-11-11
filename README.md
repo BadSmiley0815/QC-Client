@@ -47,7 +47,7 @@ Aufgenommen mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage
 
 ![Ansicht Klassisch](docs/img/klassisch.png)
 
-Alle Details: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
+Alle Versionen: [`CHANGELOG.md`](CHANGELOG.md) · mit Bildern: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
 
 ## Installation auf dem HomeServer
 
