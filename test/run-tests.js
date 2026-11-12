@@ -75,7 +75,8 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("Eintrag nur für Gruppe 1 sichtbar (Garten)", await pg.locator("#grid .mcard", { hasText: "Garten" }).count() === 1);
   await pg.click('#grid .mcard:has-text("Erdgeschoss")'); ok("Etage zeigt Räume", await pg.locator("#grid .mcard").count() === 4);
   await pg.click('nav button[data-v="m:0"]'); await pg.click('#grid .mcard:has-text("Wetter")'); await pg.waitForTimeout(600);
-  ok("Webseite eingebettet, Höhe an Inhalt (fest positioniert)", parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)) >= 500 && parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)) < 560);
+  { const fh = parseInt(await pg.evaluate(() => getComputedStyle(fifr).height)), vh = await pg.evaluate(() => innerHeight);
+    ok("Webseite eingebettet, mindestens Bildschirmhöhe (v0.9.5)", fh >= vh - 120 && fh <= vh + 50, fh + " bei Fenster " + vh); }
   ok("Adresse nicht angezeigt", !(await pg.textContent("#frame .fbar")).includes("http"));
   console.log("Plugin Wertanzeige (1-2)");
 
