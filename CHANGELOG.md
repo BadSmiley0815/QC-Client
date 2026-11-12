@@ -3,6 +3,11 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.8 – Importierte Funktionsvorlagen
+- **Neu:** Importierte (nicht von Gira stammende) Funktionsvorlagen: Der Client sucht ihre Beschreibung zusätzlich im public-Bereich des HS (`/quad/public/…/public_templates.xml`, `public_language.xml`, `public_design.xml`) und schreibt ins Protokoll, was er gefunden hat und welche Vorlagen fehlen.
+- **Neu:** Popups dieser Vorlagen erscheinen im Original-Stil (Raster, Knöpfe mit Markierung des aktuellen Werts, Werteingabe, OK), auch mit PIN-Abfrage. Die moderne Kachel zeigt die Texte der Felder und einen Knopf „Bedienen“ statt „unknown“.
+- **Geändert:** Fehlt die Beschreibung einer Vorlage, steht in der Zeile „Vorlage … fehlt“ statt „…“.
+
 ## 0.9.7 – Jalousien mit Lamelle bedienbar
 - **Behoben:** Die QC-Vorlage „Jalousie mit Lamellenverstellung“ (1-123) wurde nicht erkannt: Kachel ohne Knöpfe, Status „unknown“. Jetzt mit Auf/Stopp/Ab, Position und zusätzlich einem Regler für die Lamelle.
 

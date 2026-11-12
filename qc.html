@@ -94,6 +94,13 @@ button{font:inherit;color:inherit}
 #cl-log{position:absolute;left:686px;top:87px;width:680px;height:637px;background:#111;border:1px solid #333;display:flex;flex-direction:column}
 #cl-log pre{flex:1;overflow:auto;margin:0;padding:10px;font-size:12px;white-space:pre-wrap}#cl-log button{padding:10px;border-top:1px solid #333}
 #clcard{border:1px solid #2b302d;border-radius:14px;padding:12px;width:min(420px,94vw);--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;--acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;color-scheme:dark;background:var(--bg);color:var(--ink)}
+#clpop{outline:none;padding:0;border:0;background:transparent;overflow:visible;max-width:none;max-height:none}#clpop::backdrop{background:#0009}
+.clp-st{position:relative;transform-origin:0 0;color:#e6e6e6;font-family:Arial,"Segoe UI",Helvetica,sans-serif;user-select:none;-webkit-user-select:none}
+.clp-st.plain{background:#1d211f;border:1px solid #3a3f3c;border-radius:6px}
+.clp-b{cursor:pointer;touch-action:none}.clp-b.plain{background:#2c312e;border-radius:4px}.clp-b.plain.sel{background:#4f6600}
+.clp-b.sel{box-shadow:inset 0 0 0 2px #8fb000}.clp-b.down{filter:brightness(1.5)}.clp-b.off{opacity:.45;pointer-events:none}
+.clp-e{background:#0e0f0e;border:1px solid #3a3f3c;border-radius:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;overflow:hidden}
+.clp-e.ro{cursor:default}.clp-e .t{font-size:10px;color:#9a9a9a;white-space:nowrap}.clp-e .v{font-size:16px;white-space:nowrap}.clp-e small{font-size:11px;margin-left:2px;color:#aaa}
 #clcard::backdrop{background:#0008}#clcard .grid{grid-template-columns:1fr}.cl-cardh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 #pbody{padding:12px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
@@ -312,6 +319,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
+<dialog id="clpop" aria-label="Bedienung"></dialog>
 <dialog id="clcard"><div class="cl-cardh"><b>Einstellungen</b><button class="chip" id="clcardx">Schließen</button></div><div id="clcardg" class="grid"></div></dialog>
 <section id="app" class="hidden">
   <nav id="nav"></nav>
@@ -368,7 +376,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.7";
+const VERSION = "0.9.8";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -863,7 +871,13 @@ function tile(ref, el, label) {
       body = url ? `<div class="ctl btns"><button data-act="open">Öffnen</button></div>` : "";
       break;
     }
-    default: sub = el.kind;
+    default:
+      if (el.kind === "unknown") {                                          // importierte Vorlage: Anzeige und Popups aus der Vorlagenbeschreibung
+        const T = clTpl(el); if (!CL.tpl) clEnsure();
+        if (T) { sub = clSummary(el, T, clCtx(el, T)) || "Vorlage " + el.tpl;
+          if ([...T.children].some(n => n.localName === "popup")) body = `<div class="ctl btns"><button data-act="clpop">Bedienen</button></div>`; }
+        else sub = CL.tpl || CL.err ? "Vorlage " + el.tpl + " nicht geladen" : "Lade Vorlage …";
+      } else sub = el.kind;
   }
   if (on) cls += " is-on";
   const favOn = favs.has(ref);
@@ -993,6 +1007,7 @@ function act(ref, a, target) {
       el._w = w;
       send(k.slot_4byte, ((pc(0) << 24) >>> 0) + (pc(1) << 16) + (pc(2) << 8) + w); return;
     }
+    case "clpop": if ($("clcard").open) $("clcard").close(); clPopFirst(ref); return;
     case "open": if (p.par_url) window.open(p.par_url, "_blank", "noopener"); return;
   }
 }
@@ -1916,6 +1931,7 @@ function renderView() {
 }
 function updateKo(ko) {
   clKo(ko);
+  if (CLP && !CL.press && KOIX && KOIX.get(ko) && KOIX.get(ko).has(CLP.ref)) clPopRender();
   const refs = KOIX && KOIX.get(ko); if (!refs) return;
   for (const ref of refs) {
     for (const G of [$("grid"), $("clcardg")]) {
@@ -1935,7 +1951,7 @@ function updateKo(ko) {
    visible_slot/on_value · <visible from/to> · logic(and/or/sum, type bit, compare, inverse) · action_down/up/repeat(click, from_time/to_time).
    Was der Übersetzer (noch) nicht kann – Popups, PIN, Szenen-Lernen … – öffnet die moderne Kachel derselben Funktion. */
 let CLASSIC = store.get("ui", "modern") === "classic";
-const CL = { tpl: null, lang: {}, lay: {}, loading: null, err: "", qsel: { 1: 0, 2: 0 }, qoff: { 1: 0, 2: 0 }, top: {}, hosts: {}, press: null };
+const CL = { tpl: null, lang: {}, lay: {}, grid: {}, loading: null, err: "", qsel: { 1: 0, 2: 0 }, qoff: { 1: 0, 2: 0 }, top: {}, hosts: {}, press: null };
 const clWide = () => window.innerWidth >= 900;
 const clOn = () => CLASSIC && clWide() && P_ && !$("app").classList.contains("hidden-force");
 async function clLoad() {
@@ -1943,23 +1959,39 @@ async function clLoad() {
   CL.loading = (async () => {
     try {
       const [t, l, d] = await Promise.all(["design_4/client_templates.xml", "client_language.xml", "design_4/client_design.xml"].map(n => hsGet("/quad/client/" + n)));
-      const tx = new DOMParser().parseFromString(t, "text/xml"); CL.tpl = {};
-      tx.querySelectorAll("templates > template").forEach(e => CL.tpl[e.getAttribute("id")] = e);
-      new DOMParser().parseFromString(l, "text/xml").querySelectorAll("language > text").forEach(e => {
-        const de = e.querySelector('lang[id="de"]'); CL.lang[e.getAttribute("key")] = de ? de.getAttribute("value") : (e.getAttribute("default") || ""); });
-      new DOMParser().parseFromString(d, "text/xml").querySelectorAll("layouts > layout").forEach(L => {
-        const m = {}; L.querySelectorAll("cell").forEach(c => m[c.getAttribute("name")] = attrs(c)); CL.lay[L.getAttribute("name")] = m; });
+      CL.tpl = {}; clMerge(t, l, d);
+      // Importierte (fremde) Vorlagen: der Experte legt sie wie die eigenen Symbole in den public-Bereich (Pfade noch nicht belegt)
+      const tryGet = async list => { for (const p of list) try { return [p, await hsGet(p)]; } catch (e) {} return [null, null]; };
+      const [[pt, ptx], [pl, plx], [pd, pdx]] = await Promise.all([
+        tryGet(["/quad/public/design_4/public_templates.xml", "/quad/public/public_templates.xml", "/quad/public/design_0/public_templates.xml"]),
+        tryGet(["/quad/public/public_language.xml", "/quad/public/design_4/public_language.xml"]),
+        tryGet(["/quad/public/design_4/public_design.xml", "/quad/public/public_design.xml"])]);
+      const before = new Set(Object.keys(CL.tpl)); clMerge(ptx, plx, pdx);
+      const added = Object.keys(CL.tpl).filter(k => !before.has(k));
+      log("··", "Klassisch: public " + [[pt, "Vorlagen"], [pl, "Texte"], [pd, "Layouts"]].map(([p, n]) => n + (p ? " " + p : " –")).join(", ") + (added.length ? " · neu: " + added.join(" ") : ""));
+      const miss = [...new Set(Object.values(P_.els).filter(el => el.tpl && el.kind !== "spacer" && !clTpl(el)).map(el => el.tpl + (el.variant ? "_" + el.variant : "")))];
+      if (miss.length) log("··", "Klassisch: keine Beschreibung für " + miss.join(" "));
       // Symbole, die die Vorlagen und Parameter brauchen, zusätzlich laden
       const extra = new Set(["status_temp_out", "status_temp_in"]);
       Object.values(CL.lay).forEach(cells => Object.values(cells).forEach(c => { if (c.ico && !/_ol$|^blank/.test(c.ico)) extra.add(icoKey(c.ico)); }));
-      Object.values(P_.els).forEach(el => { const T = clTpl(el); if (T) T.querySelectorAll("[ico]").forEach(n => { const v = n.getAttribute("ico"); if (v && !v.startsWith("$")) extra.add(icoKey(v)); });
+      Object.values(P_.els).forEach(el => { const T = clTpl(el); if (T) T.querySelectorAll("[ico],[icon]").forEach(n => { const v = n.getAttribute("ico") || n.getAttribute("icon"); if (v && !v.startsWith("$")) extra.add(icoKey(v)); });
         Object.values(el.par).forEach(v => { if (/\.xaml$/i.test(v || "")) extra.add(icoKey(v)); }); });
       await loadIcons(extra);
     } catch (e) { CL.err = e.message; log("··", "Klassisch: Vorlagen nicht geladen (" + e.message + ")"); }
   })();
   return CL.loading;
 }
-const clTpl = el => CL.tpl && (CL.tpl[el.tpl + (el.variant ? "_" + el.variant : "")] || CL.tpl[el.tpl]);
+/* Vorlagen, Texte und Layouts einlesen und zusammenführen (vorhandene Einträge bleiben) */
+function clMerge(t, l, d) {
+  if (t) new DOMParser().parseFromString(t, "text/xml").querySelectorAll("template[id]").forEach(e => { const id = e.getAttribute("id"); if (!CL.tpl[id]) CL.tpl[id] = e; });
+  if (l) new DOMParser().parseFromString(l, "text/xml").querySelectorAll("language > text").forEach(e => { const k = e.getAttribute("key"); if (k in CL.lang) return;
+    const de = e.querySelector('lang[id="de"]'); CL.lang[k] = de ? de.getAttribute("value") : (e.getAttribute("default") || ""); });
+  if (d) { const x = new DOMParser().parseFromString(d, "text/xml");
+    x.querySelectorAll("layouts > layout").forEach(L => { const n = L.getAttribute("name"); if (CL.lay[n]) return;
+      const m = {}; L.querySelectorAll("cell").forEach(c => m[c.getAttribute("name")] = attrs(c)); CL.lay[n] = m; });
+    x.querySelectorAll("grids > grid").forEach(g => { const n = g.getAttribute("name"); if (!CL.grid[n]) CL.grid[n] = attrs(g); }); }
+}
+const clTpl = el => CL.tpl &&(CL.tpl[el.tpl + (el.variant ? "_" + el.variant : "")] || CL.tpl[el.tpl]);
 const clTruthy = v => typeof v === "boolean" ? v : typeof v === "number" ? v !== 0 : v === undefined || v === null || v === "" ? false : /^true$/i.test(v) ? true : /^false$/i.test(v) ? false : isFinite(+v) ? +v !== 0 : true;
 /* Kontext einer Funktion: Parameter, KO-Werte, logic-Blöcke */
 function clCtx(el, T) {
@@ -1994,7 +2026,7 @@ function clCtx(el, T) {
   const txt = v => { v = par(v); return v.startsWith("#") ? (CL.lang[v] ?? v.slice(1)) : v; };
   return { par, raw, eq, range, cond, enabled, txt };
 }
-const CL_FONT = { "500": 12, "501": 12, "5001": 13, "502": 11, "503": 16, "504": 20, "300": 21, "101": 17, "100": 15, "102": 17, "112": 17, "106": 12 };
+const CL_FONT = { "602": 16, "603": 14, "604": 13, "500": 12, "501": 12, "5001": 13, "502": 11, "503": 16, "504": 20, "300": 21, "101": 17, "100": 15, "102": 17, "112": 17, "106": 12 };
 function clCell(panelLay, n) {
   const l = n.getAttribute("layout"), c = n.getAttribute("cell");
   if (l && l.includes(".")) { const [a, b] = l.split("."); return (CL.lay[a] || {})[b]; }
@@ -2002,6 +2034,28 @@ function clCell(panelLay, n) {
   return null;
 }
 const px = (a, k, d = 0) => { const v = parseFloat(a && a[k]); return isFinite(v) ? v : d; };
+/* Symbol bzw. Text eines Vorlagen-Elements (icon/icon_dyn, text/text_dyn) */
+function clIco(n, X, def = "") {
+  let ico = n.hasAttribute("ico") ? X.par(n.getAttribute("ico")) : def;                  // ohne ico: Symbol der Layout-Zelle
+  const ct = [...n.children].find(x => x.localName === "content");
+  if (ct) { const sv = X.raw(ct.getAttribute("case_slot"));
+    for (const cs of ct.children) { if (cs.localName !== "case" || !X.enabled(cs)) continue;
+      const ok = cs.hasAttribute("on_value") ? X.eq(sv, cs.getAttribute("on_value")) : cs.hasAttribute("from") ? X.range(sv, cs) : false;
+      if (ok) { const v = X.par(cs.getAttribute("ico")); if (v) ico = v; break; } } }
+  return ico;
+}
+function clText(n, X) {
+  let t = "";
+  const ct = [...n.children].find(x => x.localName === "content");
+  if (ct && ct.getAttribute("value_slot")) { const v = X.raw(ct.getAttribute("value_slot")), nv = +v;
+    t = v === undefined || v === "" ? "–" : isFinite(nv) ? fmt(nv, +X.par(n.getAttribute("prec") || "0") || 0) : String(v);
+    const u = X.par(n.getAttribute("unit")); if (u) t += u.startsWith("°") || u === "%" ? u : " " + u; }
+  else if (ct && ct.getAttribute("case_slot")) { const sv = X.raw(ct.getAttribute("case_slot"));
+    for (const cs of ct.children) { const ok = cs.hasAttribute("on_value") ? X.eq(sv, cs.getAttribute("on_value")) : cs.hasAttribute("from") ? X.range(sv, cs) : false;
+      if (ok) { t = X.txt(cs.getAttribute("value") || cs.getAttribute("text")); break; } } }
+  else { t = X.txt(n.getAttribute("value") || n.getAttribute("text")); if (!t) t = X.txt(n.getAttribute("def_value")); }
+  return t;
+}
 function clPanel(el, P, X) {
   const lay = P.getAttribute("layout"); let h = "";
   const flat = node => [...node.children].flatMap(n => n.localName === "group" ? (X.cond(n) ? flat(n) : []) : [n]);   // <group> mit Bedingung
@@ -2010,12 +2064,7 @@ function clPanel(el, P, X) {
     const c = clCell(lay, n); if (!c) continue;
     let L = px(c, "left"), T = px(c, "top"), W = px(c, "width", 110), H = px(c, "height", 40);
     if (k === "icon" || k === "icon_dyn") {
-      let ico = n.hasAttribute("ico") ? X.par(n.getAttribute("ico")) : (c.ico || "");        // ohne ico: Symbol der Layout-Zelle
-      const ct = [...n.children].find(x => x.localName === "content");
-      if (ct) { const sv = X.raw(ct.getAttribute("case_slot"));
-        for (const cs of ct.children) { if (cs.localName !== "case" || !X.enabled(cs)) continue;
-          const ok = cs.hasAttribute("on_value") ? X.eq(sv, cs.getAttribute("on_value")) : cs.hasAttribute("from") ? X.range(sv, cs) : false;
-          if (ok) { const v = X.par(cs.getAttribute("ico")); if (v) ico = v; break; } } }
+      let ico = clIco(n, X, c.ico || "");
       const wd = [...n.children].find(x => x.localName === "width");
       if (wd) { const v = +X.raw(wd.getAttribute("slot")), mn = +X.par(wd.getAttribute("min_value") || "0") || 0, mx = +X.par(wd.getAttribute("max_value") || "100") || 100;
         W = Math.max(0, Math.min(1, ((isFinite(v) ? v : 0) - mn) / ((mx - mn) || 1))) * W; }
@@ -2024,15 +2073,7 @@ function clPanel(el, P, X) {
       h += svgH ? `<div class="cl-a" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px">${svgH}</div>`
         : /_bg$/i.test(icoKey(ico)) ? `<div class="cl-a" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px;background:${/green/i.test(ico) ? "#8fb000" : /red/i.test(ico) ? "#a01e1e" : "#2b2b2b"}"></div>` : "";
     } else {
-      let t = "";
-      const ct = [...n.children].find(x => x.localName === "content");
-      if (ct && ct.getAttribute("value_slot")) { const v = X.raw(ct.getAttribute("value_slot")), nv = +v;
-        t = v === undefined || v === "" ? "–" : isFinite(nv) ? fmt(nv, +X.par(n.getAttribute("prec") || "0") || 0) : String(v);
-        const u = X.par(n.getAttribute("unit")); if (u) t += u.startsWith("°") || u === "%" ? u : " " + u; }
-      else if (ct && ct.getAttribute("case_slot")) { const sv = X.raw(ct.getAttribute("case_slot"));
-        for (const cs of ct.children) { const ok = cs.hasAttribute("on_value") ? X.eq(sv, cs.getAttribute("on_value")) : cs.hasAttribute("from") ? X.range(sv, cs) : false;
-          if (ok) { t = X.txt(cs.getAttribute("value") || cs.getAttribute("text")); break; } } }
-      else { t = X.txt(n.getAttribute("value") || n.getAttribute("text")); if (!t) t = X.txt(n.getAttribute("def_value")); }
+      const t = clText(n, X);
       if (!t) continue;
       const al = ["left", "center", "right"][+(c.align || 0)] || "left", fs = CL_FONT[c.font_id] || 13;
       h += `<div class="cl-a cl-t" style="left:${L}px;top:${T}px;width:${W}px;font-size:${fs}px;text-align:${al}">${esc(t)}</div>`;
@@ -2053,7 +2094,7 @@ function clRow(ref, el, label, i) {
   if (T) { const done = new Set();
     for (const P of T.children) { if (P.localName !== "panel") continue; const pos = +P.getAttribute("pos"); if (!(pos >= 1 && pos <= 3) || done.has(pos) || !X.cond(P)) continue; done.add(pos);
       panels += `<div class="cl-p" data-ref="${esc(ref)}" data-pos="${pos}" style="left:${[343, 455, 567][pos - 1]}px">${clPanel(el, P, X)}</div>`; } }
-  else panels = `<div class="cl-p cl-open" data-ref="${esc(ref)}" style="left:343px;width:335px"><div class="cl-a cl-t" style="left:0;top:11px;width:330px;text-align:center;font-size:13px;color:#8a8a8a">${CL.err ? "Vorlage nicht geladen" : "…"}</div></div>`;
+  else panels = `<div class="cl-p cl-open" data-ref="${esc(ref)}" style="left:343px;width:335px"><div class="cl-a cl-t" style="left:0;top:11px;width:330px;text-align:center;font-size:13px;color:#8a8a8a">${CL.err ? "Vorlage nicht geladen" : CL.tpl ? "Vorlage " + esc(el.tpl) + " fehlt" : "…"}</div></div>`;
   return `<div class="cl-row" style="top:${i * 40}px" data-ref="${esc(ref)}"><div class="cl-ico">${ico}</div>
     <button class="cl-name${ico ? "" : " noico"}" data-open="${esc(ref)}" title="Alle Einstellungen">${esc(name)}</button>${panels}</div>`;
 }
@@ -2160,43 +2201,153 @@ function clActions(ref, pos, z) {
   const X = clCtx(el, T); const P = [...T.children].find(p => p.localName === "panel" && +p.getAttribute("pos") === pos && X.cond(p)); if (!P) return null;
   return { el, X, acts: [...P.children].filter(n => /^action_(down|up|repeat)$/.test(n.localName) && (n.getAttribute("click") || "1") === z) };
 }
-function clExec(ref, A, n) {
-  const { el, X } = A; if (!X.enabled(n)) return;
-  const type = n.getAttribute("type"), slot = n.getAttribute("slot"), ko = slot && el.kos[slot];
-  if (n.getAttribute("pin_slot") && needPin(el)) { clCard(ref); return "stop"; }
+/* Funktionen, deren Vorlage der Client nicht fest kennt (importierte Vorlagen): Popups und PIN direkt aus der Vorlage */
+const clOwn = el => el && el.kind === "unknown";
+function clExec(ref, A, n, pinOk) {
+  const { el, X } = A; if (!X.enabled(n) || !X.cond(n)) return;
+  const type = n.getAttribute("type"), slot = n.getAttribute("slot"), ko = slot && el.kos[slot], pk = n.getAttribute("pin_slot");
+  if (pk && !pinOk) {
+    if (clOwn(el) && el.kos[pk]) { clPinAsk(el, el.kos[pk]).then(ok => { if (ok) { clExec(ref, A, n, true); clPopRender(); } }); return "stop"; }
+    if (needPin(el)) { clCard(ref); return "stop"; }
+  }
   if (type === "set" && ko) { const v = X.par(n.getAttribute("value")); send(ko, isFinite(+v) && v !== "" ? +v : v); }
   else if (type === "toggle" && ko) send(ko, clTruthy(X.raw(slot)) ? 0 : (+X.par(n.getAttribute("value")) || 1));
   else if ((type === "step_up" || type === "step_down") && ko) {
     const st = Math.abs(+X.par(n.getAttribute("value")) || +X.par("$par_skip") || 1), c = +X.raw(slot) || 0;
     let nv = c + (type === "step_up" ? st : -st); const mn = +X.par("$par_min"), mx = +X.par("$par_max");
     if (el.par.par_min !== undefined && isFinite(mn)) nv = Math.max(mn, nv); if (el.par.par_max !== undefined && isFinite(mx)) nv = Math.min(mx, nv);
+    const bs = X.par(n.getAttribute("border")), bv = +bs;                                 // border = Grenze in Schrittrichtung
+    if (bs !== "" && isFinite(bv)) nv = type === "step_up" ? Math.min(bv, nv) : Math.max(bv, nv);
     send(ko, +nv.toFixed(4)); }
-  else if (type === "close") {}
+  else if (type === "close") { if (CLP) clPopClose(); }
+  else if (type === "popup" && clOwn(el) && clPop(ref, n.getAttribute("id"))) return "stop";
   else { clCard(ref); return "stop"; }                                                   // Popup, Szene lernen … -> moderne Kachel
 }
+async function clPinAsk(el, ko) {
+  const soll = String(V.get(ko) ?? "").trim();
+  return (await ask({ title: "PIN eingeben", text: el.name, type: "password", mode: "numeric", check: v => v === soll ? "" : "PIN falsch" })) !== null;
+}
 function clDown(z) {
-  const p = z.closest(".cl-p"), ref = p.dataset.ref, pos = +p.dataset.pos, A = clActions(ref, pos, z.dataset.z); if (!A) return;
+  const p = z.closest(".cl-p"), A = clActions(p.dataset.ref, +p.dataset.pos, z.dataset.z); if (A) clPress(p.dataset.ref, A, z);
+}
+function clPress(ref, A, elem) {
   const t0 = Date.now(), timers = [];
-  CL.press = { ref, pos, z: z.dataset.z, A, t0, timers, stopped: false };
-  z.classList.add("down");
+  CL.press = { ref, A, t0, timers, stopped: false };
+  elem.classList.add("down");
   for (const n of A.acts) {
     if (n.localName === "action_down") { const ft = n.getAttribute("from_time");
-      if (ft) timers.push(setTimeout(() => { if (CL.press && !CL.press.stopped && clExec(ref, A, n) === "stop") CL.press.stopped = true; }, +ft));
+      if (ft && +ft > 0) timers.push(setTimeout(() => { if (CL.press && !CL.press.stopped && clExec(ref, A, n) === "stop") CL.press.stopped = true; }, +ft));
       else if (clExec(ref, A, n) === "stop") { CL.press.stopped = true; break; } }
     if (n.localName === "action_repeat") timers.push(setTimeout(function rep() { if (!CL.press) return; clExec(ref, A, n); CL.press.timers.push(setTimeout(rep, 300)); }, 500));
   }
 }
 function clUp(cancel) {
   const P = CL.press; if (!P) return; CL.press = null; P.timers.forEach(clearTimeout);
-  document.querySelectorAll(".cl-z.down").forEach(z => z.classList.remove("down"));
-  if (cancel || P.stopped) { clRender(); return; }
-  const dt = Date.now() - P.t0;
-  for (const n of P.A.acts) { if (n.localName !== "action_up") continue;
-    const ft = n.getAttribute("from_time"), tt = n.getAttribute("to_time");
-    if ((ft && dt < +ft) || (tt && dt > +tt)) continue;
-    if (clExec(P.ref, P.A, n) === "stop") break; }
-  clRender();
+  document.querySelectorAll(".cl-z.down,.clp-b.down").forEach(z => z.classList.remove("down"));
+  if (!cancel && !P.stopped) {
+    const dt = Date.now() - P.t0;
+    for (const n of P.A.acts) { if (n.localName !== "action_up") continue;
+      const ft = n.getAttribute("from_time"), tt = n.getAttribute("to_time");
+      if ((ft && dt < +ft) || (tt && dt > +tt)) continue;
+      if (clExec(P.ref, P.A, n) === "stop") break; }
+  }
+  clRender(); clPopRender();
 }
+/* ---------- Popups aus der Vorlage (Original-Stil, 320 × 260, Raster grid1: Zeilen A–H, Spalten 1–6) ---------- */
+let CLP = null;                                     // { ref, id, nodes: [] }
+function clGrid(spec) {
+  const m = /^(\w+)\.([A-Z])(\d+)-([A-Z])(\d+)$/.exec(spec || ""); if (!m) return null;
+  const g = CL.grid[m[1]] || { left: 12, top: 42, width: 297, height: 202, rows: 8, columns: 6, distanceX: 8, distanceY: 9 };
+  const R = +g.rows || 8, C = +g.columns || 6, dx = +g.distanceX || 0, dy = +g.distanceY || 0;
+  const cw = (+g.width - (C - 1) * dx) / C, rh = (+g.height - (R - 1) * dy) / R;
+  const r1 = m[2].charCodeAt(0) - 65, r2 = m[4].charCodeAt(0) - 65, c1 = +m[3] - 1, c2 = +m[5] - 1;
+  return [+g.left + c1 * (cw + dx), +g.top + r1 * (rh + dy), (c2 - c1 + 1) * cw + (c2 - c1) * dx, (r2 - r1 + 1) * rh + (r2 - r1) * dy];
+}
+function clPopNode(el, id) { const T = clTpl(el); return T && [...T.children].find(n => n.localName === "popup" && n.getAttribute("id") === String(id)); }
+function clPop(ref, id) {
+  const el = P_.els[ref]; if (!clPopNode(el, id)) return false;
+  CLP = { ref, id: String(id), nodes: [] }; clPopRender();
+  const d = $("clpop"); if (!d.open) d.showModal(); return true;
+}
+function clPopClose() { CLP = null; const d = $("clpop"); if (d.open) d.close(); }
+function clPopFirst(ref) {
+  const el = P_.els[ref], T = clTpl(el); if (!T) return false;
+  const X = clCtx(el, T);
+  for (const P of T.children) { if (P.localName !== "panel" || !X.cond(P)) continue;
+    for (const a of P.children) if (a.localName === "action_up" || a.localName === "action_down") {
+      if (a.getAttribute("type") === "popup" && X.enabled(a) && X.cond(a)) { clExec(ref, { el, X, acts: [a] }, a); return true; } } }
+  const p = [...T.children].find(n => n.localName === "popup"); return p ? clPop(ref, p.getAttribute("id")) : false;
+}
+function clPopRender() {
+  if (!CLP) return; const el = P_.els[CLP.ref], P = el && clPopNode(el, CLP.id); if (!P) { clPopClose(); return; }
+  if (CL.press) return;
+  const X = clCtx(el, clTpl(el)); CLP.nodes = [];
+  const form = (CL.lay[(P.getAttribute("layout") || "").split(".")[0]] || {}).form || {};
+  const fw = px(form, "width", 320), fh = px(form, "height", 260);
+  const bg = qf(P.getAttribute("ico") || form.ico || "tpl_pop_bg", true);
+  let h = bg ? `<div class="cl-a" style="left:0;top:0;width:${fw}px;height:${fh}px">${bg}</div>` : "";
+  const flat = node => [...node.children].flatMap(n => n.localName === "group" ? (X.cond(n) ? flat(n) : []) : [n]);
+  const rectOf = (n, c) => { const g = clGrid(n.getAttribute("grid")); return g || [px(c, "left"), px(c, "top"), px(c, "width", 110), px(c, "height", 40)]; };
+  const textDiv = (t, r, c, al) => { const fs = CL_FONT[c && c.font_id] || 13, a = ["left", "center", "right"][+(al ?? (c && c.align) ?? 0)] || "left";
+    return `<div class="cl-a cl-t" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;font-size:${fs}px;text-align:${a}">${esc(t)}</div>`; };
+  let skipped = 0;
+  for (const n of flat(P)) {
+    const k = n.localName; if (/^(action|logic|#)/.test(k) || !X.cond(n)) continue;
+    const c = clCell(P.getAttribute("layout"), n) || {};
+    if (k === "text" || k === "text_dyn") { const t = clText(n, X); if (!t) continue;
+      let r = rectOf(n, c); if (n.getAttribute("grid") && c.top) r = [r[0] + px(c, "left"), r[1] + px(c, "top"), c.width ? Math.min(px(c, "width"), r[2]) : r[2]];
+      else if (n.getAttribute("grid")) r = [r[0] + 4, r[1] + Math.max(0, r[3] / 2 - 8), r[2] - 8];
+      h += textDiv(t, r, c, n.getAttribute("align")); }
+    else if (k === "icon" || k === "icon_dyn") { const ico = clIco(n, X, c.ico || ""), r = rectOf(n, c), sv = ico && qf(ico);
+      if (sv) h += `<div class="cl-a" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${sv}</div>`; }
+    else if (k === "button") {
+      const r = clGrid(n.getAttribute("grid")); if (!r) { skipped++; continue; }
+      const L = CL.lay[n.getAttribute("layout")] || {}, ss = n.getAttribute("selected_slot");
+      const sel = ss && X.eq(X.raw(ss), X.par(n.getAttribute("selected_value")));
+      const i = CLP.nodes.push(n) - 1, bgi = qf((L.bg || {}).ico, true), sli = sel && qf((L.selected || {}).ico, true);
+      let inner = (bgi ? `<div class="cl-a" style="inset:0">${bgi}</div>` : "") + (sli ? `<div class="cl-a" style="inset:0">${sli}</div>` : "");
+      const t = X.txt(n.getAttribute("text")), ic = X.par(n.getAttribute("icon") || "");
+      const icv = ic && qf(ic);
+      if (icv) inner += `<div class="cl-a" style="left:${Math.max(0, r[2] / 2 - 20)}px;top:${Math.max(0, r[3] / 2 - 20)}px;width:40px;height:40px">${icv}</div>`;
+      if (t) inner += `<div class="cl-a cl-t" style="left:4px;top:${Math.max(0, r[3] / 2 - 8)}px;width:${r[2] - 8}px;font-size:${CL_FONT[(L.text1 || {}).font_id] || 13}px;text-align:center">${esc(t)}</div>`;
+      for (const s of flat(n)) { if (!/^(text|text_dyn|icon|icon_dyn)$/.test(s.localName) || !X.cond(s)) continue;     // Inhalt eines Knopfs in Zellen seines Layouts
+        const sc = L[s.getAttribute("cell")] || {}, sr = [px(sc, "left"), px(sc, "top"), px(sc, "width", r[2]), px(sc, "height", r[3])];
+        if (/^icon/.test(s.localName)) { const v = qf(clIco(s, X, sc.ico || "")); if (v) inner += `<div class="cl-a" style="left:${sr[0]}px;top:${sr[1]}px;width:${sr[2]}px;height:${sr[3]}px">${v}</div>`; }
+        else { const tt = clText(s, X); if (tt) inner += textDiv(tt, sr, sc); } }
+      const off = !X.enabled(n) || ![...n.children].some(a => /^action_/.test(a.localName));
+      h += `<div class="cl-a clp-b${sel ? " sel" : ""}${bgi ? "" : " plain"}${off ? " off" : ""}" data-i="${i}" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${inner}</div>`; }
+    else if (k === "edit") {
+      const r = clGrid(n.getAttribute("grid")); if (!r) { skipped++; continue; }
+      const sl = n.getAttribute("slot"), v = X.raw(sl), nv = +v, prec = +X.par(n.getAttribute("prec") || "0") || 0, u = X.par(n.getAttribute("unit") || "");
+      const val = v === undefined || v === "" ? "–" : isFinite(nv) ? fmt(nv, prec) : String(v), ti = X.txt(n.getAttribute("title") || n.getAttribute("info") || "");
+      const mod = /^true$/i.test(X.par(n.getAttribute("modify") || "")) && el.kos[sl];
+      const i = mod ? CLP.nodes.push(n) - 1 : -1;
+      h += `<div class="cl-a clp-e${mod ? "" : " ro"}" ${mod ? `data-e="${i}"` : ""} style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">
+        ${ti ? `<span class="t">${esc(ti)}</span>` : ""}<span class="v">${esc(val)}${u ? `<small>${esc(u)}</small>` : ""}</span></div>`; }
+    else skipped++;
+  }
+  if (skipped) h += `<div class="cl-a cl-t" style="left:12px;top:${fh - 16}px;width:${fw - 24}px;font-size:10px;color:#8a8a8a">${skipped} Element(e) kann der Client noch nicht</div>`;
+  const s = Math.max(0.6, Math.min(1.8, (innerWidth - 24) / fw, (innerHeight - 24) / fh));
+  $("clpop").innerHTML = `<div style="width:${fw * s}px;height:${fh * s}px"><div class="clp-st${bg ? "" : " plain"}" style="width:${fw}px;height:${fh}px;transform:scale(${s})">${h}</div></div>`;
+}
+async function clPopEdit(i) {
+  const n = CLP && CLP.nodes[i]; if (!n) return; const el = P_.els[CLP.ref], X = clCtx(el, clTpl(el));
+  const sl = n.getAttribute("slot"), mn = +X.par(n.getAttribute("min") || ""), mx = +X.par(n.getAttribute("max") || ""), u = X.par(n.getAttribute("unit") || "");
+  const lim = n.getAttribute("min") != null && n.getAttribute("max") != null && isFinite(mn) && isFinite(mx);
+  const v = await ask({ title: X.txt(n.getAttribute("title") || n.getAttribute("info") || "") || "Wert eingeben", text: lim ? `${fmt(mn, 0)} … ${fmt(mx, 0)} ${u}` : "",
+    value: String(X.raw(sl) ?? ""), mode: "decimal",
+    check: s => { const x = +s.replace(",", "."); return s === "" || !isFinite(x) ? "Bitte eine Zahl" : lim && (x < mn || x > mx) ? "Außerhalb des Bereichs" : ""; } });
+  if (v !== null) send(el.kos[sl], +v.replace(",", "."));
+}
+/* Kurzanzeige einer importierten Vorlage für die moderne Kachel: Texte der Felder 1–3 */
+function clSummary(el, T, X) {
+  const out = [], done = new Set(), flat = node => [...node.children].flatMap(n => n.localName === "group" ? (X.cond(n) ? flat(n) : []) : [n]);
+  for (const P of T.children) { if (P.localName !== "panel") continue; const pos = +P.getAttribute("pos"); if (done.has(pos) || !X.cond(P)) continue; done.add(pos);
+    const t = flat(P).filter(n => /^text(_dyn)?$/.test(n.localName) && X.cond(n)).map(n => clText(n, X)).filter(Boolean).join(" ");
+    if (t) out.push(t); }
+  return out.join(" · ");
+}
+function clEnsure() { if (CL.tpl || CL.loading || !P_) return; clLoad().then(() => { if (!CLASSIC) renderView(); }); }
 /* moderne Kachel als Fenster – alle Einstellungen einer Funktion */
 function clCard(ref) { const el = P_.els[ref]; if (!el) return; $("clcardg").innerHTML = tile(ref, el); const d = $("clcard"); if (!d.open) d.showModal(); }
 
@@ -2264,6 +2415,14 @@ $("classic").addEventListener("click", e => {
 });
 $("cl-left").addEventListener("pointerdown", e => { const z = e.target.closest(".cl-z"); if (!z || e.button > 0) return; e.preventDefault(); try { z.setPointerCapture(e.pointerId); } catch (x) {} clDown(z); });
 $("cl-left").addEventListener("pointerup", () => clUp(false));
+$("clpop").addEventListener("pointerdown", e => { const b = e.target.closest(".clp-b"); if (!b || e.button > 0 || !CLP) return; e.preventDefault();
+  try { b.setPointerCapture(e.pointerId); } catch (x) {}
+  const n = CLP.nodes[+b.dataset.i], el = P_.els[CLP.ref]; if (!n || !el) return;
+  clPress(CLP.ref, { el, X: clCtx(el, clTpl(el)), acts: [...n.children].filter(a => /^action_(down|up|repeat)$/.test(a.localName)) }, b); });
+$("clpop").addEventListener("pointerup", () => clUp(false));
+$("clpop").addEventListener("pointercancel", () => clUp(true));
+$("clpop").addEventListener("click", e => { if (e.target === $("clpop")) { clPopClose(); return; } const ed = e.target.closest(".clp-e[data-e]"); if (ed) clPopEdit(+ed.dataset.e); });
+$("clpop").addEventListener("close", () => { CLP = null; });
 $("cl-left").addEventListener("pointercancel", () => clUp(true));
 $("cl-left").addEventListener("contextmenu", e => { if (e.target.closest(".cl-z")) e.preventDefault(); });
 $("cl-left").addEventListener("click", e => { const p = e.target.closest(".cl-open"); if (p) clCard(p.dataset.ref); });

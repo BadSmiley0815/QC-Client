@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.7 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.8 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -35,6 +35,8 @@ Stand: v0.9.7 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zu
 - [x] Eigene Symbole in Funktionsvorlagen: `tools/hsm-build.py` + Testvorlage 99-3 (im Windows-QC bestätigt; Client lädt sie ab v0.9.4 aus public)
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil
+    - [x] Importierte Vorlagen (z. B. 176-x): Popups aus der Vorlage, PIN, Werteingabe (v0.9.8) – Ablageort public_templates.xml am HS noch bestätigen
+    - [ ] Gira-Vorlagen (Slider, Auswahl, Farbe …) – bisher moderne Kachel
   - [x] Plugins in den Quadranten im Original-Stil (Diagramm, Sonos, Kamera – v0.9.1)
   - [ ] Farbbalken bei RGB-Zeilen, MyTouch, Notiz
 - [ ] Fernzugriff über Gira S1 testen

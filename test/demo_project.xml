@@ -21,6 +21,7 @@
       <device id="1005" text="Rollladen" visibleinqc="1" />
       <device id="1006" text="Leselampe" visibleinqc="1" />
       <device id="1012" text="Lichtszenen" visibleinqc="1" />
+      <device id="1090" text="Lamellen" visibleinqc="1" />
     </device_group>
     <device_group id="13" title="Küche">
       <device id="1007" text="LED-Streifen" visibleinqc="1" />
@@ -208,6 +209,12 @@
       <set parameter="par_driven_passiv" value="" type="Text" />
       <set parameter="par_driven_open" value="" type="Text" />
       <set parameter="par_driven_close" value="" type="Text" />
+    </device>
+    <device id="1090" txt="Lamellen" symbol="tpl_ico_craft_general.xaml" template="99-7_1">
+      <connect slot="slot_h" tag="190" />
+      <connect slot="slot_pin" tag="191" />
+      <set parameter="99-7_par_caption" value="Lamellen" />
+      <set parameter="99-7_par_pin" value="true" />
     </device>
     <device id="1006" txt="Leselampe" symbol="tpl_ico_craft_light.xaml" template="1-102">
       <connect slot="dim_s" tag="115" />

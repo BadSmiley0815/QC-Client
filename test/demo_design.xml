@@ -6,5 +6,9 @@
     <cell name="leftbg" left="1" top="0" width="54" height="40" />
     <cell name="txt1" left="0" top="11" width="55" height="16" font_id="500" align="1" /><cell name="txt2" left="55" top="11" width="55" height="16" font_id="500" align="1" />
   </layout>
-  <layout name="pan_dimbar"><cell name="down1" left="1" top="1" width="110" height="40" /><cell name="text" left="67" top="13" width="38" height="16" align="2" font_id="501" /></layout>
+  <layout name="pan_4txt">
+        <cell name="txt1" left="15" top="5" width="35" height="16" font_id="501" align="0" />
+        <cell name="txt2" left="60" top="5" width="35" height="16" font_id="501" align="2" />
+      </layout>
+      <layout name="pan_dimbar"><cell name="down1" left="1" top="1" width="110" height="40" /><cell name="text" left="67" top="13" width="38" height="16" align="2" font_id="501" /></layout>
 </layouts></templates></design>

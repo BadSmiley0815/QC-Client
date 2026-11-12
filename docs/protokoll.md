@@ -226,7 +226,13 @@ Der Windows-QuadClient zeichnet jede Funktionszeile aus `design_4/client_templat
   `from_time`/`to_time` in ms (z. B. kurz = schalten, ab 501 ms = dimmen), `type="set|toggle|step_up|step_down|popup|…"`
 - Werte in der Visu wie `False`/`True` gelten als 0/1.
 
-Der Client setzt diese Sprache direkt um; Popups öffnen vorerst die moderne Kachel der Funktion.
+Der Client setzt diese Sprache direkt um; Popups der Gira-Vorlagen öffnen vorerst die moderne Kachel der Funktion.
+
+Popups (`popup id layout="pop_green.form" ico`) liegen im Raster `grid1` aus `client_design.xml`
+(`left 12 top 42 width 297 height 202`, 8 Zeilen A–H × 6 Spalten 1–6, Abstand 8/9). `grid="grid1.A1-B3"` = Zeilen A–B, Spalten 1–3.
+Elemente: `text`, `text_dyn`, `icon`, `button` (`text`, `icon`, `selected_slot`/`selected_value`, Aktionen mit `from_time`/`to_time`),
+`edit` (`slot`, `prec`, `unit`, `min`/`max`, `modify`). Aktionen `type="popup" id`, `close`, `pin_slot` (PIN-KO), `step_*` mit `border`.
+Importierte Vorlagen (nicht von Gira) zeichnet der Client komplett aus der Vorlage (ab v0.9.8).
 
 ## Importierte Symbolpakete (eigene Symbole)
 
