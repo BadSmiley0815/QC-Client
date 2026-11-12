@@ -19,7 +19,7 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
 - Erweiterungen über eine eigene WebApp, das KO-Gateway und eigene HSL3-Logikbausteine –
   z. B. moderne Kameras (ONVIF), eigene Kacheln, eigene Seiten.
 
-## Stand (v0.9.6)
+## Stand (v0.9.7)
 
 - Menü als Startseite, Räume nach Etagen, Gewerke, Favoriten – mit den Symbolen aus der QC-Visu
 - Schalten, Dimmen, Rollo, Heizung, RGB, Tunable White, Taster (alle Varianten), Szenen

@@ -368,7 +368,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.6";
+const VERSION = "0.9.7";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -417,7 +417,7 @@ const svg = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? "currentColor"
 
 /* ---------------- Vorlagen → Elementart ---------------- */
 const KIND = {"1-101":"switch","1-106":"switch_pin","1-114":"switch_value","1-118":"button","1-102":"dimmer","32-300":"dimmer",
-  "1-107":"blind","1-103":"thermostat","1-109":"scene","1-120":"rgb","1-128":"tunable_white","1-125":"value","1-112":"status",
+  "1-107":"blind","1-123":"blind","1-103":"thermostat","1-109":"scene","1-120":"rgb","1-128":"tunable_white","1-125":"value","1-112":"status",
   "1-116":"text","1-117":"state_icon","79-01":"level","0-7":"waste","1-129":"link","5-21":"spacer"};
 /* ---------------- Symbole aus der QC-Visu ----------------
    Der HS liefert die QuadClient-Symbole als XAML-Vektorgrafiken: /quad/client/design_0/client_icons.xaml.zip?<sid>.
@@ -803,7 +803,9 @@ function tile(ref, el, label) {
         <div class="ctl btns"><button data-act="up" ${k.slot_long ? "" : "disabled"} aria-label="Auf">${svg("up")}</button>
           <button data-act="stop" ${k.slot_short ? "" : "disabled"} aria-label="Stopp">${svg("stop")}</button>
           <button data-act="down" ${k.slot_long ? "" : "disabled"} aria-label="Ab">${svg("down")}</button></div>
-        ${k.slot_position ? `<div class="ctl"><span class="note">Pos.</span><input type="range" min="0" max="100" value="${Math.round(pos ?? 0)}" data-act="pos" aria-label="Position"><span class="pct">${Math.round(pos ?? 0)} %</span></div>` : ""}`;
+        ${k.slot_position ? `<div class="ctl"><span class="note">Pos.</span><input type="range" min="0" max="100" value="${Math.round(pos ?? 0)}" data-act="pos" aria-label="Position"><span class="pct">${Math.round(pos ?? 0)} %</span></div>` : ""}
+        ${k.slot_position_lamelle ? (() => { const lam = num(k.slot_position_lamelle);
+          return `<div class="ctl"><span class="note">Lam.</span><input type="range" min="0" max="100" value="${Math.round(lam ?? 0)}" data-act="lam" aria-label="Lamelle"><span class="pct">${Math.round(lam ?? 0)} %</span></div>`; })() : ""}`;
       break;
     }
     case "thermostat": {
@@ -974,7 +976,8 @@ function act(ref, a, target) {
     case "up": send(k.slot_long, 0); return;                                                            // verifiziert: 0 = Auf
     case "down": send(k.slot_long, 1); return;                                                          // verifiziert: 1 = Ab
     case "stop": send(k.slot_short, 0); return;                                                         // Schritt/Stopp
-    case "pos": send(k.slot_position, +target.value); return;                                           // verifiziert: Prozent
+    case "pos": send(k.slot_position, +target.value); return;
+    case "lam": send(k.slot_position_lamelle, +target.value); return;                                  // 1-123 Jalousie mit Lamelle                                           // verifiziert: Prozent
     case "plus": case "minus": {
       const step = pfl(p.par_steps_adjustment, 0.5), mn = pfl(p.par_min_adjustment, 7), mx = pfl(p.par_max_adjustment, 30);
       const soll = num(k.slot_temp_target ?? k.slot_adjustment); if (soll === undefined) return;
