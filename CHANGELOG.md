@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.14 – Abzeichen wie im Windows-QC
+- **Geändert:** Schloss und Zweitfunktion (z. B. „AUTO“) sitzen wie im Windows-QuadClient in einem kleinen schwarzen Kreis oben rechts im Feld.
+
 ## 0.9.13 – Musiksteuerung: Taste „zurück“
 - **Korrigiert:** Fehlt im Symbolsatz des HS ein „…_back“-Symbol (z. B. `tpl_pop_media_ico_skip_back` bei der Musiksteuerung 5-91), zeigt der Client das passende „…_forward“-Symbol gespiegelt statt einer leeren Taste.
 
