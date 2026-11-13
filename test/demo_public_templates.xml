@@ -23,6 +23,7 @@
         <action_down type="set" slot="slot_h" value="0" />
       </button>
       <button layout="pop_btn_2" grid="grid1.A3-B4" type="1" text="Mitte" selected_slot="slot_h" selected_value="2">
+        <action_down type="set" slot="slot_frei" value="0" />
         <action_down type="set" slot="slot_h" value="2" />
       </button>
       <text grid="grid1.E1-F4" layout="pop_btn_full.text1" align="0" value="Info" />

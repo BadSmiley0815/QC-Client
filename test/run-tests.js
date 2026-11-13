@@ -266,7 +266,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     return a && b && a.style.left === b.style.left && a.style.textAlign === "left" && b.style.textAlign === "right"; }));
   ok("Knopf des aktuellen Werts markiert", (await pg.locator("#clpop .clp-b.sel").textContent()).includes("Links"));
   await sent(pg); await pg.locator('#clpop .clp-b:has-text("Mitte")').click(); s = await sent(pg);
-  ok("Popup-Knopf sendet Wert (action_down set)", JSON.stringify(s) === JSON.stringify(["1|190|2"]), JSON.stringify(s));
+  ok("Popup-Knopf sendet Wert (action_down set), unverbundener Slot wird übersprungen", JSON.stringify(s) === JSON.stringify(["1|190|2"]) && !(await pg.isVisible("#clcard")), JSON.stringify(s));
   await pg.evaluate(() => window.WSI.onmessage({ data: "1|190|2.0|0" })); await pg.waitForTimeout(150);
   ok("Markierung folgt dem KO", (await pg.locator("#clpop .clp-b.sel").textContent()).includes("Mitte"));
   await pg.locator('#clpop .clp-b:has-text("Max")').click(); s = await sent(pg);

@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.20 – Aktionen auf nicht verbundene Slots
+- **Korrigiert:** Setzte eine Taste im Popup zusätzlich einen nicht verbundenen Slot (z. B. Frostschutz bei der Betriebsartenumschaltung 1-20), öffnete sich statt der Umschaltung das Einstellungsfenster. Solche Aktionen werden jetzt wie im Original übersprungen.
+
 ## 0.9.19 – Name antippen öffnet das Popup
 - **Geändert:** Bei Funktionen, deren Popup der Client aus der Vorlage zeichnet (z. B. Betriebsartenumschaltung 1-20, importierte Vorlagen), öffnet das Antippen des Namens direkt das Popup statt erst das Einstellungsfenster mit „Bedienen“.
 

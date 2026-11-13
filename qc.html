@@ -411,7 +411,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.19";
+const VERSION = "0.9.20";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2257,6 +2257,7 @@ function clExec(ref, A, n, pinOk) {
     if (clOwn(el) && el.kos[pk]) { clPinAsk(el, el.kos[pk]).then(ok => { if (ok) { clExec(ref, A, n, true); clPopRender(); } }); return "stop"; }
     if (needPin(el)) { clCard(ref); return "stop"; }
   }
+  if (/^(set|toggle|step_up|step_down)$/.test(type || "") && !ko) return;              // Slot nicht verbunden: Aktion entfällt (wie im Original)
   if (type === "set" && ko) { const v = X.par(n.getAttribute("value")); send(ko, isFinite(+v) && v !== "" ? +v : v); }
   else if (type === "toggle" && ko) send(ko, clTruthy(X.raw(slot)) ? 0 : (+X.par(n.getAttribute("value")) || 1));
   else if ((type === "step_up" || type === "step_down") && ko) {
