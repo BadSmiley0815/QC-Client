@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.18 – Schloss im Kreis
+- **Korrigiert:** Das Schloss-Symbol saß unter dem schwarzen Kreis statt darin (Symbol als Inline-Grafik auf der Textgrundlinie). Jetzt genau im Kreis; im Stil „Modern“ rückt das Abzeichen etwas ins abgerundete Feld.
+
 ## 0.9.17 – Menü-Kacheln
 - **Korrigiert:** Die Menü-Kacheln der klassischen Ansicht hatten keinen Hintergrund mehr (nur leere Kacheln waren grau).
 - **Geändert:** Stil „Modern“: Kacheln plastisch mit leichtem Verlauf, Lichtkante oben, Schatten und runden Ecken, geben beim Antippen nach; Zähler abgerundet; aktiver Eintrag der unteren Leiste mit grüner Kante.

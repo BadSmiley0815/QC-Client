@@ -95,7 +95,7 @@ button{font:inherit;color:inherit}
 #cl-log{position:absolute;left:686px;top:87px;width:680px;height:637px;background:#111;border:1px solid #333;display:flex;flex-direction:column}
 #cl-log pre{flex:1;overflow:auto;margin:0;padding:10px;font-size:12px;white-space:pre-wrap}#cl-log button{padding:10px;border-top:1px solid #333}
 #clcard{border:1px solid #2b302d;border-radius:14px;padding:12px;width:min(420px,94vw);--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;--acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;color-scheme:dark;background:var(--bg);color:var(--ink)}
-.cl-badge{border-radius:50%;background:#000}
+.cl-badge{border-radius:50%;background:#000}.cl-bdg>svg{width:100%;height:100%;display:block}
 .clp-line{display:none;height:2px;border-radius:2px;background:linear-gradient(90deg,#9cc200,#9cc20000)}
 /* Stil „Modern“ für die klassische Ansicht (Aufbau wie Gira, Optik zeitgemäß); „Gira-Stil“ = html.cl-gira */
 html:not(.cl-gira) #classic,html:not(.cl-gira) #clpop{font-family:"Segoe UI Variable","Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums}
@@ -110,6 +110,7 @@ html:not(.cl-gira) .cl-row{background:#1a1c1b;border-bottom-color:#101110;transi
 html:not(.cl-gira) .cl-row.act{background:#2c312d;box-shadow:inset 3px 0 0 #9cc200}
 html:not(.cl-gira) .cl-z.down{background:#ffffff1c;border-radius:7px}
 html:not(.cl-gira) .cl-badge{box-shadow:0 0 0 1.5px #ffffff26}
+html:not(.cl-gira) .cl-bdg{transform:translate(-4px,5px)}                       /* Abzeichen ins abgerundete Feld rücken */
 html:not(.cl-gira) #clpop::backdrop{background:#0007;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 html:not(.cl-gira) .clp-w.in{animation:clpIn .16s ease-out}
 @keyframes clpIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
@@ -410,7 +411,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.17";
+const VERSION = "0.9.18";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2112,8 +2113,8 @@ function clPanel(el, P, X) {
       if (wd) { const v = +X.raw(wd.getAttribute("slot")), mn = +X.par(wd.getAttribute("min_value") || "0") || 0, mx = +X.par(wd.getAttribute("max_value") || "100") || 100;
         W = Math.max(0, Math.min(1, ((isFinite(v) ? v : 0) - mn) / ((mx - mn) || 1))) * W; }
       if (!ico || /^blank/i.test(ico)) continue;
-      if (/badge_bg/i.test(ico)) { h += `<div class="cl-a cl-badge" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px"></div>`; continue; }   // Abzeichen (Schloss, Zweitfunktion): runder Hintergrund
-      if (/badge_ico/i.test(ico)) { const sv = qf(ico); if (sv) h += `<div class="cl-a" style="left:${L + 2.5}px;top:${T + 2}px;width:${W - 5}px;height:${H - 5}px">${sv}</div>`; continue; }
+      if (/badge_bg/i.test(ico)) { h += `<div class="cl-a cl-badge cl-bdg" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px"></div>`; continue; }   // Abzeichen (Schloss, Zweitfunktion): runder Hintergrund
+      if (/badge_ico/i.test(ico)) { const sv = qf(ico); if (sv) h += `<div class="cl-a cl-bdg" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px">${sv}</div>`; continue; }
       const svgH = qf(ico, /_bg|bar|_ol$|line/i.test(ico));
       const fill = /_bg$/i.test(icoKey(ico)) && W >= 30 ? " cl-bgw" : "";                  // Flächen-Hintergrund (Modern: abgerundet, mit Abstand)
       h += svgH ? `<div class="cl-a${fill}" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px">${svgH}</div>`
