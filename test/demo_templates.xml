@@ -9,6 +9,7 @@
       <icon_dyn cell="leftbg" ico="demo_grey">
         <content case_slot="switch_rm"><case on_value="1" ico="$par_switch_on" /></content>
       </icon_dyn>
+      <icon cell="rightbg" ico="tpl_btn_red_bg" />
       <text cell="txt1" value="$par_on" def_value="#ON" />
       <text cell="txt2" value="$par_off" def_value="#OFF" />
       <action_up click="2" type="set" slot="switch" value="1" />
@@ -28,6 +29,36 @@
     <panel pos="2" click="1" layout="pan_dimbar">
       <text_dyn cell="text" prec="0" unit="$par_unit"><content value_slot="dim_val" /></text_dyn>
       <action_up click="1" type="popup" id="1" />
+    </panel>
+  </template>
+  <!-- Heizung, Rollladen, Szenen: erfundene Zeilen, damit die Beispielbilder nicht leer sind -->
+  <template id="1-103">
+    <panel pos="1" click="4" layout="pan_doublebtn">
+      <icon cell="leftbg" ico="tpl_btn_grey_bg" /><icon cell="rightbg" ico="tpl_btn_grey_bg" />
+      <text cell="txt1" value="−" /><text cell="txt2" value="+" />
+      <action_up click="2" type="step_down" slot="slot_adjustment" value="0.5" />
+      <action_up click="3" type="step_up" slot="slot_adjustment" value="0.5" />
+    </panel>
+    <panel pos="2" click="1" layout="pan_2val">
+      <text cell="txt1" value="Soll" /><text_dyn cell="txt2" prec="1" unit="°"><content value_slot="slot_temp_target" /></text_dyn>
+      <text cell="txt3" value="Ist" /><text_dyn cell="txt4" prec="1" unit="°"><content value_slot="slot_temp_actual" /></text_dyn>
+    </panel>
+  </template>
+  <template id="1-107_1">
+    <panel pos="1" click="4" layout="pan_doublebtn">
+      <icon cell="leftbg" ico="tpl_btn_grey_bg" /><icon cell="rightbg" ico="tpl_btn_grey_bg" />
+      <text cell="txt1" value="AUF" /><text cell="txt2" value="AB" />
+      <action_up click="2" type="set" slot="slot_long" value="0" />
+      <action_up click="3" type="set" slot="slot_long" value="1" />
+    </panel>
+    <panel pos="2" click="0" layout="pan_2val">
+      <text cell="txt1" value="Pos." /><text_dyn cell="txt2" prec="0" unit="%"><content value_slot="slot_position" /></text_dyn>
+    </panel>
+  </template>
+  <template id="1-109_4">
+    <panel pos="1" click="4" layout="pan_doublebtn">
+      <icon cell="leftbg" ico="tpl_btn_blue_bg" /><icon cell="rightbg" ico="tpl_btn_blue_bg" />
+      <text cell="txt1" value="Abend" /><text cell="txt2" value="Kino" />
     </panel>
   </template>
 </templates>

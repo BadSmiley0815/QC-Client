@@ -2118,7 +2118,7 @@ function clPanel(el, P, X) {
       const svgH = qf(ico, /_bg|bar|_ol$|line/i.test(ico));
       const fill = /_bg$/i.test(icoKey(ico)) && W >= 30 ? " cl-bgw" : "";                  // Flächen-Hintergrund (Modern: abgerundet, mit Abstand)
       h += svgH ? `<div class="cl-a${fill}" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px">${svgH}</div>`
-        : /_bg$/i.test(icoKey(ico)) ? `<div class="cl-a${fill}" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px;background:${/green/i.test(ico) ? "#8fb000" : /red/i.test(ico) ? "#a01e1e" : "#2b2b2b"}"></div>` : "";
+        : /_bg$/i.test(icoKey(ico)) ? `<div class="cl-a${fill}" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px;background:${/green/i.test(ico) ? "#8fb000" : /red/i.test(ico) ? "#a01e1e" : /blue/i.test(ico) ? "#0f4f8f" : "#2b2b2b"}"></div>` : "";
     } else {
       const t = clText(n, X);
       if (!t) continue;

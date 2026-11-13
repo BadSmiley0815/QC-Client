@@ -43,9 +43,21 @@ Aufgenommen mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage
 
 ![Plugin Diagramm](docs/img/plugins.png)
 
-**Ansicht „Klassisch“** – wie der Windows-QuadClient: Zeilen links, Plugins in den Quadranten rechts
+**Ansicht „Klassisch“** – Aufbau wie der Windows-QuadClient (Zeilen links, Plugins in den Quadranten rechts), im Stil „Modern“: abgerundete Felder, moderne Schrift
 
 ![Ansicht Klassisch](docs/img/klassisch.png)
+
+**Popup aus der Vorlage** – Knöpfe, Wertfeld, Schieberegler; die angetippte Zeile bleibt markiert
+
+![Popup im Stil Modern](docs/img/klassisch_popup.png)
+
+**Menü** – plastische Kacheln mit Zählern und Zuständen
+
+![Menü Klassisch](docs/img/klassisch_menue.png)
+
+**Stil „Gira“** – dieselbe Seite so schlicht wie das Original (umschaltbar in den Einstellungen bzw. System → „Stil wechseln“)
+
+![Stil Gira](docs/img/klassisch_gira.png)
 
 Alle Versionen: [`CHANGELOG.md`](CHANGELOG.md) · mit Bildern: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
 

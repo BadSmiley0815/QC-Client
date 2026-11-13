@@ -8,7 +8,8 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const FILES = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
   "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml",
-  "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml" };
+  "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml",
+  "public_templates.xml": "demo_public_templates.xml", "public_language.xml": "demo_public_language.xml" };
 
 // gleichmäßige, glaubwürdige Verläufe für die Diagramme
 function arch(q) {
@@ -30,6 +31,7 @@ async function open(b, ui) {
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (n === "client_icons.xaml.zip") return r.fulfill({ status: u.includes("/quad/client/design_0/") ? 200 : 404, contentType: "application/zip", body: T("demo_icons.xaml.zip") });
     if (n === "client_templates.xml" && !u.includes("/design_4/")) return r.fulfill({ status: 403, body: "" });
+    if (/public_(templates|language)\.xml$/.test(n) && !/\/quad\/public\/(design_4\/public_templates|public_language)/.test(u)) return r.fulfill({ status: 404, body: "" });
     const f = FILES[n]; let body = f ? T(f).toString() : "";
     // Plugins in die Quadranten der klassischen Ansicht legen (oben Klima + Verbrauch, unten Zähler + Musik)
     if (n === "quad_plugin.xml") body = body.replace(/title="(Klima|Verbrauch)"/g, '$& quad_3="1"').replace(/title="(Zähler|Musik)"/g, '$& quad_3="2"');
@@ -75,6 +77,16 @@ async function open(b, ui) {
   pg = await open(b, "classic");
   await pg.click('#cl-left .cl-mt:has-text("Wohnen")'); await pg.waitForTimeout(1500);
   await pg.screenshot({ path: path.join(OUT, "klassisch.png") });
+  // Popup aus der Vorlage (erfundene Vorlage 99-7 mit PIN): Zeile antippen, PIN, Popup
+  await pg.locator('#cl-left .cl-row:has-text("Lamellen") .cl-p[data-pos="1"] .cl-z').first().click(); await pg.waitForTimeout(300);
+  await pg.fill("#dinput", "1234"); await pg.press("#dinput", "Enter"); await pg.waitForTimeout(700);
+  await pg.screenshot({ path: path.join(OUT, "klassisch_popup.png") });
+  await pg.close();
+  pg = await open(b, "classic"); await pg.waitForTimeout(500);
+  await pg.screenshot({ path: path.join(OUT, "klassisch_menue.png") });
+  await pg.evaluate(() => clSetStyle("gira")); await pg.click('#cl-left .cl-mt:has-text("Wohnen")'); await pg.waitForTimeout(1200);
+  await pg.screenshot({ path: path.join(OUT, "klassisch_gira.png") });
+  await pg.evaluate(() => clSetStyle("modern"));
   await pg.close();
   await b.close();
   console.log("Bilder in docs/img/");
