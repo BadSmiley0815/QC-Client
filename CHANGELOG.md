@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.11 – Schloss-Abzeichen
+- **Geändert:** Das Schloss (PIN) und andere Abzeichen in den Feldern der Ansicht „Klassisch“ sitzen jetzt in einem kleinen runden, halbtransparenten Kreis statt auf einem harten grauen Quadrat.
+- **Neu:** Das Protokoll zeigt, welches Popup bzw. Einstellungsfenster für welche Funktion geöffnet wird.
+
 ## 0.9.10 – Popups: Schieberegler, alle Knöpfe
 - **Neu:** Schieberegler in Popups (waagrecht und senkrecht), Wert wird beim Loslassen gesendet.
 - **Korrigiert:** Knöpfe und Wertfelder, die über `layout="grid1.F2-G2+pop_btn_1"` platziert sind, fehlten (z. B. „Ab“ und „−“ bei der Jalousie mit Lamelle).
