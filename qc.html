@@ -39,7 +39,7 @@ button{font:inherit;color:inherit}
 #cl-title{position:absolute;left:11px;top:52px;font-size:21px;color:#77A600}
 #cl-left{position:absolute;left:0;top:86px;width:680px;height:640px;background:#141414;overflow:hidden}
 .cl-mt{position:absolute;width:224px;height:78px;background:#222;text-align:left;overflow:hidden}
-.cl-mt:active,.cl-mt.down{background:#3a3a3a}.cl-mt.empty{background:#222}.cl-mt.off{opacity:.45}
+#classic .cl-mt{background:#222}#classic .cl-mt:active,#classic .cl-mt.down{background:#3a3a3a}.cl-mt.empty{background:#222}.cl-mt.off{opacity:.45}
 .cl-mt .t1,.cl-mt .t2{position:absolute;left:12px;width:150px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cl-mt .t1{top:10px}.cl-mt .t2{top:30px}
 .cl-mi{position:absolute;left:140px;top:0;width:80px;height:79px;color:#ececec;display:grid;place-items:center}
@@ -99,6 +99,12 @@ button{font:inherit;color:inherit}
 .clp-line{display:none;height:2px;border-radius:2px;background:linear-gradient(90deg,#9cc200,#9cc20000)}
 /* Stil „Modern“ für die klassische Ansicht (Aufbau wie Gira, Optik zeitgemäß); „Gira-Stil“ = html.cl-gira */
 html:not(.cl-gira) #classic,html:not(.cl-gira) #clpop{font-family:"Segoe UI Variable","Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+html:not(.cl-gira) #classic .cl-mt{background:linear-gradient(180deg,#2a2d2b,#1f2120);border-radius:10px;box-shadow:inset 0 1px 0 #ffffff14,0 2px 6px #0008;transition:transform .08s,filter .15s}
+html:not(.cl-gira) #classic .cl-mt:active,html:not(.cl-gira) #classic .cl-mt.down{transform:scale(.97);filter:brightness(1.25)}
+html:not(.cl-gira) #classic .cl-mt.empty{background:#1b1d1c;box-shadow:none}
+html:not(.cl-gira) .cl-cnt{border-radius:9px;font-weight:600}
+html:not(.cl-gira) .cl-pg{border-top-color:#9cc200aa}
+html:not(.cl-gira) #cl-nav button.act{background:linear-gradient(180deg,#2a2d2b,#1f2120);box-shadow:inset 0 2px 0 #9cc200}
 html:not(.cl-gira) .cl-bgw{clip-path:inset(3px round 7px)}
 html:not(.cl-gira) .cl-row{background:#1a1c1b;border-bottom-color:#101110;transition:background .15s}
 html:not(.cl-gira) .cl-row.act{background:#2c312d;box-shadow:inset 3px 0 0 #9cc200}
@@ -404,7 +410,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.16";
+const VERSION = "0.9.17";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {

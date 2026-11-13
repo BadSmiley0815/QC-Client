@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.17 – Menü-Kacheln
+- **Korrigiert:** Die Menü-Kacheln der klassischen Ansicht hatten keinen Hintergrund mehr (nur leere Kacheln waren grau).
+- **Geändert:** Stil „Modern“: Kacheln plastisch mit leichtem Verlauf, Lichtkante oben, Schatten und runden Ecken, geben beim Antippen nach; Zähler abgerundet; aktiver Eintrag der unteren Leiste mit grüner Kante.
+
 ## 0.9.16 – Klassisch im modernen Stil
 - **Neu:** Stil „Modern“ für die klassische Ansicht (Standard): Aufbau und Raster wie beim Gira-QuadClient, Optik zeitgemäß – abgerundete Felder mit Abstand, Popups mit runden Ecken, Schatten, unscharfem Hintergrund und kurzer Einblendung, flache Knöpfe (aktiv grün gefüllt), feine grüne Linie unter der Überschrift, moderne Schrift mit gleich breiten Ziffern.
 - **Neu:** Umschalter „Stil Klassisch: Modern / Gira“ in den Einstellungen bzw. „Stil wechseln“ im System-Menü der klassischen Ansicht.
