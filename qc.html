@@ -99,6 +99,9 @@ button{font:inherit;color:inherit}
 .clp-st.plain{background:#1d211f;border:1px solid #3a3f3c;border-radius:6px}
 .clp-b{cursor:pointer;touch-action:none}.clp-b.plain{background:#2c312e;border-radius:4px}.clp-b.plain.sel{background:#4f6600}
 .clp-b.sel{box-shadow:inset 0 0 0 2px #8fb000}.clp-b.down{filter:brightness(1.5)}.clp-b.off{opacity:.45;pointer-events:none}
+.clp-s{touch-action:none;cursor:pointer}.clp-s.ro{cursor:default}.clp-s>div{position:absolute}.clp-s .bg{inset:0;background:#0e0f0e;border:1px solid #3a3f3c;border-radius:4px}
+.clp-s .bg:has(svg){background:none;border:0}.clp-s .bar{left:0;bottom:0;height:100%;background:#8fb000aa;border-radius:4px}.clp-s.v .bar{width:100%}
+.clp-s .kn{width:9px;top:0;bottom:0;margin-left:-4px;background:#e6e6e6;border-radius:2px}.clp-s.v .kn{width:auto;height:9px;left:0;right:0;top:auto;margin:0 0 -4px}
 .clp-e{background:#0e0f0e;border:1px solid #3a3f3c;border-radius:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;overflow:hidden}
 .clp-e.ro{cursor:default}.clp-e .t{font-size:10px;color:#9a9a9a;white-space:nowrap}.clp-e .v{font-size:16px;white-space:nowrap}.clp-e small{font-size:11px;margin-left:2px;color:#aaa}
 #clcard::backdrop{background:#0008}#clcard .grid{grid-template-columns:1fr}.cl-cardh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -376,7 +379,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.9";
+const VERSION = "0.9.10";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1983,6 +1986,7 @@ async function clLoad() {
 }
 /* Vorlagen, Texte und Layouts einlesen und zusammenführen (vorhandene Einträge bleiben) */
 function clMerge(t, l, d) {
+  const bom = x => x && x.replace(/^\uFEFF/, ""); t = bom(t); l = bom(l); d = bom(d);
   if (t) new DOMParser().parseFromString(t, "text/xml").querySelectorAll("template[id]").forEach(e => { const id = e.getAttribute("id"); if (!CL.tpl[id]) CL.tpl[id] = e; });
   if (l) new DOMParser().parseFromString(l, "text/xml").querySelectorAll("language > text").forEach(e => { const k = e.getAttribute("key"); if (k in CL.lang) return;
     const de = e.querySelector('lang[id="de"]'); CL.lang[k] = de ? de.getAttribute("value") : (e.getAttribute("default") || ""); });
@@ -2293,6 +2297,9 @@ function clPopRender() {
   if (!CLP) return; const el = P_.els[CLP.ref], P = el && clPopNode(el, CLP.id); if (!P) { clPopClose(); return; }
   if (CL.press) return;
   const X = clCtx(el, clTpl(el)); CLP.nodes = [];
+  const cs = P.getAttribute("close_slot");                                              // Popup schließt sich selbst (z. B. bei Sperre)
+  if (cs && X.eq(X.raw(cs), P.getAttribute("on_value") ?? "1")) { clPopClose(); return; }
+  if (CLP.drag) return;
   const form = (CL.lay[(P.getAttribute("layout") || "").split(".")[0]] || {}).form || {};
   const fw = px(form, "width", 320), fh = px(form, "height", 260);
   const bg = qf(P.getAttribute("ico") || form.ico || "tpl_pop_bg", true);
@@ -2311,8 +2318,8 @@ function clPopRender() {
     else if (k === "icon" || k === "icon_dyn") { const ico = clIco(n, X, c.ico || ""), sv = ico && G && qf(ico, /^tpl_pop_(btn|bg)|_bg$/.test(ico));
       if (sv) h += `<div class="cl-a" style="left:${G[0]}px;top:${G[1]}px;width:${G[2]}px;height:${G[3]}px">${sv}</div>`; }
     else if (k === "button") {
-      const r = clGrid(n.getAttribute("grid")); if (!r) { skipped++; continue; }
-      const L = CL.lay[n.getAttribute("layout")] || {}, ss = n.getAttribute("selected_slot");
+      if (!G || !(n.getAttribute("grid") || /\+/.test(n.getAttribute("layout") || ""))) { skipped++; continue; }
+      const r = G.slice(0, 4), L = CL.lay[G[5]] || {}, ss = n.getAttribute("selected_slot");
       const sel = ss && X.eq(X.raw(ss), X.par(n.getAttribute("selected_value")));
       const i = CLP.nodes.push(n) - 1, bgi = qf((L.bg || {}).ico, true), sli = sel && qf((L.selected || {}).ico, true);
       let inner = (bgi ? `<div class="cl-a" style="inset:0">${bgi}</div>` : "") + (sli ? `<div class="cl-a" style="inset:0">${sli}</div>` : "");
@@ -2329,8 +2336,17 @@ function clPopRender() {
         else { const tt = clText(s, X); if (tt) inner += textDiv(tt, sr, sc); } }
       const off = !X.enabled(n) || ![...n.children].some(a => /^action_/.test(a.localName));
       h += `<div class="cl-a clp-b${sel ? " sel" : ""}${bgi ? "" : " plain"}${off ? " off" : ""}" data-i="${i}" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${inner}</div>`; }
+    else if (k === "slider") {
+      if (!G) { skipped++; continue; }
+      const r = G.slice(0, 4), sl = n.getAttribute("slot"), mn = +X.par(n.getAttribute("min") || "0") || 0, mx = +X.par(n.getAttribute("max") || "100");
+      const vert = r[3] > r[2], f = Math.max(0, Math.min(1, ((+X.raw(sl) || 0) - mn) / ((isFinite(mx) ? mx : 100) - mn || 1)));
+      const i = el.kos[sl] && /^true$/i.test(X.par(n.getAttribute("can_slide") || "true")) ? CLP.nodes.push(n) - 1 : -1, L = CL.lay[G[5] || "slider"] || CL.lay.slider || {};
+      const im = k2 => qf((L[k2] || {}).ico, true), bgI = im(vert ? "bg_v" : "bg_h"), barI = im(vert ? "bar_v" : "bar_h");
+      h += `<div class="cl-a clp-s${vert ? " v" : ""}${i < 0 ? " ro" : ""}" ${i < 0 ? "" : `data-s="${i}"`} style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">
+        <div class="bg">${bgI}</div><div class="bar" style="${vert ? `height:${f * 100}%` : `width:${f * 100}%`}">${barI}</div><div class="kn" style="${vert ? `bottom:${f * 100}%` : `left:${f * 100}%`}"></div></div>`; }
     else if (k === "edit") {
-      const r = clGrid(n.getAttribute("grid")); if (!r) { skipped++; continue; }
+      if (!G || !(n.getAttribute("grid") || /\+/.test(n.getAttribute("layout") || ""))) { skipped++; continue; }
+      const r = G.slice(0, 4);
       const sl = n.getAttribute("slot"), v = X.raw(sl), nv = +v, prec = +X.par(n.getAttribute("prec") || "0") || 0, u = X.par(n.getAttribute("unit") || "");
       const val = v === undefined || v === "" ? "–" : isFinite(nv) ? fmt(nv, prec) : String(v), ti = X.txt(n.getAttribute("title") || n.getAttribute("info") || "");
       const mod = /^true$/i.test(X.par(n.getAttribute("modify") || "")) && el.kos[sl];
@@ -2433,6 +2449,17 @@ $("clpop").addEventListener("pointerdown", e => { const b = e.target.closest(".c
   const n = CLP.nodes[+b.dataset.i], el = P_.els[CLP.ref]; if (!n || !el) return;
   clPress(CLP.ref, { el, X: clCtx(el, clTpl(el)), acts: [...n.children].filter(a => /^action_(down|up|repeat)$/.test(a.localName)) }, b); });
 $("clpop").addEventListener("pointerup", () => clUp(false));
+$("clpop").addEventListener("pointerdown", e => { const sd = e.target.closest(".clp-s[data-s]"); if (!sd || !CLP) return; e.preventDefault();
+  const n = CLP.nodes[+sd.dataset.s], el = P_.els[CLP.ref]; if (!n || !el) return; const X = clCtx(el, clTpl(el));
+  const mn = +X.par(n.getAttribute("min") || "0") || 0, mx0 = +X.par(n.getAttribute("max") || "100"), mx = isFinite(mx0) ? mx0 : 100, st = +X.par(n.getAttribute("step") || "1") || 1;
+  const vert = sd.classList.contains("v"); let val = null;
+  const at = ev => { const b = sd.getBoundingClientRect(), f = Math.max(0, Math.min(1, vert ? (b.bottom - ev.clientY) / b.height : (ev.clientX - b.left) / b.width));
+    val = Math.round((mn + f * (mx - mn)) / st) * st; const g = (val - mn) / (mx - mn || 1);
+    sd.querySelector(".bar").style[vert ? "height" : "width"] = g * 100 + "%"; sd.querySelector(".kn").style[vert ? "bottom" : "left"] = g * 100 + "%"; };
+  CLP.drag = true; try { sd.setPointerCapture(e.pointerId); } catch (x) {} at(e);
+  const mv = ev => at(ev), up = () => { sd.removeEventListener("pointermove", mv); sd.removeEventListener("pointerup", up); sd.removeEventListener("pointercancel", up);
+    if (CLP) CLP.drag = false; if (val !== null) send(el.kos[n.getAttribute("slot")], +val.toFixed(4)); clPopRender(); };
+  sd.addEventListener("pointermove", mv); sd.addEventListener("pointerup", up); sd.addEventListener("pointercancel", up); });
 $("clpop").addEventListener("pointercancel", () => clUp(true));
 $("clpop").addEventListener("click", e => { if (e.target === $("clpop")) { clPopClose(); return; } const ed = e.target.closest(".clp-e[data-e]"); if (ed) clPopEdit(+ed.dataset.e); });
 $("clpop").addEventListener("close", () => { CLP = null; });

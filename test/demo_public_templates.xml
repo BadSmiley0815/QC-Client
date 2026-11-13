@@ -24,6 +24,10 @@
       <text grid="grid1.E1-F4" layout="pop_btn_full.text1" align="0" value="Info" />
       <text_dyn grid="grid1.E1-F4" layout="pop_btn_full.text1" align="2"><content value_slot="slot_h" /></text_dyn>
       <edit layout="edit_3" grid="grid1.C1-D3" type="2" title="Wert" slot="slot_h" prec="0" min="0" max="4" modify="true" />
+      <slider layout="slider" grid="grid1.G1-G5" type="2" can_slide="true" slot="slot_h" min="0" max="4" step="1" />
+      <button layout="grid1.H1-H2+pop_btn_2" type="1" text="Max">
+        <action_down type="step_up" slot="slot_h" value="9" border="4" />
+      </button>
       <button layout="pop_btn_ok" grid="grid1.G6-H6" type="1" text="OK">
         <action_up type="close" />
       </button>

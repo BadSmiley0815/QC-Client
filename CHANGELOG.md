@@ -3,6 +3,12 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.10 – Popups: Schieberegler, alle Knöpfe
+- **Neu:** Schieberegler in Popups (waagrecht und senkrecht), Wert wird beim Loslassen gesendet.
+- **Korrigiert:** Knöpfe und Wertfelder, die über `layout="grid1.F2-G2+pop_btn_1"` platziert sind, fehlten (z. B. „Ab“ und „−“ bei der Jalousie mit Lamelle).
+- **Neu:** Popups mit `close_slot` schließen sich selbst (z. B. bei Sperre/Zwangsführung).
+- **Korrigiert:** Vorlagendateien mit BOM werden gelesen.
+
 ## 0.9.9 – Popups: Lage wie im Original
 - **Korrigiert:** Popup-Elemente mit `layout="grid3.A1-A2+pop_btn_list.bg"` (Raster + Layoutzelle) lagen alle oben links übereinander (z. B. Listenzeilen und Symbole der Musiksteuerung 5-91). Jetzt an der richtigen Stelle; Texte links/rechts nach der Layoutzelle, Knopf-Symbole und -Texte in den Zellen `icon3`/`text1`.
 

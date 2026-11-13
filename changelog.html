@@ -81,7 +81,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <header class="hero">
   <div>
     <div class="kicker"><i></i> QC-Client · qc.html</div>
-    <h1>Der QuadClient im Browser – Version 0.9.9</h1>
+    <h1>Der QuadClient im Browser – Version 0.9.10</h1>
     <p class="lead">Eigener HTML5-Client für den Gira HomeServer. Er lädt die vorhandene QC-Visu, nutzt die QC-Benutzerrechte und läuft auf jedem Gerät mit Browser – ohne App, ohne Zusatzdateien.</p>
     <div class="pills">
       <span class="pill">Aufruf: <b>https://&lt;HS-IP&gt;/opt/hs-client/qc.html</b></span>
@@ -144,6 +144,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <h2>Änderungen</h2>
 <p class="sub">Neueste Version oben. <span class="tag t-neu">neu</span> <span class="tag t-fix">korrigiert</span> <span class="tag t-offen">noch offen</span></p>
 <div class="tl">
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.10</span>Popups: Schieberegler, alle Knöpfe</h3><ul><li><span class="tag t-neu">neu</span> Schieberegler in Popups (waagrecht und senkrecht), der Wert wird beim Loslassen gesendet.</li><li><span class="tag t-fix">korrigiert</span> Knöpfe und Wertfelder fehlten, wenn die Vorlage sie über Raster und Layout zugleich platziert (z. B. „Ab“ und „−“ bei der Jalousie mit Lamelle).</li><li><span class="tag t-neu">neu</span> Popups, die sich laut Vorlage bei Sperre oder Zwangsführung schließen, tun das jetzt auch.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.9</span>Popups: Lage wie im Original</h3><ul><li><span class="tag t-fix">korrigiert</span> Elemente, die im Popup über Raster und Layoutzelle platziert sind, lagen alle oben links übereinander (z. B. Listenzeilen und Symbole der Musiksteuerung). Jetzt an der richtigen Stelle; Texte links/rechts wie im Original, Symbole und Texte der Knöpfe in ihren Zellen.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.8</span>Importierte Funktionsvorlagen</h3><ul><li><span class="tag t-neu">neu</span> Importierte (nicht von Gira stammende) Funktionsvorlagen: Der Client sucht ihre Beschreibung zusätzlich im public-Bereich des HS und schreibt ins Protokoll, was er gefunden hat und welche Vorlagen fehlen.</li><li><span class="tag t-neu">neu</span> Popups dieser Vorlagen erscheinen im Original-Stil (Raster, Knöpfe mit Markierung des aktuellen Werts, Werteingabe, OK), auch mit PIN-Abfrage. Die moderne Kachel zeigt die Texte der Felder und „Bedienen“ statt „unknown“.</li><li><span class="tag t-fix">korrigiert</span> Fehlt die Beschreibung einer Vorlage, steht in der Zeile „Vorlage … fehlt“ statt „…“.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.7</span>Jalousien mit Lamelle bedienbar</h3><ul><li><span class="tag t-fix">fix</span> Die QC-Vorlage „Jalousie mit Lamellenverstellung“ (1-123) wurde nicht erkannt: Kachel ohne Knöpfe, Status „unknown“. Jetzt mit Auf/Stopp/Ab, Position und zusätzlich einem Regler für die Lamelle.</li></ul></div></div>
