@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.12 – Vorlagen-Logik: umgekehrte Eingänge
+- **Korrigiert:** In der Vorlagen-Logik wurde `inverse="true"` an einzelnen Eingängen (`<slot … inverse="true"/>`) nicht beachtet. Folgen u. a. bei der Betriebsartenumschaltung (1-20): Soll- und Ist-Anzeige übereinander, Popup ließ sich nicht öffnen (Freigabe „ändern ohne PIN“ immer aus). Betrifft alle Vorlagen mit solcher Logik.
+- **Korrigiert:** Sichtbarkeit mit `visible_slot` + `from`/`to` am Element wird als Bereich geprüft.
+
 ## 0.9.11 – Schloss-Abzeichen
 - **Geändert:** Das Schloss (PIN) und andere Abzeichen in den Feldern der Ansicht „Klassisch“ sitzen jetzt in einem kleinen runden, halbtransparenten Kreis statt auf einem harten grauen Quadrat.
 - **Neu:** Das Protokoll zeigt, welches Popup bzw. Einstellungsfenster für welche Funktion geöffnet wird.

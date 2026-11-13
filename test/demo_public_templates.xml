@@ -2,8 +2,12 @@
 <!-- Testvorlage 99-7 (eigene, frei erfundene Vorlage) im public-Bereich: Feld mit Text aus case_slot, Popup mit Raster-Knöpfen, PIN -->
 <templates>
   <template id="99-7_1">
+    <logic id="logic_nopin" operation="and">
+      <slot id="$99-7_par_pin" inverse="true" />
+    </logic>
     <panel pos="1" click="1" layout="pan_4txt">
       <text cell="txt1" value="LR" />
+      <text cell="txt1" value="XX" visible_slot="logic_nopin" />
       <text_dyn cell="txt2">
         <content case_slot="slot_h">
           <case from="0" from_type="2" to="0" to_type="2" value="#99-7_left" />

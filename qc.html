@@ -380,7 +380,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.11";
+const VERSION = "0.9.12";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2007,8 +2007,10 @@ function clCtx(el, T) {
     const op = L.getAttribute("operation"), bit = L.getAttribute("type") === "bit";
     const vals = [...L.children].map(c => { if (c.localName === "fix") return +c.getAttribute("value");
       const v = raw(c.getAttribute("id")), cmp = c.getAttribute("compare");
-      if (cmp != null) return String(isFinite(+v) && v !== "" && v != null ? +v : v) === cmp ? 1 : 0;
-      return bit || op === "sum" ? (+v || 0) : (clTruthy(v) ? 1 : 0); });
+      const inv = c.getAttribute("inverse") === "true";                                   // <slot … inverse="true"/>: Eingang umkehren
+      if (cmp != null) return (String(isFinite(+v) && v !== "" && v != null ? +v : v) === cmp) !== inv ? 1 : 0;
+      if (bit || op === "sum") { const n = +v || 0; return inv ? (n ? 0 : 1) : n; }
+      return clTruthy(v) !== inv ? 1 : 0; });
     let res = op === "sum" ? vals.reduce((a, b) => a + b, 0) : bit ? vals.reduce((a, b) => op === "or" ? (a | b) : (a & b)) :
       op === "or" ? vals.some(Boolean) : vals.every(Boolean);
     if (L.getAttribute("inverse") === "true") res = bit || op === "sum" ? (res ? 0 : 1) : !res;
@@ -2023,7 +2025,7 @@ function clCtx(el, T) {
     return (ft === "1" ? x > f : x >= f) && (tt === "1" ? x < t : x <= t); };
   const cond = n => {
     const vs = n.getAttribute("visible_slot") || n.getAttribute("vsisble_slot"), ov = n.getAttribute("on_value");
-    if (vs && !(ov == null ? clTruthy(raw(vs)) : eq(raw(vs), ov))) return false;                         // ohne on_value: sichtbar, wenn wahr
+    if (vs && !(ov != null ? eq(raw(vs), ov) : n.hasAttribute("from") ? range(raw(vs), n) : clTruthy(raw(vs)))) return false;   // auch visible_slot + from/to                         // ohne on_value: sichtbar, wenn wahr
     const up = n.getAttribute("used_param"); if (up && !eq(raw(up), n.getAttribute("used_on"))) return false;
     for (const c of n.children) if (c.localName === "visible" && !range(raw(c.getAttribute("slot")), c)) return false;
     return true; };

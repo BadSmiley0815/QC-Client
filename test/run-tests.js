@@ -257,7 +257,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   await rowTxt("Leselampe").locator('.cl-p[data-pos="2"] .cl-z').click(); await pg.waitForTimeout(200);
   ok("Popup der Vorlage -> Einstellungsfenster", await pg.isVisible("#clcard") && (await pg.textContent("#clcardg")).includes("Leselampe"));
   await pg.click("#clcardx");
-  ok("importierte Vorlage aus public: Feld zeigt Text", (await rowTxt("Lamellen").textContent()).replace(/\s+/g, "").includes("LRLinks"), await rowTxt("Lamellen").textContent());
+  ok("importierte Vorlage aus public: Feld zeigt Text", (await rowTxt("Lamellen").textContent()).replace(/\s+/g, "").includes("LRLinks") && !(await rowTxt("Lamellen").textContent()).includes("XX"), await rowTxt("Lamellen").textContent());
   await rowTxt("Lamellen").locator('.cl-p[data-pos="1"] .cl-z').click(); await pg.waitForTimeout(200);
   ok("PIN-Abfrage vor dem Popup", await pg.isVisible("#dlg") && !(await pg.isVisible("#clpop")));
   await pg.fill("#dinput", "4711"); await pg.press("#dinput", "Enter"); await pg.waitForTimeout(200);
