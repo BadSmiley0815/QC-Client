@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.20 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.21 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 

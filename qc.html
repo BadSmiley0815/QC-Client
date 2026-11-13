@@ -74,7 +74,7 @@ button{font:inherit;color:inherit}
 .cl-sub{position:absolute;left:0;top:0;width:680px;height:42px;background:#151515;border-bottom:1px solid #000}
 .cl-sa{position:absolute!important;top:0;width:57px;height:42px;display:grid;place-items:center;color:#e6e6e6!important;border-right:1px solid #000!important}.cl-sa svg{width:20px;height:20px}.cl-sa:disabled{color:#3a3a3a!important}
 .cl-st{position:absolute;left:114px;width:452px;top:11px;text-align:center;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cl-chart{position:absolute;left:0;top:42px;width:680px;height:232px}.cl-chart svg{position:absolute;left:0;top:0;font-family:Arial,sans-serif}
+.cl-chart{position:absolute;left:0;top:42px;width:680px;height:232px;cursor:crosshair}.cl-chart svg{touch-action:pan-y}.cl-chart svg{position:absolute;left:0;top:0;font-family:Arial,sans-serif}
 .cl-leg{position:absolute;top:6px;font-size:12px;line-height:1.35}
 .cl-sonos{position:absolute;left:0;top:42px;width:680px;height:232px}
 .cl-cover{position:absolute;left:30px;top:14px;width:200px;height:200px;border:2px solid #000;background:#141414;display:grid;place-items:center;color:#e6e6e6;overflow:hidden}.cl-cover svg{width:70px;height:70px}.cl-cover img{width:100%;height:100%;object-fit:cover}
@@ -87,6 +87,19 @@ button{font:inherit;color:inherit}
 .cl-camv .btns{position:absolute;right:8px;bottom:8px;margin:0}.cl-camv .cerr{height:232px;border-radius:0}
 .cl-camg{position:absolute;left:0;top:42px;width:680px;height:232px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:#000}
 .cl-camc{overflow:hidden;min-height:0}.cl-camc .camgrid{display:block}.cl-camc .camimg{aspect-ratio:auto;height:115px;border-radius:0}.cl-camc .camcap{display:none}.cl-camc .cerr{height:115px;min-height:0;padding:6px;font-size:11px}
+.cl-vgrid{position:absolute;left:0;top:0;width:680px;height:274px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:89px;gap:3px;background:#0d0d0d}
+.cl-vt{position:relative;background:#222;color:#e6e6e6;overflow:hidden}
+.cl-vt .cap{position:absolute;left:14px;top:9px;right:12px;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-vt .ico{position:absolute;left:12px;bottom:10px;width:40px;height:40px;color:#e6e6e6}.cl-vt .ico svg{width:100%;height:100%;display:block}
+.cl-vt .big{position:absolute;right:16px;bottom:9px;font-size:28px;white-space:nowrap;font-variant-numeric:tabular-nums}.cl-vt .big u{text-decoration:none}
+.cl-vt .list{position:absolute;left:47%;right:14px;top:8px;bottom:6px;display:flex;flex-direction:column;justify-content:space-evenly}
+.cl-vt .row{display:flex;justify-content:space-between;gap:8px;font-size:12px;border-bottom:1px solid #444;padding-bottom:2px}.cl-vt .row:last-child{border-bottom:0}
+.cl-vt .row span{color:#9a9a9a}.cl-vt .row b{font-weight:400;white-space:nowrap}.cl-vt .row u{text-decoration:none}
+html:not(.cl-gira) .cl-vgrid{gap:6px;padding:6px;background:#141615}
+html:not(.cl-gira) .cl-vt{background:linear-gradient(180deg,#2a2d2b,#1f2120);border-radius:10px;box-shadow:inset 0 1px 0 #ffffff12,0 2px 6px #0007}
+html:not(.cl-gira) .cl-vt .cap{color:#b9c0bb;font-size:15px}
+html:not(.cl-gira) .cl-vt .big{font-weight:300;letter-spacing:-.3px}html:not(.cl-gira) .cl-vt .big u{font-size:17px;color:#9aa29d;font-weight:400}
+html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) .cl-vt .row u{color:#9aa29d}
 .cl-qmsg{display:flex;flex-direction:column;gap:6px;padding:14px;color:#bbb;font-size:15px}
 #cl-nav{position:absolute;left:0;top:726px;width:1366px;height:42px;display:flex;background:#000}
 #cl-nav button{flex:1;font-size:17px;color:#fff;border-left:1px solid #222}#cl-nav button.act{background:#1e1e1e}#cl-nav button:disabled{color:#555}
@@ -411,7 +424,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.20";
+const VERSION = "0.9.21";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1319,6 +1332,7 @@ async function openPlugin(title, id, host) {
     if (h.plug !== P0) return;
     P0.data = T.read(x); P0.tags = new Set(T.tags(P0.data).filter(k => k && k !== "0")); if (T.start) T.start(P0.data, h);
     renderHost(h);
+    if (T.icons) { const ic = T.icons(P0.data).filter(k => k && !QCI.has(icoKey(k))); if (ic.length) loadIcons(ic.map(icoKey)).then(() => { if (h.plug === P0) renderHost(h); }); }
     if (T.load) { await T.load(P0.data); if (h.plug === P0) renderHost(h); }
   } catch (e) { h.body.innerHTML = `<p class="note">Plugin konnte nicht geladen werden: ${esc(e.message)}</p>`; log("··", "Plugin " + id + ": " + e.message); }
 }
@@ -1337,16 +1351,26 @@ const hsUrl = path => "https://" + cfg.host + path + "?" + sid;
 /* 1-2 Wertanzeige („Wetterstation“): Gruppen mit je 1–n Werten aus KOs */
 PLUGIN_TYPES["1-2"] = {
   name: "Wertanzeige",
-  read: x => [...x.querySelectorAll("station_item")].map(it => ({ cap: it.getAttribute("caption") || "",
+  read: x => [...x.querySelectorAll("station_item")].map(it => ({ cap: it.getAttribute("caption") || "", icon: it.getAttribute("icon") || "",
     vals: [...it.querySelectorAll("value")].map(v => ({ t: v.getAttribute("title") || "", ko: v.getAttribute("dpt"),
       d: decimals(v.getAttribute("format")), u: v.getAttribute("unit") || "" })) })),
   tags: d => d.flatMap(g => g.vals.map(v => v.ko)),
+  icons: d => d.map(g => g.icon),                                                     // Symbole der Kacheln (aus dem Symbolsatz des HS)
   html: d => {
     const val = v => { const n = num(v.ko); return n === undefined ? (V.get(v.ko) || "–") : fmt(n, v.d); };
     return '<div class="pgrid">' + d.map(g => g.vals.length === 1 && g.vals[0].t === g.cap
       ? `<div class="pval"><div class="cap">${esc(g.cap)}</div><div class="big">${esc(val(g.vals[0]))}<u>${esc(g.vals[0].u)}</u></div></div>`
       : `<div class="pval"><div class="cap">${esc(g.cap)}</div>${g.vals.map(v =>
           `<div class="row"><span>${esc(v.t)}</span><b>${esc(val(v))}<u>${esc(v.u)}</u></b></div>`).join("")}</div>`).join("") + "</div>";
+  },
+  /* Original-Stil: Kacheln in zwei Spalten – Titel oben links, Symbol unten links, Wert groß rechts bzw. Werteliste rechts */
+  htmlClassic: d => {
+    const val = v => { const n = num(v.ko); return n === undefined ? (V.get(v.ko) || "–") : fmt(n, v.d); };
+    return '<div class="cl-vgrid">' + d.map(g => { const ic = g.icon && qf(g.icon);
+      const one = g.vals.length === 1;
+      return `<div class="cl-vt${one ? "" : " multi"}"><div class="cap">${esc(g.cap)}</div>${ic ? `<div class="ico">${ic}</div>` : ""}${one
+        ? `<div class="big">${esc(val(g.vals[0]))}${g.vals[0].u ? ` <u>${esc(g.vals[0].u)}</u>` : ""}</div>`
+        : `<div class="list">${g.vals.map(v => `<div class="row"><span>${esc(v.t)}</span><b>${esc(val(v))}${v.u ? ` <u>${esc(v.u)}</u>` : ""}</b></div>`).join("")}</div>`}</div>`; }).join("") + "</div>";
   }
 };
 
@@ -1562,8 +1586,21 @@ PLUGIN_TYPES["0-3"] = {
       v.forEach((y, j) => { if (y === null) { pen = false; return; } p += (pen ? "L" : "M") + x(j).toFixed(1) + " " + s1.y(y).toFixed(1); pen = true; last = y; });
       g += `<path d="${p}" fill="none" stroke="${COL[l.color]}" stroke-width="1.5"/>`;
       if (last !== null) { const ax = PR + 22 + axes.indexOf(l.axis) * 78, yy = s1.y(last); g += `<path d="M${ax - 12} ${yy}l8 -5v10z" fill="${COL[l.color]}"/>`; } });
+    if (d.hover !== null && d.hover >= 0 && d.hover < rg.count) {                 // Maus/Finger: Linie, Punkte und Werte zum Zeitpunkt
+      const hx = x(d.hover), t = new Date(d.start.getTime() + d.hover * rg.size * 60000), t2 = new Date(t.getTime() + rg.size * 60000);
+      const tf = rg.unit === "d" ? { weekday: "short", day: "2-digit", month: "2-digit" } : { hour: "2-digit", minute: "2-digit" };
+      const rows = d.lines.map((l, k) => { const v = (d.vals[k] || [])[d.hover]; return { c: COL[l.color], t: l.title, v, y: v === null || v === undefined ? null : sc[l.axis].y(v),
+        s: v === null || v === undefined ? "–" : fmt(v, d.sc[l.axis].prec) + " " + d.sc[l.axis].unit }; });
+      g += `<line x1="${hx}" x2="${hx}" y1="${T}" y2="${T + ph}" stroke="#e6e6e6" stroke-opacity=".55" stroke-dasharray="3 3"/>`;
+      rows.forEach(r => { if (r.y !== null) g += `<circle cx="${hx}" cy="${r.y}" r="4" fill="${r.c}" stroke="#111" stroke-width="1.5"/>`; });
+      const head = t.toLocaleString("de-DE", tf) + (rg.size > 1 && rg.unit !== "d" ? " – " + t2.toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "");
+      const bw = 190, bh = 22 + rows.length * 17, bx = hx + 12 + bw > PR ? hx - 12 - bw : hx + 12, by = T + 2;
+      g += `<g class="cl-tip"><rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="7" fill="#111d" stroke="#ffffff22"/>
+        <text x="${bx + 10}" y="${by + 16}" fill="#fff" font-size="12" font-weight="600">${esc(head)}</text>
+        ${rows.map((r, n) => `<circle cx="${bx + 14}" cy="${by + 30 + n * 17}" r="4" fill="${r.c}"/><text x="${bx + 24}" y="${by + 34 + n * 17}" fill="#ddd" font-size="12">${esc(r.t)}</text><text x="${bx + bw - 10}" y="${by + 34 + n * 17}" fill="#fff" font-size="12" text-anchor="end">${esc(r.s)}</text>`).join("")}</g>`;
+    }
     const leg = [0, 1].map(a => d.lines.filter(l => l.axis === a).map(l => `<div style="color:${COL[l.color]}">${esc(l.title)}</div>`).join("")).map((h, n) => `<div class="cl-leg" style="left:${18 + n * 240}px">${h}</div>`).join("");
-    return sub + `<div class="cl-chart">${leg}<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(d.lines.map(l => l.title).join(", "))}">${g}</svg></div>`;
+    return sub + `<div class="cl-chart">${leg}<svg data-chart="cl" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(d.lines.map(l => l.title).join(", "))}">${g}</svg></div>`;
   },
   act: async (d, b) => {
     const k = b.dataset.k || b.dataset.d;
@@ -1576,9 +1613,11 @@ function chartHover(e) {
   const svgEl = e.target.closest && e.target.closest("svg[data-chart]"), d = PLUG.data;
   let h = null;
   if (svgEl && e.type !== "mouseleave") {
-    const rg = CHART_RANGES.find(r => r.k === d.cur), bx = svgEl.getBoundingClientRect(), L = 44, R = 10, pw = bx.width - L - R;
-    const px = (e.touches ? e.touches[0].clientX : e.clientX) - bx.left - L;
-    h = px < 0 || px > pw ? null : Math.min(rg.count - 1, Math.max(0, Math.floor(px / pw * rg.count)));
+    const rg = CHART_RANGES.find(r => r.k === d.cur), bx = svgEl.getBoundingClientRect(), cx = (e.touches ? e.touches[0].clientX : e.clientX) - bx.left;
+    if (svgEl.dataset.chart === "cl") {                                        // klassisch: Zeichenfläche 14 … 545 von 680 (Ansicht skaliert)
+      const f = (cx / bx.width * 680 - 14) / (545 - 14); h = f < 0 || f > 1 ? null : Math.min(rg.count - 1, Math.max(0, Math.floor(f * rg.count)));
+    } else { const L = 44, R = 10, pw = bx.width - L - R, px = cx - L;
+      h = px < 0 || px > pw ? null : Math.min(rg.count - 1, Math.max(0, Math.floor(px / pw * rg.count))); }
   }
   if (h !== d.hover) { d.hover = h; renderHost(H); }
 }

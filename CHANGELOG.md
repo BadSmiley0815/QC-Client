@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.21 – Diagramm mit Maus, Wertanzeige im Original-Aufbau
+- **Neu:** Diagramme in der klassischen Ansicht zeigen beim Überfahren mit der Maus (bzw. Antippen) eine Linie, Punkte auf den Kurven und ein Kästchen mit Zeitraum und allen Werten.
+- **Neu:** Wertanzeige (Plugin 1-2) in der klassischen Ansicht wie im Windows-QC: Kacheln in zwei Spalten mit Titel, Symbol und großem Wert bzw. Werteliste – im Stil „Modern“ mit runden, plastischen Kacheln. Symbole der Kacheln werden aus dem Symbolsatz des HS geladen.
+
 ## 0.9.20 – Aktionen auf nicht verbundene Slots
 - **Korrigiert:** Setzte eine Taste im Popup zusätzlich einen nicht verbundenen Slot (z. B. Frostschutz bei der Betriebsartenumschaltung 1-20), öffnete sich statt der Umschaltung das Einstellungsfenster. Solche Aktionen werden jetzt wie im Original übersprungen.
 
