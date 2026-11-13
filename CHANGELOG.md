@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.9 – Popups: Lage wie im Original
+- **Korrigiert:** Popup-Elemente mit `layout="grid3.A1-A2+pop_btn_list.bg"` (Raster + Layoutzelle) lagen alle oben links übereinander (z. B. Listenzeilen und Symbole der Musiksteuerung 5-91). Jetzt an der richtigen Stelle; Texte links/rechts nach der Layoutzelle, Knopf-Symbole und -Texte in den Zellen `icon3`/`text1`.
+
 ## 0.9.8 – Importierte Funktionsvorlagen
 - **Neu:** Importierte (nicht von Gira stammende) Funktionsvorlagen: Der Client sucht ihre Beschreibung zusätzlich im public-Bereich des HS (`/quad/public/…/public_templates.xml`, `public_language.xml`, `public_design.xml`) und schreibt ins Protokoll, was er gefunden hat und welche Vorlagen fehlen.
 - **Neu:** Popups dieser Vorlagen erscheinen im Original-Stil (Raster, Knöpfe mit Markierung des aktuellen Werts, Werteingabe, OK), auch mit PIN-Abfrage. Die moderne Kachel zeigt die Texte der Felder und einen Knopf „Bedienen“ statt „unknown“.

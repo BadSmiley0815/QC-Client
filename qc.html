@@ -376,7 +376,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.8";
+const VERSION = "0.9.9";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2263,6 +2263,17 @@ function clGrid(spec) {
   const r1 = m[2].charCodeAt(0) - 65, r2 = m[4].charCodeAt(0) - 65, c1 = +m[3] - 1, c2 = +m[5] - 1;
   return [+g.left + c1 * (cw + dx), +g.top + r1 * (rh + dy), (c2 - c1 + 1) * cw + (c2 - c1) * dx, (r2 - r1 + 1) * rh + (r2 - r1) * dy];
 }
+/* Lage eines Popup-Elements: grid="grid1.A1-B3" und/oder layout="grid3.A1-A2+pop_btn_list.bg" bzw. layout="Layout.Zelle".
+   Liefert [x, y, b, h, Zelle, Layoutname]; Zelle mit left/top/width verschiebt innerhalb des Rasterfelds. */
+function clGeo(n, popLay) {
+  let l = n.getAttribute("layout") || "", g = clGrid(n.getAttribute("grid"));
+  const m = /^(\w+\.[A-Z]\d+-[A-Z]\d+)\+(.+)$/.exec(l); if (m) { g = clGrid(m[1]); l = m[2]; }
+  const [ln, cn] = l.split("."), L = CL.lay[ln] || {};
+  const c = cn ? L[cn] : n.getAttribute("cell") ? (CL.lay[popLay] || {})[n.getAttribute("cell")] : null;
+  if (!g) return c ? [px(c, "left"), px(c, "top"), px(c, "width", 110), px(c, "height", 40), c, ln] : [21, 21, 280, 24, null, ln];   // ohne Lage: wie die Überschrift
+  if (c && (c.left || c.top || c.width)) return [g[0] + px(c, "left"), g[1] + px(c, "top"), c.width ? Math.min(px(c, "width"), g[2] - px(c, "left")) : g[2] - px(c, "left"), c.height ? px(c, "height") : g[3] - px(c, "top"), c, ln];
+  return [...g, c, ln];
+}
 function clPopNode(el, id) { const T = clTpl(el); return T && [...T.children].find(n => n.localName === "popup" && n.getAttribute("id") === String(id)); }
 function clPop(ref, id) {
   const el = P_.els[ref]; if (!clPopNode(el, id)) return false;
@@ -2287,19 +2298,18 @@ function clPopRender() {
   const bg = qf(P.getAttribute("ico") || form.ico || "tpl_pop_bg", true);
   let h = bg ? `<div class="cl-a" style="left:0;top:0;width:${fw}px;height:${fh}px">${bg}</div>` : "";
   const flat = node => [...node.children].flatMap(n => n.localName === "group" ? (X.cond(n) ? flat(n) : []) : [n]);
-  const rectOf = (n, c) => { const g = clGrid(n.getAttribute("grid")); return g || [px(c, "left"), px(c, "top"), px(c, "width", 110), px(c, "height", 40)]; };
+  const popLay = (P.getAttribute("layout") || "").split(".")[0];
   const textDiv = (t, r, c, al) => { const fs = CL_FONT[c && c.font_id] || 13, a = ["left", "center", "right"][+(al ?? (c && c.align) ?? 0)] || "left";
     return `<div class="cl-a cl-t" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;font-size:${fs}px;text-align:${a}">${esc(t)}</div>`; };
   let skipped = 0;
   for (const n of flat(P)) {
     const k = n.localName; if (/^(action|logic|#)/.test(k) || !X.cond(n)) continue;
-    const c = clCell(P.getAttribute("layout"), n) || {};
-    if (k === "text" || k === "text_dyn") { const t = clText(n, X); if (!t) continue;
-      let r = rectOf(n, c); if (n.getAttribute("grid") && c.top) r = [r[0] + px(c, "left"), r[1] + px(c, "top"), c.width ? Math.min(px(c, "width"), r[2]) : r[2]];
-      else if (n.getAttribute("grid")) r = [r[0] + 4, r[1] + Math.max(0, r[3] / 2 - 8), r[2] - 8];
+    const G = clGeo(n, popLay), c = (G && G[4]) || {};
+    if (k === "text" || k === "text_dyn") { const t = clText(n, X); if (!t || !G) continue;
+      const r = c.top !== undefined || !(n.getAttribute("grid") || /\+/.test(n.getAttribute("layout") || "")) ? G : [G[0] + 4, G[1] + Math.max(0, G[3] / 2 - 8), G[2] - 8];
       h += textDiv(t, r, c, n.getAttribute("align")); }
-    else if (k === "icon" || k === "icon_dyn") { const ico = clIco(n, X, c.ico || ""), r = rectOf(n, c), sv = ico && qf(ico);
-      if (sv) h += `<div class="cl-a" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${sv}</div>`; }
+    else if (k === "icon" || k === "icon_dyn") { const ico = clIco(n, X, c.ico || ""), sv = ico && G && qf(ico, /^tpl_pop_(btn|bg)|_bg$/.test(ico));
+      if (sv) h += `<div class="cl-a" style="left:${G[0]}px;top:${G[1]}px;width:${G[2]}px;height:${G[3]}px">${sv}</div>`; }
     else if (k === "button") {
       const r = clGrid(n.getAttribute("grid")); if (!r) { skipped++; continue; }
       const L = CL.lay[n.getAttribute("layout")] || {}, ss = n.getAttribute("selected_slot");
@@ -2307,9 +2317,12 @@ function clPopRender() {
       const i = CLP.nodes.push(n) - 1, bgi = qf((L.bg || {}).ico, true), sli = sel && qf((L.selected || {}).ico, true);
       let inner = (bgi ? `<div class="cl-a" style="inset:0">${bgi}</div>` : "") + (sli ? `<div class="cl-a" style="inset:0">${sli}</div>` : "");
       const t = X.txt(n.getAttribute("text")), ic = X.par(n.getAttribute("icon") || "");
-      const icv = ic && qf(ic);
-      if (icv) inner += `<div class="cl-a" style="left:${Math.max(0, r[2] / 2 - 20)}px;top:${Math.max(0, r[3] / 2 - 20)}px;width:40px;height:40px">${icv}</div>`;
-      if (t) inner += `<div class="cl-a cl-t" style="left:4px;top:${Math.max(0, r[3] / 2 - 8)}px;width:${r[2] - 8}px;font-size:${CL_FONT[(L.text1 || {}).font_id] || 13}px;text-align:center">${esc(t)}</div>`;
+      const icv = ic && ic !== "blank" && qf(ic), i3 = L.icon3;
+      if (icv) inner += i3 && px(i3, "width") > 0 ? `<div class="cl-a" style="left:${px(i3, "left")}px;top:${px(i3, "top")}px;width:${px(i3, "width")}px;height:${px(i3, "height", r[3])}px">${icv}</div>`
+        : `<div class="cl-a" style="left:${Math.max(0, r[2] / 2 - 20)}px;top:${Math.max(0, r[3] / 2 - 20)}px;width:40px;height:40px">${icv}</div>`;
+      const t1 = L.text1;
+      if (t) inner += t1 ? textDiv(t, [px(t1, "left"), px(t1, "top"), Math.min(px(t1, "width", r[2]), r[2]) || r[2]], t1)
+        : `<div class="cl-a cl-t" style="left:4px;top:${Math.max(0, r[3] / 2 - 8)}px;width:${r[2] - 8}px;font-size:13px;text-align:center">${esc(t)}</div>`;
       for (const s of flat(n)) { if (!/^(text|text_dyn|icon|icon_dyn)$/.test(s.localName) || !X.cond(s)) continue;     // Inhalt eines Knopfs in Zellen seines Layouts
         const sc = L[s.getAttribute("cell")] || {}, sr = [px(sc, "left"), px(sc, "top"), px(sc, "width", r[2]), px(sc, "height", r[3])];
         if (/^icon/.test(s.localName)) { const v = qf(clIco(s, X, sc.ico || "")); if (v) inner += `<div class="cl-a" style="left:${sr[0]}px;top:${sr[1]}px;width:${sr[2]}px;height:${sr[3]}px">${v}</div>`; }

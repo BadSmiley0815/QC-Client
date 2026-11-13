@@ -262,6 +262,8 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("PIN-Abfrage vor dem Popup", await pg.isVisible("#dlg") && !(await pg.isVisible("#clpop")));
   await pg.fill("#dinput", "4711"); await pg.press("#dinput", "Enter"); await pg.waitForTimeout(200);
   ok("Popup im Original-Stil mit Überschrift und Knöpfen", await pg.isVisible("#clpop") && /Lamellen/.test(await pg.textContent("#clpop")) && (await pg.locator("#clpop .clp-b").count()) === 3);
+  ok("Text im Raster mit Layoutzelle (links/rechts)", await pg.evaluate(() => { const t = [...document.querySelectorAll("#clpop .cl-t")]; const a = t.find(x => x.textContent === "Info"), b = t.find(x => x.textContent === "0");
+    return a && b && a.style.left === b.style.left && a.style.textAlign === "left" && b.style.textAlign === "right"; }));
   ok("Knopf des aktuellen Werts markiert", (await pg.locator("#clpop .clp-b.sel").textContent()).includes("Links"));
   await sent(pg); await pg.locator('#clpop .clp-b:has-text("Mitte")').click(); s = await sent(pg);
   ok("Popup-Knopf sendet Wert (action_down set)", JSON.stringify(s) === JSON.stringify(["1|190|2"]), JSON.stringify(s));
