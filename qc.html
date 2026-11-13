@@ -96,6 +96,29 @@ button{font:inherit;color:inherit}
 #cl-log pre{flex:1;overflow:auto;margin:0;padding:10px;font-size:12px;white-space:pre-wrap}#cl-log button{padding:10px;border-top:1px solid #333}
 #clcard{border:1px solid #2b302d;border-radius:14px;padding:12px;width:min(420px,94vw);--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;--acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;color-scheme:dark;background:var(--bg);color:var(--ink)}
 .cl-badge{border-radius:50%;background:#000}
+.clp-line{display:none;height:2px;border-radius:2px;background:linear-gradient(90deg,#9cc200,#9cc20000)}
+/* Stil „Modern“ für die klassische Ansicht (Aufbau wie Gira, Optik zeitgemäß); „Gira-Stil“ = html.cl-gira */
+html:not(.cl-gira) #classic,html:not(.cl-gira) #clpop{font-family:"Segoe UI Variable","Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+html:not(.cl-gira) .cl-bgw{clip-path:inset(3px round 7px)}
+html:not(.cl-gira) .cl-row{background:#1a1c1b;border-bottom-color:#101110;transition:background .15s}
+html:not(.cl-gira) .cl-row.act{background:#2c312d;box-shadow:inset 3px 0 0 #9cc200}
+html:not(.cl-gira) .cl-z.down{background:#ffffff1c;border-radius:7px}
+html:not(.cl-gira) .cl-badge{box-shadow:0 0 0 1.5px #ffffff26}
+html:not(.cl-gira) #clpop::backdrop{background:#0007;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+html:not(.cl-gira) .clp-w.in{animation:clpIn .16s ease-out}
+@keyframes clpIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+html:not(.cl-gira) .clp-st{background:linear-gradient(180deg,#272b29,#1c1f1d);border:1px solid #ffffff14;border-radius:14px;box-shadow:0 18px 50px #000c}
+html:not(.cl-gira) .clp-bgimg,html:not(.cl-gira) .clp-bi{display:none}
+html:not(.cl-gira) .clp-line{display:block}
+html:not(.cl-gira) .clp-b{background:#303432;border-radius:9px;box-shadow:inset 0 1px 0 #ffffff12;transition:transform .08s,background .15s,box-shadow .15s}
+html:not(.cl-gira) .clp-b.sel{background:linear-gradient(180deg,#a8ce14,#84a600);box-shadow:0 0 14px #9cc20050,inset 0 1px 0 #ffffff40}
+html:not(.cl-gira) .clp-b.down{transform:scale(.95);filter:brightness(1.25)}
+html:not(.cl-gira) .clp-b.off{opacity:.4}
+html:not(.cl-gira) .clp-e{background:#151716;border:1px solid #ffffff1a;border-radius:9px}
+html:not(.cl-gira) .clp-e:not(.ro):active{border-color:#9cc200}
+html:not(.cl-gira) .clp-et{color:#9aa29d}
+html:not(.cl-gira) .clp-s .bg{border-radius:9px;background:#151716;border:1px solid #ffffff1a}html:not(.cl-gira) .clp-s .bg svg{display:none}
+html:not(.cl-gira) .clp-s .bar{background:linear-gradient(90deg,#84a600,#a8ce14);border-radius:9px}html:not(.cl-gira) .clp-s .bar svg{display:none}
 #clpop{outline:none;padding:0;border:0;background:transparent;overflow:visible;max-width:none;max-height:none}#clpop::backdrop{background:#0009}
 .clp-st{position:relative;transform-origin:0 0;color:#e6e6e6;font-family:Arial,"Segoe UI",Helvetica,sans-serif;user-select:none;-webkit-user-select:none}
 .clp-st.plain{background:#1d211f;border:1px solid #3a3f3c;border-radius:6px}
@@ -321,7 +344,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div class="cl-quad" style="top:87px"><div id="cl-q1c"></div><div id="cl-q1b" class="cl-qb"></div></div>
   <div class="cl-quad" style="top:408px"><div id="cl-q2c"></div><div id="cl-q2b" class="cl-qb"></div></div>
   <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
-  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
+  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
 <dialog id="clpop" aria-label="Bedienung"></dialog>
@@ -381,7 +404,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.15";
+const VERSION = "0.9.16";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1889,7 +1912,8 @@ function buildNav() {
   const st = store.get("start", "m");
   h += `<label class="startsel">Startseite <select id="startsel"><option value="m" ${st === "m" ? "selected" : ""}>Menü</option>
     <option value="fav" ${st === "fav" ? "selected" : ""}>Favoriten</option><option value="last" ${st === "last" ? "selected" : ""}>zuletzt geöffnet</option></select></label>
-    <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>`;
+    <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>
+    <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
   { const cp = store.get("camproxy", null); h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
   if (P_.menu && P_.menu.length) h += `<button data-v="m:0">Menü<span></span></button>`;
   h += `<button data-v="fav">Favoriten<span>${favs.size}</span></button>`;
@@ -1901,6 +1925,7 @@ function buildNav() {
   $("nav").innerHTML = h;
   $("startsel").onchange = e => store.set("start", e.target.value);
   $("cpbtn").onclick = camProxyDlg;
+  $("clstylesel").onchange = e => clSetStyle(e.target.value);
   $("uisel").onchange = e => { clSetUi(e.target.value); if (e.target.value === "classic" && !clWide()) { e.target.value = "modern"; alert("Die klassische Ansicht braucht ein breites Fenster (ab 900 Pixel)."); } };
 }
 function viewData(v) {
@@ -1956,6 +1981,10 @@ function updateKo(ko) {
    visible_slot/on_value · <visible from/to> · logic(and/or/sum, type bit, compare, inverse) · action_down/up/repeat(click, from_time/to_time).
    Was der Übersetzer (noch) nicht kann – Popups, PIN, Szenen-Lernen … – öffnet die moderne Kachel derselben Funktion. */
 let CLASSIC = store.get("ui", "modern") === "classic";
+let CLSTYLE = store.get("clstyle", "modern");                          // Optik der klassischen Ansicht: "modern" | "gira"
+document.documentElement.classList.toggle("cl-gira", CLSTYLE === "gira");
+function clSetStyle(st) { CLSTYLE = st; store.set("clstyle", st); document.documentElement.classList.toggle("cl-gira", st === "gira");
+  const b = document.querySelector('#cl-sys [data-sysa="style"]'); if (b) b.textContent = "Stil: " + (st === "gira" ? "Gira" : "Modern"); }
 const CL = { tpl: null, lang: {}, lay: {}, grid: {}, loading: null, err: "", qsel: { 1: 0, 2: 0 }, qoff: { 1: 0, 2: 0 }, top: {}, hosts: {}, press: null };
 const clWide = () => window.innerWidth >= 900;
 const clOn = () => CLASSIC && clWide() && P_ && !$("app").classList.contains("hidden-force");
@@ -2080,8 +2109,9 @@ function clPanel(el, P, X) {
       if (/badge_bg/i.test(ico)) { h += `<div class="cl-a cl-badge" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px"></div>`; continue; }   // Abzeichen (Schloss, Zweitfunktion): runder Hintergrund
       if (/badge_ico/i.test(ico)) { const sv = qf(ico); if (sv) h += `<div class="cl-a" style="left:${L + 2.5}px;top:${T + 2}px;width:${W - 5}px;height:${H - 5}px">${sv}</div>`; continue; }
       const svgH = qf(ico, /_bg|bar|_ol$|line/i.test(ico));
-      h += svgH ? `<div class="cl-a" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px">${svgH}</div>`
-        : /_bg$/i.test(icoKey(ico)) ? `<div class="cl-a" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px;background:${/green/i.test(ico) ? "#8fb000" : /red/i.test(ico) ? "#a01e1e" : "#2b2b2b"}"></div>` : "";
+      const fill = /_bg$/i.test(icoKey(ico)) && W >= 30 ? " cl-bgw" : "";                  // Flächen-Hintergrund (Modern: abgerundet, mit Abstand)
+      h += svgH ? `<div class="cl-a${fill}" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px">${svgH}</div>`
+        : /_bg$/i.test(icoKey(ico)) ? `<div class="cl-a${fill}" style="left:${L}px;top:${T}px;width:${W}px;height:${H}px;background:${/green/i.test(ico) ? "#8fb000" : /red/i.test(ico) ? "#a01e1e" : "#2b2b2b"}"></div>` : "";
     } else {
       const t = clText(n, X);
       if (!t) continue;
@@ -2314,7 +2344,7 @@ function clPopRender() {
   const form = (CL.lay[(P.getAttribute("layout") || "").split(".")[0]] || {}).form || {};
   const fw = px(form, "width", 320), fh = px(form, "height", 260);
   const bg = qf(P.getAttribute("ico") || form.ico || "tpl_pop_bg", true);
-  let h = bg ? `<div class="cl-a" style="left:0;top:0;width:${fw}px;height:${fh}px">${bg}</div>` : "";
+  let h = (bg ? `<div class="cl-a clp-bgimg" style="left:0;top:0;width:${fw}px;height:${fh}px">${bg}</div>` : "") + `<div class="cl-a clp-line" style="left:14px;top:38px;width:${fw - 28}px"></div>`;
   const flat = node => [...node.children].flatMap(n => n.localName === "group" ? (X.cond(n) ? flat(n) : []) : [n]);
   const popLay = (P.getAttribute("layout") || "").split(".")[0];
   const textDiv = (t, r, c, al) => { const fs = CL_FONT[c && c.font_id] || 13, a = ["left", "center", "right"][+(al ?? (c && c.align) ?? 0)] || "left";
@@ -2333,7 +2363,7 @@ function clPopRender() {
       const r = G.slice(0, 4), L = CL.lay[G[5]] || {}, ss = n.getAttribute("selected_slot");
       const sel = ss && X.eq(X.raw(ss), X.par(n.getAttribute("selected_value")));
       const i = CLP.nodes.push(n) - 1, bgi = qf((L.bg || {}).ico, true), sli = sel && qf((L.selected || {}).ico, true);
-      let inner = (bgi ? `<div class="cl-a" style="inset:0">${bgi}</div>` : "") + (sli ? `<div class="cl-a" style="inset:0">${sli}</div>` : "");
+      let inner = (bgi ? `<div class="cl-a clp-bi" style="inset:0">${bgi}</div>` : "") + (sli ? `<div class="cl-a clp-bi" style="inset:0">${sli}</div>` : "");
       const t = X.txt(n.getAttribute("text")), ic = X.par(n.getAttribute("icon") || "");
       let icv = ic && ic !== "blank" && qf(ic); const i3 = L.icon3;
       if (ic && ic !== "blank" && !icv && /_back$/.test(icoKey(ic))) {                // fehlt „…_back“ im Symbolsatz: „…_forward“ gespiegelt
@@ -2366,8 +2396,8 @@ function clPopRender() {
       const i = mod ? CLP.nodes.push(n) - 1 : -1, EL = CL.lay[G[5]] || CL.lay[n.getAttribute("layout")] || {};
       const bgI = qf((EL.bg || {}).ico, true), vc = EL.value || {}, ic = EL.info || {};
       const vfs = CL_FONT[vc.font_id] || 22, ifs = CL_FONT[ic.font_id] || 13;
-      h += `<div class="cl-a clp-e${mod ? "" : " ro"}${bgI ? " img" : ""}" ${mod ? `data-e="${i}"` : ""} style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${bgI ? `<div class="cl-a" style="inset:0">${bgI}</div>` : ""}
-        ${ti ? `<div class="cl-a cl-t" style="left:${px(ic, "left", 7)}px;top:${px(ic, "top", 5)}px;font-size:${ifs}px">${esc(ti)}</div>` : ""}
+      h += `<div class="cl-a clp-e${mod ? "" : " ro"}${bgI ? " img" : ""}" ${mod ? `data-e="${i}"` : ""} style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${bgI ? `<div class="cl-a clp-bi" style="inset:0">${bgI}</div>` : ""}
+        ${ti ? `<div class="cl-a cl-t clp-et" style="left:${px(ic, "left", 7)}px;top:${px(ic, "top", 5)}px;font-size:${ifs}px">${esc(ti)}</div>` : ""}
         <div class="cl-a cl-t" style="right:${Math.max(6, r[2] - px(vc, "left", 2) - px(vc, "width", r[2] - 8))}px;bottom:${Math.max(2, r[3] / 2 - vfs * .75)}px;font-size:${vfs}px;text-align:right;white-space:nowrap">${esc(val)}${u ? `<small style="font-size:${Math.round(vfs * .62)}px;margin-left:2px">${esc(u)}</small>` : ""}</div></div>`; }
     else skipped++;
   }
@@ -2380,7 +2410,8 @@ function clPopRender() {
       y = Math.max(8, Math.min(innerHeight - fh * s - 8, rr.top + rr.height / 2 - fh * s / 2));
     pos = `position:fixed;margin:0;left:${x}px;top:${y}px`; }
   d.style.cssText = pos;
-  d.innerHTML = `<div style="width:${fw * s}px;height:${fh * s}px"><div class="clp-st${bg ? "" : " plain"}" style="width:${fw}px;height:${fh}px;transform:scale(${s})">${h}</div></div>`;
+  const anim = !d.open || !d.firstElementChild;
+  d.innerHTML = `<div class="clp-w${anim ? " in" : ""}" style="width:${fw * s}px;height:${fh * s}px"><div class="clp-st${bg ? "" : " plain"}" style="width:${fw}px;height:${fh}px;transform:scale(${s})">${h}</div></div>`;
 }
 async function clPopEdit(i) {
   const n = CLP && CLP.nodes[i]; if (!n) return; const el = P_.els[CLP.ref], X = clCtx(el, clTpl(el));
@@ -2460,6 +2491,7 @@ $("classic").addEventListener("click", e => {
   if (t.dataset.sys) { $("cl-sys").classList.toggle("hidden"); return; }
   if (t.dataset.sysa) { $("cl-sys").classList.add("hidden");
     if (t.dataset.sysa === "modern") clSetUi("modern");
+    if (t.dataset.sysa === "style") { clSetStyle(CLSTYLE === "gira" ? "modern" : "gira"); clRender(); }
     if (t.dataset.sysa === "log") { $("cl-log").querySelector("pre").textContent = $("log").textContent; $("cl-log").classList.remove("hidden"); }
     if (t.dataset.sysa === "logclose") $("cl-log").classList.add("hidden");
     if (t.dataset.sysa === "copy") $("logcopy").click();
