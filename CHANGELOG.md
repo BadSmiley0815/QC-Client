@@ -3,6 +3,12 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.15 – Popups näher am Windows-QC
+- **Korrigiert:** „+“ und „−“ in Popups (`action_repeat`) reagierten nur bei langem Drücken; jetzt sofort beim Antippen, beim Halten mit Wiederholung. Schrittweite auch aus `def_value`.
+- **Geändert:** Wertfelder wie im Original: Bezeichnung (`info`) oben links, Wert groß rechtsbündig mit kleiner Einheit, Rahmen aus dem Layout (`edit_2`/`edit_3`).
+- **Geändert:** In „Klassisch“ öffnet das Popup im Maßstab der Ansicht über der Liste auf Höhe der angetippten Zeile; die Zeile bleibt markiert, solange Popup oder Einstellungsfenster offen sind.
+- **Korrigiert:** Knöpfe ohne Aktion (reine Statusanzeige) werden nicht mehr abgeblendet.
+
 ## 0.9.14 – Abzeichen wie im Windows-QC
 - **Geändert:** Schloss und Zweitfunktion (z. B. „AUTO“) sitzen wie im Windows-QuadClient in einem kleinen schwarzen Kreis oben rechts im Feld.
 
