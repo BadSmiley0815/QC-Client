@@ -2281,6 +2281,7 @@ function clGeo(n, popLay) {
 function clPopNode(el, id) { const T = clTpl(el); return T && [...T.children].find(n => n.localName === "popup" && n.getAttribute("id") === String(id)); }
 function clPop(ref, id) {
   const el = P_.els[ref]; if (!clPopNode(el, id)) return false;
+  log("··", `Popup ${el.tpl}${el.variant ? "_" + el.variant : ""} #${id} für „${el.name}“ (Art ${el.kind})`);
   CLP = { ref, id: String(id), nodes: [] }; clPopRender();
   const d = $("clpop"); if (!d.open) d.showModal(); return true;
 }
@@ -2378,7 +2379,7 @@ function clSummary(el, T, X) {
 }
 function clEnsure() { if (CL.tpl || CL.loading || !P_) return; clLoad().then(() => { if (!CLASSIC) renderView(); }); }
 /* moderne Kachel als Fenster – alle Einstellungen einer Funktion */
-function clCard(ref) { const el = P_.els[ref]; if (!el) return; $("clcardg").innerHTML = tile(ref, el); const d = $("clcard"); if (!d.open) d.showModal(); }
+function clCard(ref) { const el = P_.els[ref]; if (!el) return; log("··", `Einstellungsfenster ${el.tpl}${el.variant ? "_" + el.variant : ""} für „${el.name}“ (Art ${el.kind})`); $("clcardg").innerHTML = tile(ref, el); const d = $("clcard"); if (!d.open) d.showModal(); }
 
 /* ---------------- Ereignisse ---------------- */
 $("nav").addEventListener("click", e => {
