@@ -3,6 +3,11 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.24 – Mehr Symbole aus der QC-Visu
+- **Korrigiert:** Symbole mit Linien, Polylinien/Polygonen oder ausführlich notierten Pfaden (PathFigure mit Segmenten, GeometryGroup, Ellipse-/Rechteck-/Liniengeometrie) konnte der Client nicht umsetzen und zeigte ein Ersatzsymbol (z. B. Haus statt Lineal beim Menüpunkt „Büro“, `mnu_btn_ico_techoffice`). Diese Formen werden jetzt gezeichnet; der Symbol-Zwischenspeicher wird dafür einmal neu aufgebaut.
+- **Neu:** Das Protokoll nennt fehlende („nicht im Symbolsatz“) und nicht umsetzbare Symbole beim Namen.
+- **Korrigiert:** Menü-LEDs zeigen die im Experten eingestellten Farben für Ein und Aus (`color_on`/`color_off`: rot, grün, blau, gelb, weiß, orange). Bisher war Aus immer grau – z. B. „Essplatz sperren“ (Aus = grün) war im Windows-QC grün, im Client grau. Zähler nehmen ihre eingestellte Farbe an.
+
 ## 0.9.23 – Szenen-Tasten gleichmäßig
 - **Geändert:** Szene/Auslöser 1- bis 4-fach (1-109) verteilt die Tasten im Stil „Modern“ gleichmäßig über beide Felder: 1-fach über die ganze Breite, 2-fach halb/halb, 3-fach in Dritteln, 4-fach in Vierteln. Kurz/lang drücken (Szene abrufen, Lernen) wie in der Vorlage. Im Stil „Gira“ bleibt die Original-Aufteilung.
 - **Korrigiert:** Die Trennlinien zwischen den Feldern fangen keine Klicks mehr ab.

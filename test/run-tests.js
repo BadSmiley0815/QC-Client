@@ -69,6 +69,13 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
 
   console.log("Symbole aus der QC-Visu");
   ok("XAML-Symbol im Menü (ZIP64 wie vom HS)", await pg.locator('#grid .mcard:has-text("Wohnen") svg.qci').count() === 1);
+  ok("Menü-LED in der Farbe aus dem Projekt (Aus = grün)", await pg.evaluate(() => { const c = [...document.querySelectorAll("#grid .mcard")].find(x => x.textContent.includes("Alarm scharf"));
+    const l = c && c.querySelector(".mled"); return !!l && /190, 220, 0|BEDC00/i.test(l.style.background); }));
+  ok("XAML: Line, Polyline/Polygon, PathFigure mit Segmenten, GeometryGroup werden umgesetzt", await pg.evaluate(() => {
+    const X = b => `<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Width="48" Height="48">${b}</Canvas>`;
+    const a = xamlToSvg(X('<Line X1="4" Y1="4" X2="40" Y2="40" Stroke="#FFFFFFFF" StrokeThickness="2"/><Polygon Points="4,40 20,44 30,40" Fill="#FFFFFFFF"/>'));
+    const b = xamlToSvg(X('<Path Fill="#FFFFFFFF"><Path.Data><GeometryGroup><EllipseGeometry Center="10,10" RadiusX="6" RadiusY="6"/><PathGeometry><PathFigure StartPoint="20,20"><LineSegment Point="40,20"/><ArcSegment Point="40,40" Size="10,10"/></PathFigure></PathGeometry></GeometryGroup></Path.Data></Path>'));
+    return a && /M4 4L40 40/.test(a.b) && /L20 44L30 40Z/.test(a.b) && b && /A6 6/.test(b.b) && /M20 20L40 20A10 10/.test(b.b); }));
   ok("helle Grautöne folgen dem Farbschema, Farben bleiben", await pg.evaluate(() => { const h = document.querySelector("#grid svg.qci").innerHTML; return h.includes('fill="currentColor"') && h.includes("#DC3C3C"); }));
   ok("fehlende Symbole werden auch in importierten Symbolpaketen (public) gesucht", publicHits >= 1, String(publicHits));
   ok("ohne passendes Symbol: eigenes Ersatzsymbol", await pg.locator('#grid .mcard:has-text("Küche") svg.qci').count() === 0 && await pg.locator('#grid .mcard:has-text("Küche") .ic svg').count() === 1);

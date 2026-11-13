@@ -73,7 +73,7 @@
       <cmd type="3" room="17" />
     </mnu_item>
     <mnu_item id="507" txt1="Alarm scharf" txt2="" ico="mnu_btn_ico_exit.xaml" group="1" visibleinqc="1" page="0">
-      <state type="1" tag="902" />
+      <state type="1" tag="902" color_on="1" color_off="2" />
       <cmd type="5" tag="902" op="toggle" value="1" />
     </mnu_item>
     <mnu_item id="508" txt1="Wetter" txt2="Webseite" ico="mnu_btn_ico_wetter.xaml" group="3" visibleinqc="1" page="0">

@@ -45,7 +45,8 @@ button{font:inherit;color:inherit}
 .cl-mi{position:absolute;left:140px;top:0;width:80px;height:79px;color:#ececec;display:grid;place-items:center}
 .cl-mi>svg{width:100%;height:100%}.cl-mi>svg:not([preserveAspectRatio]){width:40px;height:40px}
 .cl-cnt{position:absolute;left:11px;top:52px;width:37px;height:17px;border-radius:2px;background:#BEDC00;color:#111;font-size:13px;text-align:center;line-height:17px}
-.cl-cnt.zero{background:#4b5600;color:#1a1a1a}
+.cl-cnt.zero{background:#4b5600;color:#1a1a1a}.cl-cnt.zero[style]{filter:brightness(.4)}
+.mled{position:absolute;right:12px;bottom:12px;width:10px;height:10px;border-radius:50%}
 .cl-led{position:absolute;left:14px;top:66px;width:13px;height:13px;border-radius:50%;background:#333}.cl-led.on{background:#BEDC00;box-shadow:0 0 6px #BEDC00aa}
 .cl-pg{position:absolute;right:0;top:0;width:0;height:0;border-top:19px solid #555;border-left:19px solid transparent}
 .cl-row{position:absolute;left:0;width:680px;height:40px;border-bottom:1px solid #0a0a0a;background:#1e1e1e}
@@ -426,7 +427,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.23";
+const VERSION = "0.9.24";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -539,6 +540,31 @@ function xamlToSvg(txt) {
   const fs = (el, attr) => { const f = brush(el, "Fill"), s = brush(el, "Stroke"), sw = el.getAttribute("StrokeThickness");
     const cap = { Round: "round", Square: "square", Flat: "butt" }[el.getAttribute("StrokeStartLineCap") || ""], join = { Round: "round", Bevel: "bevel", Miter: "miter" }[el.getAttribute("StrokeLineJoin") || ""];
     return ` fill="${f ? f.v : "none"}"${f && f.a ? ` fill-opacity="${f.a}"` : ""}${s && s.v !== "none" ? ` stroke="${s.v}" stroke-width="${num(sw) || 1}"${s.a ? ` stroke-opacity="${s.a}"` : ""}${cap ? ` stroke-linecap="${cap}"` : ""}${join ? ` stroke-linejoin="${join}"` : ""}` : ""}${attr || ""}`; };
+  /* WPF-Punkte „x,y x,y …“ und Geometrien (PathGeometry mit Figures oder PathFigure/…Segment, GeometryGroup, Ellipse-, Rectangle-, LineGeometry) -> SVG-Pfad */
+  const pts = v => { const a = (v || "").trim().split(/[\s,]+/).map(Number).filter(isFinite), o = []; for (let i = 0; i + 1 < a.length; i += 2) o.push([a[i], a[i + 1]]); return o; };
+  const pt = v => (pts(v)[0] || [0, 0]).join(" ");
+  const geo = g => { const n = g.localName;
+    if (n === "PathGeometry") { const f = g.getAttribute("Figures"); if (f) return f.replace(/^\s*F[01]\s*/, "");
+      return [...g.children].filter(c => c.localName === "PathFigure" || c.localName === "PathGeometry.Figures").flatMap(c => c.localName === "PathFigure" ? [c] : [...c.children]).map(fig => {
+        let d = "M" + pt(fig.getAttribute("StartPoint"));
+        const segs = [...fig.children].flatMap(c => c.localName === "PathFigure.Segments" ? [...c.children] : [c]);
+        for (const sg of segs) { const k = sg.localName;
+          if (k === "LineSegment") d += "L" + pt(sg.getAttribute("Point"));
+          else if (k === "PolyLineSegment") d += pts(sg.getAttribute("Points")).map(q => "L" + q.join(" ")).join("");
+          else if (k === "BezierSegment") d += "C" + [sg.getAttribute("Point1"), sg.getAttribute("Point2"), sg.getAttribute("Point3")].map(pt).join(" ");
+          else if (k === "PolyBezierSegment") { const p = pts(sg.getAttribute("Points")); for (let i = 0; i + 2 < p.length; i += 3) d += "C" + [p[i], p[i + 1], p[i + 2]].map(q => q.join(" ")).join(" "); }
+          else if (k === "QuadraticBezierSegment") d += "Q" + [sg.getAttribute("Point1"), sg.getAttribute("Point2")].map(pt).join(" ");
+          else if (k === "ArcSegment") { const sz = pts(sg.getAttribute("Size"))[0] || [0, 0];
+            d += `A${sz[0]} ${sz[1]} ${num(sg.getAttribute("RotationAngle"))} ${sg.getAttribute("IsLargeArc") === "True" ? 1 : 0} ${sg.getAttribute("SweepDirection") === "Clockwise" ? 1 : 0} ${pt(sg.getAttribute("Point"))}`; }
+          else return null; }
+        return d + (fig.getAttribute("IsClosed") === "True" ? "Z" : ""); }).join(" "); }
+    if (n === "GeometryGroup") { const parts = [...g.children].filter(c => !c.localName.includes(".")).map(geo); return parts.includes(null) ? null : parts.join(" "); }
+    if (n === "EllipseGeometry") { const [cx, cy] = pts(g.getAttribute("Center"))[0] || [0, 0], rx = num(g.getAttribute("RadiusX")), ry = num(g.getAttribute("RadiusY"));
+      return `M${cx - rx} ${cy}A${rx} ${ry} 0 1 0 ${cx + rx} ${cy}A${rx} ${ry} 0 1 0 ${cx - rx} ${cy}Z`; }
+    if (n === "RectangleGeometry") { const r = (g.getAttribute("Rect") || "").split(/[\s,]+/).map(Number); if (r.length < 4) return null; const [x, y, w, h] = r;
+      return `M${x} ${y}h${w}v${h}h${-w}Z`; }
+    if (n === "LineGeometry") return "M" + pt(g.getAttribute("StartPoint")) + "L" + pt(g.getAttribute("EndPoint"));
+    return null; };
   const walk = el => {
     const n = el.localName;
     if (n.includes(".")) return "";                                  // Eigenschafts-Elemente behandelt der Elternteil
@@ -546,7 +572,8 @@ function xamlToSvg(txt) {
     if (n === "Path") {
       let d = el.getAttribute("Data"), rule = "evenodd";
       if (d) { const m = /^\s*F([01])\s*/.exec(d); if (m) { rule = m[1] === "1" ? "nonzero" : "evenodd"; d = d.slice(m[0].length); } }
-      else { const g = el.querySelector("PathGeometry"); if (!g) { ok = false; return ""; } d = g.getAttribute("Figures") || ""; if ((g.getAttribute("FillRule") || "EvenOdd") === "Nonzero") rule = "nonzero"; }
+      else { const pd = [...el.children].find(x => x.localName === "Path.Data"), g = pd && pd.firstElementChild; if (!g) { ok = false; return ""; }
+        d = geo(g); if (d === null) { ok = false; return ""; } if ((g.getAttribute("FillRule") || "EvenOdd") === "Nonzero") rule = "nonzero"; }
       if (!d) return "";
       const str = /^(Fill|Uniform|UniformToFill)$/.test(el.getAttribute("Stretch") || "");
       return `<path d="${d.replace(/"/g, "")}" fill-rule="${rule}"${fs(el)}${tf(el, str)}${common(el)}/>`;
@@ -556,6 +583,10 @@ function xamlToSvg(txt) {
       return `<g transform="translate(${num(el.getAttribute("Canvas.Left"))} ${num(el.getAttribute("Canvas.Top"))}) scale(${(W || cw) / (cw || 1)} ${(H || chh) / (chh || 1)})">${walk(ch)}</g>`; }
     if (n === "Rectangle") return `<rect x="0" y="0" width="${num(el.getAttribute("Width"))}" height="${num(el.getAttribute("Height"))}" rx="${num(el.getAttribute("RadiusX"))}" ry="${num(el.getAttribute("RadiusY"))}"${fs(el)}${tf(el)}${common(el)}/>`;
     if (n === "Ellipse") { const w = num(el.getAttribute("Width")), h = num(el.getAttribute("Height")); return `<ellipse cx="${w / 2}" cy="${h / 2}" rx="${w / 2}" ry="${h / 2}"${fs(el)}${tf(el)}${common(el)}/>`; }
+    if (n === "Line") return `<path d="M${num(el.getAttribute("X1"))} ${num(el.getAttribute("Y1"))}L${num(el.getAttribute("X2"))} ${num(el.getAttribute("Y2"))}"${fs(el)}${tf(el)}${common(el)}/>`;
+    if (n === "Polyline" || n === "Polygon") { const p = pts(el.getAttribute("Points")); if (p.length < 2) return "";
+      return `<path d="M${p.map(q => q.join(" ")).join("L")}${n === "Polygon" ? "Z" : ""}" fill-rule="${el.getAttribute("FillRule") === "Nonzero" ? "nonzero" : "evenodd"}"${fs(el)}${tf(el)}${common(el)}/>`; }
+    if (n === "StackPanel" || n === "Border") return `<g${tf(el)}${common(el)}>${[...el.children].map(walk).join("")}</g>`;
     if (/^(Resources|TextBlock)$/.test(n)) return "";
     ok = false; return "";                                            // Viewbox, DrawingGroup … -> Ersatzsymbol
   };
@@ -573,7 +604,7 @@ async function loadIcons(extra) {
   if (!P_) return;
   if (iconsLoading) { iconsMore = new Set([...(iconsMore || []), ...(extra || [])]); return iconsLoading; }
   const want = new Set([...P_.menu.map(m => icoKey(m.ico)), ...Object.values(P_.els).map(e => icoKey(e.symbol)), ...(extra || [])].filter(k => k && k !== "blank"));
-  const ck = "icons3." + cfg.host, cache = store.get(ck, null);
+  const ck = "icons4." + cfg.host, cache = store.get(ck, null);
   if (cache && cache.p === projId) { Object.entries(cache.m).forEach(([k, v]) => v && QCI.set(k, v)); [...want].forEach(k => { if (!(k in cache.m)) {} });
     if ([...want].every(k => k in cache.m)) { renderView(); clRender(); return; } }
   let done; iconsLoading = new Promise(r => done = r);
@@ -588,8 +619,11 @@ async function loadIcons(extra) {
       if (r2.ok) { const f2 = await unzipPick(await r2.arrayBuffer(), rest); f2.forEach((v, k) => files.set(k, v)); for (const k of f2.keys()) delete m[k];
         if (f2.size) log("··", "Symbole: " + f2.size + " aus importierten Symbolpaketen"); }
     } catch (e) {}
-    for (const k of want) { if (k in m) continue; const t = files.get(k); const v = t ? xamlToSvg(t) : null; m[k] = v || ""; if (v) QCI.set(k, v); }
-    store.set(ck, { p: projId, m }); store.del("icons." + cfg.host); store.del("icons2." + cfg.host);
+    const miss = [], bad = [];
+    for (const k of want) { if (k in m) continue; const t = files.get(k); const v = t ? xamlToSvg(t) : null; m[k] = v || ""; if (v) QCI.set(k, v); else (t ? bad : miss).push(k); }
+    if (miss.length) log("··", "Symbole nicht im Symbolsatz: " + miss.slice(0, 30).join(" ") + (miss.length > 30 ? " …" : ""));
+    if (bad.length) log("··", "Symbole nicht umsetzbar (XAML): " + bad.slice(0, 30).join(" ") + (bad.length > 30 ? " …" : ""));
+    store.set(ck, { p: projId, m }); store.del("icons." + cfg.host); store.del("icons2." + cfg.host); store.del("icons3." + cfg.host);
     log("··", "Symbole: " + [...want].filter(k => m[k]).length + " von " + want.size + " aus der QC-Visu");
     renderView(); clRender();
   } catch (e) { log("··", "Symbole nicht geladen (" + e.message + ") – eigene Symbole bleiben"); }
@@ -644,7 +678,8 @@ function parseProject(txt) {
     const it = { id: m.getAttribute("id"), page: m.getAttribute("page") || "0", isPage: m.tagName === "page_item",
       t1: m.getAttribute("txt1") || "", t2: m.getAttribute("txt2") || "", ico: (m.getAttribute("ico") || "").replace(".xaml", ""),
       group: m.getAttribute("group") || "0", plugin: m.getAttribute("plugin") || "" };
-    const st = m.querySelector("state"); if (st) it.state = { type: st.getAttribute("type"), tag: st.getAttribute("tag") };
+    const st = m.querySelector("state"); if (st) it.state = { type: st.getAttribute("type"), tag: st.getAttribute("tag"),
+      on: st.getAttribute("color_on"), off: st.getAttribute("color_off"), cc: st.getAttribute("counter_color") };
     it.cmds = [...m.querySelectorAll("cmd")].map(c => Object.fromEntries([...c.attributes].map(a => [a.name, a.value])));
     menu.push(it);
   });
@@ -1224,12 +1259,17 @@ function menuPage(page) {
   const items = P_.menu.filter(m => menuVisible(m) && (page === "0" ? (m.isPage || m.page === "0") : (!m.isPage && m.page === page)));
   return { title: page === "0" ? "Menü" : (pages[page] ? pages[page].t1 : "Menü"), crumb: page === "0" ? "" : "Menü", items };
 }
+/* Farben der Menü-LED bzw. des Zählers (Experte: value_led_red=1, green=2, blue=3, yellow=4, white=5, orange=6; 0 = aus) */
+const LEDC = { 1: "#E43B3B", 2: "#BEDC00", 3: "#2F8FFF", 4: "#FFD200", 5: "#F2F2F2", 6: "#FF8C1A" };
+function menuLed(st) { const on = !!bool(st.tag);
+  if (st.on == null && st.off == null) return { on, c: on ? LEDC[2] : "" };                   // ältere Projekte: Ein = grün, Aus = grau
+  return { on, c: LEDC[on ? st.on : st.off] || "" }; }
 function menuTile(m) {
   if (!m.isPage && !m.t1 && !m.cmds.length) return "";                                                // Leerfeld
   let cls = "card mcard", badge = "", on = false;
   if (m.state && m.state.tag) { MENU_TAGS.add(m.state.tag);
     if (m.state.type === "3") { const n = num(m.state.tag); if (n) badge = `<span class="cnt">${fmt(n, 0)}</span>`; }
-    if (m.state.type === "1") on = !!bool(m.state.tag); }
+    if (m.state.type === "1") { const L = menuLed(m.state); on = L.on; if (L.c) badge += `<span class="mled" style="background:${L.c};box-shadow:0 0 6px ${L.c}aa"></span>`; } }
   const c = m.cmds[0] || {}, plug = !m.isPage && ((c.type === "2" && !plugSupported(c.plugin_id)) || !m.cmds.length);
   if (on) cls += " is-on"; if (plug) cls += " off";
   const icon = m.isPage ? "plugin" : c.type === "6" ? "web" : menuIcon(m.ico);
@@ -2231,8 +2271,9 @@ function clMenuTile(m, col, row) {
   const c = m.cmds[0] || {}, plug = !m.isPage && ((c.type === "2" && !plugSupported(c.plugin_id)) || !m.cmds.length);
   let extra = "";
   if (m.state && m.state.tag) { MENU_TAGS.add(m.state.tag);
-    if (m.state.type === "3") { const n = num(m.state.tag) || 0; extra = `<span class="cl-cnt${n ? "" : " zero"}">${fmt(n, 0)}</span>`; }
-    if (m.state.type === "1") extra = `<span class="cl-led${bool(m.state.tag) ? " on" : ""}"></span>`; }
+    if (m.state.type === "3") { const n = num(m.state.tag) || 0, cc = LEDC[m.state.cc];
+      extra = `<span class="cl-cnt${n ? "" : " zero"}"${cc && cc !== LEDC[2] ? ` style="background:${cc}"` : ""}>${fmt(n, 0)}</span>`; }
+    if (m.state.type === "1") { const L = menuLed(m.state); extra = `<span class="cl-led${L.c ? " on" : ""}"${L.c ? ` style="background:${L.c};box-shadow:0 0 6px ${L.c}aa"` : ""}></span>`; } }
   return `<button class="cl-mt${plug ? " off" : ""}" data-m="${esc(m.id)}" style="left:${[2, 228, 454][col]}px;top:${row * 80}px">
     <span class="t1">${esc(m.t1)}</span><span class="t2">${esc(m.t2)}</span>${extra}${m.isPage ? '<span class="cl-pg"></span>' : ""}
     <span class="cl-mi">${m.isPage ? qf(m.ico) || svg("plugin") : qf(m.ico) || svg(menuIcon(m.ico))}</span></button>`;
