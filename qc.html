@@ -380,7 +380,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.12";
+const VERSION = "0.9.13";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2330,7 +2330,9 @@ function clPopRender() {
       const i = CLP.nodes.push(n) - 1, bgi = qf((L.bg || {}).ico, true), sli = sel && qf((L.selected || {}).ico, true);
       let inner = (bgi ? `<div class="cl-a" style="inset:0">${bgi}</div>` : "") + (sli ? `<div class="cl-a" style="inset:0">${sli}</div>` : "");
       const t = X.txt(n.getAttribute("text")), ic = X.par(n.getAttribute("icon") || "");
-      const icv = ic && ic !== "blank" && qf(ic), i3 = L.icon3;
+      let icv = ic && ic !== "blank" && qf(ic); const i3 = L.icon3;
+      if (ic && ic !== "blank" && !icv && /_back$/.test(icoKey(ic))) {                // fehlt „…_back“ im Symbolsatz: „…_forward“ gespiegelt
+        const fw = qf(icoKey(ic).replace(/_back$/, "_forward")); if (fw) icv = `<div style="width:100%;height:100%;transform:scaleX(-1)">${fw}</div>`; }
       if (icv) inner += i3 && px(i3, "width") > 0 ? `<div class="cl-a" style="left:${px(i3, "left")}px;top:${px(i3, "top")}px;width:${px(i3, "width")}px;height:${px(i3, "height", r[3])}px">${icv}</div>`
         : `<div class="cl-a" style="left:${Math.max(0, r[2] / 2 - 20)}px;top:${Math.max(0, r[3] / 2 - 20)}px;width:40px;height:40px">${icv}</div>`;
       const t1 = L.text1;

@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.13 – Musiksteuerung: Taste „zurück“
+- **Korrigiert:** Fehlt im Symbolsatz des HS ein „…_back“-Symbol (z. B. `tpl_pop_media_ico_skip_back` bei der Musiksteuerung 5-91), zeigt der Client das passende „…_forward“-Symbol gespiegelt statt einer leeren Taste.
+
 ## 0.9.12 – Vorlagen-Logik: umgekehrte Eingänge
 - **Korrigiert:** In der Vorlagen-Logik wurde `inverse="true"` an einzelnen Eingängen (`<slot … inverse="true"/>`) nicht beachtet. Folgen u. a. bei der Betriebsartenumschaltung (1-20): Soll- und Ist-Anzeige übereinander, Popup ließ sich nicht öffnen (Freigabe „ändern ohne PIN“ immer aus). Betrifft alle Vorlagen mit solcher Logik.
 - **Korrigiert:** Sichtbarkeit mit `visible_slot` + `from`/`to` am Element wird als Bereich geprüft.

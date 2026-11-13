@@ -81,7 +81,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <header class="hero">
   <div>
     <div class="kicker"><i></i> QC-Client · qc.html</div>
-    <h1>Der QuadClient im Browser – Version 0.9.12</h1>
+    <h1>Der QuadClient im Browser – Version 0.9.13</h1>
     <p class="lead">Eigener HTML5-Client für den Gira HomeServer. Er lädt die vorhandene QC-Visu, nutzt die QC-Benutzerrechte und läuft auf jedem Gerät mit Browser – ohne App, ohne Zusatzdateien.</p>
     <div class="pills">
       <span class="pill">Aufruf: <b>https://&lt;HS-IP&gt;/opt/hs-client/qc.html</b></span>
@@ -144,6 +144,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <h2>Änderungen</h2>
 <p class="sub">Neueste Version oben. <span class="tag t-neu">neu</span> <span class="tag t-fix">korrigiert</span> <span class="tag t-offen">noch offen</span></p>
 <div class="tl">
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.13</span>Musiksteuerung: Taste „zurück“</h3><ul><li><span class="tag t-fix">korrigiert</span> Die Taste „zurück“ der Musiksteuerung war leer, weil das Symbol im Symbolsatz des HomeServers fehlt. Der Client zeigt jetzt das Symbol „vor“ gespiegelt.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.12</span>Vorlagen-Logik: umgekehrte Eingänge</h3><ul><li><span class="tag t-fix">korrigiert</span> Umgekehrte Eingänge in der Logik der Vorlagen wurden nicht beachtet. Bei der Betriebsartenumschaltung lagen dadurch Soll- und Ist-Anzeige übereinander und das Popup ging nicht auf. Betrifft alle Vorlagen mit solcher Logik.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.11</span>Schloss-Abzeichen</h3><ul><li><span class="tag t-fix">korrigiert</span> Das Schloss (PIN) in den Feldern der Ansicht „Klassisch“ sitzt jetzt in einem kleinen runden, halbtransparenten Kreis statt auf einem harten grauen Quadrat.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.10</span>Popups: Schieberegler, alle Knöpfe</h3><ul><li><span class="tag t-neu">neu</span> Schieberegler in Popups (waagrecht und senkrecht), der Wert wird beim Loslassen gesendet.</li><li><span class="tag t-fix">korrigiert</span> Knöpfe und Wertfelder fehlten, wenn die Vorlage sie über Raster und Layout zugleich platziert (z. B. „Ab“ und „−“ bei der Jalousie mit Lamelle).</li><li><span class="tag t-neu">neu</span> Popups, die sich laut Vorlage bei Sperre oder Zwangsführung schließen, tun das jetzt auch.</li></ul></div></div>
