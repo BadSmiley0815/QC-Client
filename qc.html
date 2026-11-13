@@ -411,7 +411,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.18";
+const VERSION = "0.9.19";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2487,7 +2487,7 @@ $("classic").addEventListener("click", e => {
   const t = e.target.closest("button,[data-open]"); if (!t || t.disabled) return;
   if (t.dataset.m) { menuAct(t.dataset.m); return; }
   if (t.dataset.mv) { go(t.dataset.mv); return; }
-  if (t.dataset.open) { clCard(t.dataset.open); return; }
+  if (t.dataset.open) { const r = t.dataset.open; if (clOwn(P_.els[r]) && clPopFirst(r)) return; clCard(r); return; }   // Vorlage mit eigenem Popup: gleich das Popup
   if (t.dataset.nav) { go(t.dataset.nav); return; }
   if (t.dataset.tab) { CL.qsel[t.dataset.q] = +t.dataset.tab; clRender(); return; }
   if (t.dataset.qnav) { const q = t.dataset.q, n = clQuadList(q).length; CL.qsel[q] = Math.max(0, Math.min(n - 1, CL.qsel[q] + +t.dataset.qnav));

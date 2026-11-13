@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.19 – Name antippen öffnet das Popup
+- **Geändert:** Bei Funktionen, deren Popup der Client aus der Vorlage zeichnet (z. B. Betriebsartenumschaltung 1-20, importierte Vorlagen), öffnet das Antippen des Namens direkt das Popup statt erst das Einstellungsfenster mit „Bedienen“.
+
 ## 0.9.18 – Schloss im Kreis
 - **Korrigiert:** Das Schloss-Symbol saß unter dem schwarzen Kreis statt darin (Symbol als Inline-Grafik auf der Textgrundlinie). Jetzt genau im Kreis; im Stil „Modern“ rückt das Abzeichen etwas ins abgerundete Feld.
 
