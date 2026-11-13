@@ -183,12 +183,12 @@ html:not(.cl-gira) .clp-s .bar{background:linear-gradient(90deg,#84a600,#a8ce14)
 @media (max-width:560px){.mrow{flex-direction:column;gap:2px}.mrow time{min-width:0}}
 .camgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
 .camtile{min-width:0}.camcap{font-size:13px;color:var(--muted);margin-top:4px}
-.camimg{display:block;width:100%;padding:0;border:0;background:#000;border-radius:10px;overflow:hidden;cursor:pointer;aspect-ratio:16/9}
+.camimg{position:relative;display:block;width:100%;padding:0;border:0;background:#000;border-radius:10px;overflow:hidden;cursor:pointer;aspect-ratio:16/9}
 .camimg img{width:100%;height:100%;object-fit:cover;display:block}
 .cerr{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:center;padding:12px;min-height:120px;height:100%;background:var(--bg);color:var(--ink);border:1px dashed var(--line);border-radius:10px;font-size:13px;text-align:left}
 .cerr span{color:var(--muted)}
 .camtile .cerr{min-height:0;height:100%;overflow:auto}.camtile .cerr b{display:none}
-.carch{position:relative}.camfps{position:absolute;right:8px;top:8px;font-size:12px;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}
+.carch{position:relative}.camfps{position:absolute;right:8px;top:8px;z-index:1;font-size:12px;font-variant-numeric:tabular-nums;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}
 .carch img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000;border-radius:10px}
 .chip svg{width:16px;height:16px;vertical-align:middle;display:inline-block}
 .chip.act{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
@@ -424,7 +424,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.21";
+const VERSION = "0.9.22";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1790,8 +1790,8 @@ PLUGIN_TYPES["0-2"] = {
     const btns = c => c.cmds.length ? `<div class="btns" style="margin-top:8px">${c.cmds.map((m, j) => `<button data-pa="cmd" data-j="${j}" class="${num(m.tag) ? "act" : ""}">${esc(m.text || "Schalten")}</button>`).join("")}</div>` : "";
     const fast = (c, live) => !live && d.sel !== null && camLocal(c.jpg);
     const img = (c, i, live) => d.bad[i] ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(hint(c))}</span><button class="chip" data-pa="retry" data-i="${i}">Erneut versuchen</button></div>`
-      : `<img data-cam="${i}" data-live="${live ? 1 : 0}" data-fast="${fast(c, live) ? 1 : 0}" src="${esc(live ? camSrc(c.mjpg, false) : camSrc(c.jpg, true))}" alt="${esc(c.title)}" referrerpolicy="no-referrer">`;
-    const fps = (c, live) => fast(c, live) ? `<div class="camfps" data-fps="${d.sel}">${d.fps ? esc(d.fps) : "…"} Bilder/s</div>` : "";
+      : `<img data-cam="${i}" data-live="${live ? 1 : 0}" data-fast="${fast(c, live) ? 1 : 0}" src="${esc(live ? camSrc(c.mjpg, false) : camSrc(c.jpg, true))}" alt="${esc(c.title)}" referrerpolicy="no-referrer"><div class="camfps">… Bilder/s</div>`;
+    const fps = () => "";                                                                // Anzeige hängt jetzt an jedem Bild (camMeter)
     if (d.sel === null) return `<div class="camgrid">${d.cams.map((c, i) => `<div class="camtile">${d.bad[i] ? `<div class="camimg" style="cursor:default;background:none">${img(c, i, false)}</div>` : `<button data-pa="sel" data-i="${i}" class="camimg">${img(c, i, false)}</button>`}<div class="camcap">${esc(c.title)}</div></div>`).join("")}</div>`;
     const c = d.cams[d.sel], live = c.codec === "MJPEG" && !!c.mjpg && c.mjpg.startsWith("https:") && c.jpg.startsWith("https:");
     return `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><button class="chip" data-pa="all">${svg("left")} Alle Kameras</button><b>${esc(c.title)}</b></div>
@@ -1823,13 +1823,33 @@ document.addEventListener("error", e => {                       // Kamerabild ni
   const H = hostOfEl(im); if (!H || !H.plug || H.plug.cls !== "0-2" || !H.plug.data) return;
   H.plug.data.bad[+im.dataset.cam] = true; renderHost(H);
 }, true);
+/* Bilder/s für jedes Kamerabild: Einzelbilder zählen geladene Bilder, MJPEG-Ströme werden über eine Mini-Leinwand
+   (16 × 9 Punkte) auf Bildwechsel geprüft. Kameras ohne Freigabe für fremde Seiten (direkt, nicht über den HS) lassen
+   sich so nicht messen – dort steht „Live“. */
+const CAMM = new WeakMap(), camCx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+camCx.canvas.width = 16; camCx.canvas.height = 9;
+const camM = im => { let m = CAMM.get(im); if (!m) CAMM.set(im, m = { n: 0, t0: performance.now(), sig: null, bad: false }); return m; };
+document.addEventListener("load", e => { const im = e.target; if (im instanceof HTMLImageElement && im.dataset.cam && im.dataset.live !== "1") camM(im).n++; }, true);
+let camLast = 0;
+(function camMeter(t) {
+  const imgs = document.querySelectorAll("img[data-cam]");
+  imgs.forEach(im => { if (im.dataset.live !== "1" || !im.naturalWidth) return; const m = camM(im); if (m.bad) return;
+    try { camCx.drawImage(im, 0, 0, 16, 9); const px = camCx.getImageData(0, 0, 16, 9).data; let h = 0;
+      for (let i = 0; i < px.length; i += 4) h = (h * 31 + px[i] + px[i + 1] * 3 + px[i + 2] * 7) | 0;
+      if (h !== m.sig) { if (m.sig !== null) m.n++; m.sig = h; } } catch (x) { m.bad = true; } });
+  if (t - camLast > 1000) { camLast = t;
+    imgs.forEach(im => { const m = camM(im), b = im.parentElement && im.parentElement.querySelector(".camfps"); if (!b) return;
+      const dt = (t - m.t0) / 1000; if (dt < 0.9) return;
+      b.textContent = m.bad ? "Live" : (m.n / dt).toLocaleString("de-DE", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + " Bilder/s"; m.n = 0; m.t0 = t; }); }
+  requestAnimationFrame(camMeter);
+})(0);
 document.addEventListener("load", e => {                        // Endpunkt-Kamera: nächstes Bild, sobald das vorige da ist
   const im = e.target; if (!(im instanceof HTMLImageElement) || im.dataset.fast !== "1") return;
   const H = hostOfEl(im); if (!H || !H.plug || H.plug.cls !== "0-2" || !H.plug.data) return;
   const d = H.plug.data, c = d.cams[+im.dataset.cam], now = Date.now(); if (!c) return;
   d.frames = (d.frames || []).filter(t => now - t < 3000); d.frames.push(now);
   if (d.frames.length > 1) { d.fps = ((d.frames.length - 1) / ((now - d.frames[0]) / 1000)).toLocaleString("de-DE", { maximumFractionDigits: 1 });
-    const f = H.body.querySelector(".camfps"); if (f) f.textContent = d.fps + " Bilder/s"; }
+  }
   const wait = Math.max(0, 1000 / CAM_FPS - (now - (d.req || 0)));          // Abstand ab Beginn der letzten Anfrage
   clearTimeout(d.fast); d.fast = setTimeout(() => { if (im.isConnected) { d.req = Date.now(); im.src = camSrc(c.jpg, true); } }, wait);
 }, true);

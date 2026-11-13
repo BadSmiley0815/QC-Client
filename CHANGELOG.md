@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.22 – Bilder/s bei jeder Kamera
+- **Neu:** Die Anzeige „Bilder/s“ steht jetzt an jedem Kamerabild – Einzelansicht, Mehrfachansicht und klassische Quadranten, bei Einzelbildern und MJPEG-Strömen (Kamera-Proxy). Ströme werden über eine Mini-Leinwand auf Bildwechsel geprüft; direkt eingebundene Kameras ohne Freigabe für fremde Seiten zeigen „Live“.
+
 ## 0.9.21 – Diagramm mit Maus, Wertanzeige im Original-Aufbau
 - **Neu:** Diagramme in der klassischen Ansicht zeigen beim Überfahren mit der Maus (bzw. Antippen) eine Linie, Punkte auf den Kurven und ein Kästchen mit Zeitraum und allen Werten.
 - **Neu:** Wertanzeige (Plugin 1-2) in der klassischen Ansicht wie im Windows-QC: Kacheln in zwei Spalten mit Titel, Symbol und großem Wert bzw. Werteliste – im Stil „Modern“ mit runden, plastischen Kacheln. Symbole der Kacheln werden aus dem Symbolsatz des HS geladen.
