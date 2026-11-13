@@ -53,7 +53,7 @@ button{font:inherit;color:inherit}
 .cl-ico{position:absolute;left:0;top:-2px;width:40px;height:40px;color:#d8d8d8}
 .cl-name{position:absolute!important;left:44px;top:0;width:292px;height:39px;text-align:left;font-size:21px!important;color:#C8C8C8!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cl-name.noico{left:11px}
-.cl-vl{position:absolute;top:0;width:2px;height:600px;background:#0a0a0a;z-index:1}
+.cl-vl{position:absolute;top:0;width:2px;height:600px;background:#0a0a0a;z-index:1;pointer-events:none}
 .cl-p{position:absolute;top:1px;width:110px;height:39px;overflow:hidden;color:#e6e6e6}
 .cl-p.cl-open{cursor:pointer}
 .cl-z{position:absolute;cursor:pointer;touch-action:none}.cl-z.down{background:#ffffff22}
@@ -118,6 +118,8 @@ html:not(.cl-gira) #classic .cl-mt.empty{background:#1b1d1c;box-shadow:none}
 html:not(.cl-gira) .cl-cnt{border-radius:9px;font-weight:600}
 html:not(.cl-gira) .cl-pg{border-top-color:#9cc200aa}
 html:not(.cl-gira) #cl-nav button.act{background:linear-gradient(180deg,#2a2d2b,#1f2120);box-shadow:inset 0 2px 0 #9cc200}
+.cl-scn{height:40px;z-index:2;background:#1a1c1b}html.cl-gira .cl-scn{background:#1e1e1e}.cl-scc{inset:0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:#e6e6e6;pointer-events:none;white-space:nowrap;overflow:hidden}
+.cl-scc .i{width:26px;height:26px;flex:none}.cl-scc .i svg{width:100%;height:100%;display:block}.cl-scc .t{overflow:hidden;text-overflow:ellipsis}
 html:not(.cl-gira) .cl-bgw{clip-path:inset(3px round 7px)}
 html:not(.cl-gira) .cl-row{background:#1a1c1b;border-bottom-color:#101110;transition:background .15s}
 html:not(.cl-gira) .cl-row.act{background:#2c312d;box-shadow:inset 3px 0 0 #9cc200}
@@ -424,7 +426,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.22";
+const VERSION = "0.9.23";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2197,12 +2199,31 @@ function clRow(ref, el, label, i) {
   const T = clTpl(el), X = T && clCtx(el, T), name = (label && label !== el.name ? label : el.name || "").split("\\").pop();
   const ico = el.symbol ? qf(el.symbol) : "";
   let panels = "";
-  if (T) { const done = new Set();
+  const sc = T && CLSTYLE !== "gira" && /^1-109$/.test(el.tpl) ? clScenes(ref, el, T, X) : "";
+  if (sc) panels = sc;
+  else if (T) { const done = new Set();
     for (const P of T.children) { if (P.localName !== "panel") continue; const pos = +P.getAttribute("pos"); if (!(pos >= 1 && pos <= 3) || done.has(pos) || !X.cond(P)) continue; done.add(pos);
       panels += `<div class="cl-p" data-ref="${esc(ref)}" data-pos="${pos}" style="left:${[343, 455, 567][pos - 1]}px">${clPanel(el, P, X)}</div>`; } }
   else panels = `<div class="cl-p cl-open" data-ref="${esc(ref)}" style="left:343px;width:335px"><div class="cl-a cl-t" style="left:0;top:11px;width:330px;text-align:center;font-size:13px;color:#8a8a8a">${CL.err ? "Vorlage nicht geladen" : CL.tpl ? "Vorlage " + esc(el.tpl) + " fehlt" : "…"}</div></div>`;
   return `<div class="cl-row" style="top:${i * 40}px" data-ref="${esc(ref)}"><div class="cl-ico">${ico}</div>
     <button class="cl-name${ico ? "" : " noico"}" data-open="${esc(ref)}" title="Alle Einstellungen">${esc(name)}</button>${panels}</div>`;
+}
+/* Szenen/Auslöser 1–4-fach (1-109) im Stil „Modern“: Tasten gleichmäßig über die Felder 1 und 2 verteilt
+   (Original: 1-fach nur Feld 1, 3-fach eineinhalb Felder). Jede Taste behält Feld (pos) und Klickzone der Vorlage. */
+function clScenes(ref, el, T, X) {
+  const btns = [];
+  for (const pos of [1, 2]) { const P = [...T.children].find(n => n.localName === "panel" && +n.getAttribute("pos") === pos && X.cond(n)); if (!P) continue;
+    const zs = [...new Set([...P.children].filter(a => /^action_/.test(a.localName)).map(a => a.getAttribute("click") || "1"))].sort((a, b) => a - b);
+    zs.forEach(z => btns.push({ pos, z })); }
+  if (!btns.length || btns.length > 4) return "";
+  const W = 222, g = 4, bw = (W - (btns.length - 1) * g) / btns.length, mode = String(X.par("$par_button_mode") || "0");
+  return btns.map((b, k) => { const suf = k ? "_" + (k + 1) : "", x = 343 + k * (bw + g);
+    const bg = qf(X.par("$par_push_ico" + suf), true), ic = mode !== "0" && qf(X.par("$par_button_icon" + suf));
+    const t = mode !== "1" ? (X.txt("$par_push" + suf) || X.txt("#SZENE")) : "";
+    return `<div class="cl-p cl-scn" data-ref="${esc(ref)}" data-pos="${b.pos}" style="left:${x}px;width:${bw}px">
+      <div class="cl-a cl-bgw" style="inset:0">${bg || '<div style="width:100%;height:100%;background:#2b2b2b"></div>'}</div>
+      <div class="cl-a cl-scc">${ic ? `<span class="i">${ic}</span>` : ""}${t ? `<span class="t">${esc(t)}</span>` : ""}</div>
+      <div class="cl-z" data-z="${b.z}" style="left:0;top:0;width:100%;height:40px"></div></div>`; }).join("");
 }
 /* ---------- Rahmen ---------- */
 function clMenuTile(m, col, row) {

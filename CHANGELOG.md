@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.23 – Szenen-Tasten gleichmäßig
+- **Geändert:** Szene/Auslöser 1- bis 4-fach (1-109) verteilt die Tasten im Stil „Modern“ gleichmäßig über beide Felder: 1-fach über die ganze Breite, 2-fach halb/halb, 3-fach in Dritteln, 4-fach in Vierteln. Kurz/lang drücken (Szene abrufen, Lernen) wie in der Vorlage. Im Stil „Gira“ bleibt die Original-Aufteilung.
+- **Korrigiert:** Die Trennlinien zwischen den Feldern fangen keine Klicks mehr ab.
+
 ## 0.9.22 – Bilder/s bei jeder Kamera
 - **Neu:** Die Anzeige „Bilder/s“ steht jetzt an jedem Kamerabild – Einzelansicht, Mehrfachansicht und klassische Quadranten, bei Einzelbildern und MJPEG-Strömen (Kamera-Proxy). Ströme werden über eine Mini-Leinwand auf Bildwechsel geprüft; direkt eingebundene Kameras ohne Freigabe für fremde Seiten zeigen „Live“.
 
