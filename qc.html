@@ -427,7 +427,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.26";
+const VERSION = "0.9.27";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1870,17 +1870,31 @@ document.addEventListener("error", e => {                       // Kamerabild ni
    sich so nicht messen – dort steht „Live“. */
 const CAMM = new WeakMap(), camCx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
 camCx.canvas.width = 16; camCx.canvas.height = 9;
-const camM = im => { let m = CAMM.get(im); if (!m) CAMM.set(im, m = { n: 0, t0: performance.now(), sig: null, bad: false }); return m; };
-document.addEventListener("load", e => { const im = e.target; if (im instanceof HTMLImageElement && im.dataset.cam && im.dataset.live !== "1") camM(im).n++; }, true);
+const camM = im => { let m = CAMM.get(im); if (!m) CAMM.set(im, m = { n: 0, t0: performance.now(), last: performance.now(), sig: null, bad: false, re: 0 }); return m; };
+document.addEventListener("load", e => { const im = e.target; if (im instanceof HTMLImageElement && im.dataset.cam && im.dataset.live !== "1") { const m = camM(im); m.n++; m.last = performance.now(); } }, true);
+/* Wächter: steht ein Live-Strom (bzw. eine schnelle Endpunkt-Kamera) 8 s ohne neues Bild, wird neu verbunden –
+   Ströme reißen nach längerer Zeit gern ab (WLAN, Kamera, Proxy) und erholen sich im Browser nicht von selbst. */
+function camRevive(im, m, t) {
+  m.last = t; m.re++; const s0 = im.getAttribute("src") || ""; if (!s0) return;
+  const s1 = im.dataset.live === "1" ? s0 : s0.replace(/([?&])_t=\d+/, "$1_t=" + Date.now());
+  im.removeAttribute("src"); setTimeout(() => { if (im.isConnected) im.src = s1; }, 60);
+  const H = hostOfEl(im), c = H && H.plug && H.plug.data && H.plug.data.cams && H.plug.data.cams[+im.dataset.cam];
+  log("··", `Kamera${c ? " „" + c.title + "“" : ""}: kein neues Bild seit 8 s – neu verbunden (${m.re}.)`);
+}
 let camLast = 0;
+let camPrevT = 0;
 (function camMeter(t) {
   const imgs = document.querySelectorAll("img[data-cam]");
+  if (t - camPrevT > 2000) imgs.forEach(im => { camM(im).last = t; });            // Seite war im Hintergrund: Wächter neu starten
+  camPrevT = t;
   imgs.forEach(im => { if (im.dataset.live !== "1" || !im.naturalWidth) return; const m = camM(im); if (m.bad) return;
     try { camCx.drawImage(im, 0, 0, 16, 9); const px = camCx.getImageData(0, 0, 16, 9).data; let h = 0;
       for (let i = 0; i < px.length; i += 4) h = (h * 31 + px[i] + px[i + 1] * 3 + px[i + 2] * 7) | 0;
-      if (h !== m.sig) { if (m.sig !== null) m.n++; m.sig = h; } } catch (x) { m.bad = true; } });
+      if (h !== m.sig) { if (m.sig !== null) m.n++; m.sig = h; m.last = t; } } catch (x) { m.bad = true; } });
   if (t - camLast > 1000) { camLast = t;
-    imgs.forEach(im => { const m = camM(im), b = im.parentElement && im.parentElement.querySelector(".camfps"); if (!b) return;
+    imgs.forEach(im => { const m = camM(im);
+      if (!m.bad && (im.dataset.live === "1" || im.dataset.fast === "1") && document.visibilityState === "visible" && t - m.last > 8000) camRevive(im, m, t);
+      const b = im.parentElement && im.parentElement.querySelector(".camfps"); if (!b) return;
       const dt = (t - m.t0) / 1000; if (dt < 0.9) return;
       b.textContent = m.bad ? "Live" : (m.n / dt).toLocaleString("de-DE", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + " Bilder/s"; m.n = 0; m.t0 = t; }); }
   requestAnimationFrame(camMeter);

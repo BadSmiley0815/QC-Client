@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.27 – Kamera-Ströme erholen sich selbst
+- **Korrigiert:** Lief ein Live-Strom (Kamera-Proxy) länger, konnte er abreißen – Bild halb weiß, „0,0 Bilder/s“, und es tat sich nichts mehr. Ein Wächter verbindet jetzt neu, sobald 8 s lang kein neues Bild kommt (auch bei schnellen Endpunkt-Kameras); das Protokoll vermerkt es. Nach dem Wechsel aus dem Hintergrund startet der Wächter neu, statt sofort zu verbinden.
+
 ## 0.9.26 – Gira-Popups im Original-Stil
 - **Neu:** Auch bei Gira-Vorlagen (Jalousie, Heizung, Dimmer, Szenen-Popup …) öffnet das Antippen eines Felds jetzt das Popup der Vorlage im Original-Stil (bzw. Stil „Modern“) statt des modernen Einstellungsfensters – sofern der Client alle Elemente und Aktionen des Popups beherrscht (Tasten, Wertfelder, Schieberegler, Texte, Symbole; Setzen, Umschalten, Schritt, Schließen, weiteres Popup). Popups mit Szene lernen/abrufen, Abläufen, Navigation oder PIN-Verwaltung öffnen vorerst weiter das Einstellungsfenster. Der Name einer Funktion öffnet weiterhin das Einstellungsfenster.
 - **Geändert:** PIN-Abfrage vor solchen Popups und Aktionen direkt aus der Vorlage (PIN-KO), auch bei Gira-Vorlagen.
