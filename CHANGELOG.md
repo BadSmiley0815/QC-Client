@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.29 – Live-Strom vom Client gelesen
+- **Korrigiert:** Die Bilder/s-Messung bei Live-Strömen (Prüfung des angezeigten Bildes) war unzuverlässig: Der Browser liefert bei MJPEG-Bildern oft nur das erste Einzelbild an die Messung. Dadurch stand „0,0 Bilder/s“ bei flüssigem Bild, und der Wächter aus 0.9.27 verband alle 8 s unnötig neu.
+- **Neu:** Live-Ströme über den HS (Kamera-Proxy) liest der Client jetzt selbst: Er holt den MJPEG-Strom, zerlegt ihn in Einzelbilder (Länge aus dem Teil-Kopf, sonst JPEG-Ende) und zeigt sie an. Bilder/s sind damit exakt; reißt der Strom ab, verbindet der Wächter nach 8 s neu. Ströme direkt von der Kamera (fremde Adresse) bleiben normale Bilder mit Anzeige „Live“ und ohne Wächter.
+
 ## 0.9.28 – Menü-LED
 - **Geändert:** Stil „Modern“: Die Zustands-LED der Menü-Kacheln sitzt etwas höher, auf Höhe der Zähler, statt am unteren Rand der abgerundeten Kachel.
 
