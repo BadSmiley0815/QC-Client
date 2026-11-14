@@ -45,11 +45,14 @@
     </panel>
   </template>
   <template id="1-107_1">
+    <logic id="logic_lock" operation="or"><slot id="slot_hand" /></logic>
     <panel pos="1" click="4" layout="pan_doublebtn">
       <icon cell="leftbg" ico="tpl_btn_grey_bg" /><icon cell="rightbg" ico="tpl_btn_grey_bg" />
       <text cell="txt1" value="AUF" /><text cell="txt2" value="AB" />
-      <action_up click="2" type="set" slot="slot_long" value="0" />
-      <action_up click="3" type="set" slot="slot_long" value="1" />
+      <group enable_slot="logic_lock" on_value="0">
+        <action_up click="2" type="set" slot="slot_long" value="0" />
+        <action_up click="3" type="set" slot="slot_long" value="1" />
+      </group>
     </panel>
     <panel pos="2" click="0" layout="pan_2val">
       <text cell="txt1" value="Pos." /><text_dyn cell="txt2" prec="0" unit="%"><content value_slot="slot_position" /></text_dyn>

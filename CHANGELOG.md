@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.25 – Jalousie in der klassischen Ansicht
+- **Korrigiert:** Die Pfeiltasten der Jalousie (1-107) reagierten in der klassischen Ansicht nicht. Die Vorlage legt die Tasten-Aktionen in eine Gruppe („nur ohne Sperre“), die der Client bei Klickflächen und Aktionen nicht durchsucht hat. Betrifft alle Vorlagen mit Aktionen in Gruppen.
+
 ## 0.9.24 – Mehr Symbole aus der QC-Visu
 - **Korrigiert:** Symbole mit Linien, Polylinien/Polygonen oder ausführlich notierten Pfaden (PathFigure mit Segmenten, GeometryGroup, Ellipse-/Rechteck-/Liniengeometrie) konnte der Client nicht umsetzen und zeigte ein Ersatzsymbol (z. B. Haus statt Lineal beim Menüpunkt „Büro“, `mnu_btn_ico_techoffice`). Diese Formen werden jetzt gezeichnet; der Symbol-Zwischenspeicher wird dafür einmal neu aufgebaut.
 - **Neu:** Das Protokoll nennt fehlende („nicht im Symbolsatz“) und nicht umsetzbare Symbole beim Namen.

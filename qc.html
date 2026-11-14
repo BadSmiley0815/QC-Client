@@ -427,7 +427,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.24";
+const VERSION = "0.9.25";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2229,7 +2229,7 @@ function clPanel(el, P, X) {
   }
   // Klickflächen
   if (P.getAttribute("click") !== "0") {
-    const zones = new Set([...P.children].filter(n => /^action/.test(n.localName)).map(n => n.getAttribute("click") || "1"));
+    const zones = new Set(clActs(P, X).map(n => n.getAttribute("click") || "1"));
     for (const z of zones) { const d = (CL.lay[lay] || {})["down" + z]; const r = d ? [px(d, "left"), px(d, "top"), px(d, "width", 110), px(d, "height", 40)] : z === "2" ? [0, 0, 55, 40] : z === "3" ? [55, 0, 55, 40] : [0, 0, 110, 40];
       h += `<div class="cl-z" data-z="${z}" style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px"></div>`; }
   }
@@ -2253,7 +2253,7 @@ function clRow(ref, el, label, i) {
 function clScenes(ref, el, T, X) {
   const btns = [];
   for (const pos of [1, 2]) { const P = [...T.children].find(n => n.localName === "panel" && +n.getAttribute("pos") === pos && X.cond(n)); if (!P) continue;
-    const zs = [...new Set([...P.children].filter(a => /^action_/.test(a.localName)).map(a => a.getAttribute("click") || "1"))].sort((a, b) => a - b);
+    const zs = [...new Set(clActs(P, X).map(a => a.getAttribute("click") || "1"))].sort((a, b) => a - b);
     zs.forEach(z => btns.push({ pos, z })); }
   if (!btns.length || btns.length > 4) return "";
   const W = 222, g = 4, bw = (W - (btns.length - 1) * g) / btns.length, mode = String(X.par("$par_button_mode") || "0");
@@ -2367,8 +2367,10 @@ function clKo(ko) {
 function clActions(ref, pos, z) {
   const el = P_.els[ref], T = el && clTpl(el); if (!T) return null;
   const X = clCtx(el, T); const P = [...T.children].find(p => p.localName === "panel" && +p.getAttribute("pos") === pos && X.cond(p)); if (!P) return null;
-  return { el, X, acts: [...P.children].filter(n => /^action_(down|up|repeat)$/.test(n.localName) && (n.getAttribute("click") || "1") === z) };
+  return { el, X, acts: clActs(P, X).filter(n => /^action_(down|up|repeat)$/.test(n.localName) && (n.getAttribute("click") || "1") === z) };
 }
+/* Aktionen eines Felds, auch aus Gruppen (<group enable_slot=… on_value=…>, z. B. Jalousie 1-107: Pfeile nur ohne Sperre) */
+const clActs = (P, X) => [...P.children].flatMap(n => n.localName === "group" ? (X.cond(n) && X.enabled(n) ? clActs(n, X) : []) : /^action/.test(n.localName) ? [n] : []);
 /* Funktionen, deren Vorlage der Client nicht fest kennt (importierte Vorlagen): Popups und PIN direkt aus der Vorlage */
 const clOwn = el => el && el.kind === "unknown";
 function clExec(ref, A, n, pinOk) {
@@ -2459,7 +2461,7 @@ function clPopFirst(ref) {
   const el = P_.els[ref], T = clTpl(el); if (!T) return false;
   const X = clCtx(el, T);
   for (const P of T.children) { if (P.localName !== "panel" || !X.cond(P)) continue;
-    for (const a of P.children) if (a.localName === "action_up" || a.localName === "action_down") {
+    for (const a of clActs(P, X)) if (a.localName === "action_up" || a.localName === "action_down") {
       if (a.getAttribute("type") === "popup" && X.enabled(a) && X.cond(a)) { clExec(ref, { el, X, acts: [a] }, a); return true; } } }
   const p = [...T.children].find(n => n.localName === "popup"); return p ? clPop(ref, p.getAttribute("id")) : false;
 }
