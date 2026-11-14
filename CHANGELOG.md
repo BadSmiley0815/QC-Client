@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.41 – Handy-Plugin-Seite auch auf älteren WebViews
+- **Korrigiert:** Die Plugin-Seite der klassischen Ansicht auf dem Handy nutzt für die normale Schriftgröße jetzt eine Transformation statt CSS-`zoom`. Unter `zoom` rechnen ältere Android-WebViews (vor Chromium 128) Positionen anders, das Fadenkreuz in Diagrammen hätte dort neben dem Finger gesessen. Aussehen unverändert.
+- README: Vorschaubild der neuen Plugin-Seite.
+
 ## 0.9.40 – Klassisch auf dem Handy: ein Plugin in voller Größe
 - **Geändert:** Die Plugin-Seite der klassischen Ansicht zeigt auf dem Handy nur noch **ein** Plugin über die ganze Seite (nach dem Vorbild der Gira-App) statt zwei verkleinerter Quadranten. Eine Auswahlzeile „‹ Name ›“ blättert durch alle Plugins; der Titel nennt das Plugin. Der Inhalt nutzt die bewegliche Darstellung in normaler Schriftgröße (Diagramm, Kamera, Wetter … über die volle Breite).
 - **Geändert:** Auf dem Handy läuft ein Plugin nur, solange die Plugin-Seite offen ist (Kamera-Ströme enden beim Wechsel zu Menü oder Liste).

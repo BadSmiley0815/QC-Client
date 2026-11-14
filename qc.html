@@ -127,7 +127,8 @@ html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) 
 #classic.cl-phone .cl-qctl{height:64px}
 #classic.cl-phone .cl-qa{height:64px;width:72px}#classic.cl-phone .cl-qa svg{width:28px;height:28px}
 .cl-psel{position:absolute;left:72px;top:6px;width:536px;height:58px;display:grid;place-items:center;background:#2b2b2b;border-radius:6px 6px 0 0;font-size:26px;color:#e6e6e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}
-#classic.cl-phone .cl-qb{zoom:var(--pz);top:calc(64px / var(--pz));width:calc(680px / var(--pz));height:calc((var(--lh) - 27px) / var(--pz));padding:10px;background:#141615;font-size:15px;
+/* v0.9.41: transform statt zoom – unter zoom antworten ältere WebViews (vor Chromium 128) bei getBoundingClientRect in anderen Einheiten, das Fadenkreuz der Diagramme säße daneben. */
+#classic.cl-phone .cl-qb{transform:scale(var(--pz));transform-origin:0 0;top:64px;width:calc(680px / var(--pz));height:calc((var(--lh) - 27px) / var(--pz));padding:10px;background:#141615;font-size:15px;
   color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
   --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df;color:var(--ink)}
 #classic.cl-phone:not(.pg-plug) .cl-quad{visibility:hidden}#classic.cl-phone.pg-plug #cl-left{display:none}
@@ -488,7 +489,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.40";
+const VERSION = "0.9.41";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {

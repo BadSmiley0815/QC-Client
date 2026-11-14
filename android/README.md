@@ -11,14 +11,15 @@ eigenen Plugins auch auf dem Handy.
 Aufgenommen im Android-Emulator mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage.
 
 <p>
-<img src="../docs/img/android_menue.png" alt="Klassische Ansicht auf dem Handy: Menü" width="24%">
-<img src="../docs/img/android_raum.png" alt="Klassische Ansicht: Funktionen eines Raums" width="24%">
-<img src="../docs/img/android_modern.png" alt="Ansicht Modern" width="24%">
-<img src="../docs/img/android_zertifikat.png" alt="Zertifikat des HomeServers bestätigen" width="24%">
+<img src="../docs/img/android_menue.png" alt="Klassische Ansicht auf dem Handy: Menü" width="19%">
+<img src="../docs/img/android_raum.png" alt="Klassische Ansicht: Funktionen eines Raums" width="19%">
+<img src="../docs/img/android_plugin.png" alt="Klassische Ansicht: ein Plugin über die ganze Seite" width="19%">
+<img src="../docs/img/android_modern.png" alt="Ansicht Modern" width="19%">
+<img src="../docs/img/android_zertifikat.png" alt="Zertifikat des HomeServers bestätigen" width="19%">
 </p>
 
-Von links: Menü und Raum in der Ansicht „Klassisch“ (auf dem Handy eine Spalte), Ansicht „Modern“,
-einmalige Bestätigung des HomeServer-Zertifikats.
+Von links: Menü, Raum und Plugin-Seite in der Ansicht „Klassisch“ (auf dem Handy eine Spalte, ein Plugin
+in voller Größe), Ansicht „Modern“, einmalige Bestätigung des HomeServer-Zertifikats.
 
 ## Wie sie arbeitet
 

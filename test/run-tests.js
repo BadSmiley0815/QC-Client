@@ -360,6 +360,10 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     if (process.env.QC_SHOT) await p3.screenshot({ path: process.env.QC_SHOT + "1.png" });
     await p3.click('button[data-pnav="1"]'); await p3.waitForTimeout(800); r = await st();
     ok("› blättert zum nächsten Plugin (Diagramm)", r.id === "905" && r.sel === r.title, JSON.stringify(r));
+    ok("Darstellung ohne CSS-zoom (ältere WebViews rechnen darunter anders)", await p3.evaluate(() => { const c = getComputedStyle(document.getElementById("cl-q1b")); return (c.zoom === "1" || c.zoom === "normal" || c.zoom === undefined) && c.transform !== "none"; }));
+    { const bx = await p3.locator("#cl-q1b svg[data-chart]").first().boundingBox(), hov = async f => { await p3.mouse.move(bx.x + 44 + (bx.width - 54) * f, bx.y + bx.height / 2); await p3.waitForTimeout(150); return p3.evaluate(() => CL.hosts[1].plug.data.hover); };
+      const a = await hov(0.25), c = await hov(0.75), n = await p3.evaluate(() => CHART_RANGES.find(r => r.k === CL.hosts[1].plug.data.cur).count);
+      ok("Fadenkreuz im Diagramm trifft die Stelle unter dem Zeiger (¼ und ¾ der Breite)", Math.abs(a - n * 0.25) <= 1 && Math.abs(c - n * 0.75) <= 1, JSON.stringify({ a, c, n, bx })); }
     if (process.env.QC_SHOT) await p3.screenshot({ path: process.env.QC_SHOT + "2.png" });
     await p3.click('button[data-pnav="1"]'); await p3.waitForTimeout(800); r = await st();
     ok("› blättert weiter in die Plugins des zweiten Quadranten (Kamera), dann Ende", r.id === "901" && await p3.isDisabled('button[data-pnav="1"]'), JSON.stringify(r));
