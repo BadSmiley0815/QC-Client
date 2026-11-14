@@ -34,7 +34,7 @@ Stand: v0.9.34 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [x] Symbole aus der QC-Visu (v0.8.0)
 - [ ] Eigene Entwickler-ID von Gira (angefragt 14.11.2026) – bis dahin vorläufig 99-…; danach alle eigenen Vorlagen umstellen, Vorlagen in eigenes Repository
-  - [ ] Funktionsvorlage „Wetterstation“ (vorläufig 99-4): KOs für Temperatur, Feuchte, Wind, Windrichtung, Regen, Helligkeit, Luftdruck; Zeile + Popup im normalen QC, Wetter-Plugin des Clients liest sie für „Jetzt“
+  - [ ] Eigenes Wetter-Plugin (vorläufig 99-1, Repo QC-Plugin, C#): Ort und Stations-KOs im Experten, Anzeige im Windows-QC; danach liest der QC-Client dessen Einstellung (Unterstützung der verworfenen Vorlage 99-4 dabei wieder entfernen)
 - [x] Eigene Symbole in Funktionsvorlagen: `tools/hsm-build.py` + Testvorlage 99-3 (im Windows-QC bestätigt; Client lädt sie ab v0.9.4 aus public)
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil

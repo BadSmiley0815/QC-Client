@@ -84,9 +84,9 @@ Der Client ersetzt den Gira-Wetterdienst durch eine eigene Lösung:
 
 Vorlagen-IDs bestehen aus **Entwickler-ID + Nummer** (z. B. `1-101`: Entwickler 1 = Gira, Vorlage 101). Die Entwickler-ID vergibt Gira auf Anfrage.
 
-Die hier verwendeten IDs **`99-…`** (Testvorlagen 99-3, 99-7 und die geplante Wetterstation 99-4) sind **vorläufig**: Eine eigene Entwickler-ID ist bei Gira angefragt.
+Die hier verwendeten IDs **`99-…`** (Testvorlagen 99-3, 99-7 und das geplante Wetter-Plugin 99-1) sind **vorläufig**: Eine eigene Entwickler-ID ist bei Gira angefragt.
 Sobald sie vergeben ist, werden alle eigenen Vorlagen in allen Dateien auf die neue ID umgestellt – Elemente, die eine 99-Vorlage verwenden, müssen danach im Experten neu zugewiesen werden.
-Die eigenen Funktionsvorlagen liegen im Repository [QC-Funktionsvorlagen](https://github.com/BadSmiley0815/QC-Funktionsvorlagen).
+Eigene Funktionsvorlagen liegen im Repository [QC-Funktionsvorlagen](https://github.com/BadSmiley0815/QC-Funktionsvorlagen), eigene Plugins in [QC-Plugin](https://github.com/BadSmiley0815/QC-Plugin).
 
 ## Installation auf dem HomeServer
 
