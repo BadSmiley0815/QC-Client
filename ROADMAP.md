@@ -40,6 +40,7 @@ Stand: v0.9.34 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
   - [ ] Popups der Vorlagen im Original-Stil
     - [x] Importierte Vorlagen (z. B. 176-x): Popups aus der Vorlage, PIN, Werteingabe (v0.9.8) – Ablageort public_templates.xml am HS noch bestätigen
     - [x] Gira-Vorlagen: Popups mit Tasten, Wertfeldern, Schiebereglern (v0.9.26)
+    - [ ] Eigene Vorlagen (Repo QC-Funktionsvorlagen) wie im Windows-QC darstellen: 99-2 Popup – Bezeichnung im Wertfeld liegt über dem Wert, Beschriftung der Knöpfe ohne Aktion rutscht unter den Knopf; 99-1 Popup – aktive Betriebsart/Lüfterstufe (selected_slot) prüfen
     - [ ] Gira-Popups mit Szene lernen/abrufen, Abläufen, Navigation, PIN-Verwaltung – bisher Einstellungsfenster
   - [x] Plugins in den Quadranten im Original-Stil (Diagramm, Sonos, Kamera – v0.9.1)
   - [ ] Farbbalken bei RGB-Zeilen, MyTouch, Notiz
