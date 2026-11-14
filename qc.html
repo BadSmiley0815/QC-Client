@@ -107,6 +107,21 @@ html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) 
 #cl-sys{position:absolute;right:0;bottom:44px;width:228px;background:#1e1e1e;border:1px solid #333;display:flex;flex-direction:column}
 #cl-sys button{padding:12px 14px;text-align:left;font-size:16px;border-bottom:1px solid #333}
 #cl-log{position:absolute;left:686px;top:87px;width:680px;height:637px;background:#111;border:1px solid #333;display:flex;flex-direction:column}
+/* v0.9.36 – Klassisch auf dem Handy (schmales Fenster): eine Spalte, 680 breit. Menü/Liste und die beiden Plugin-Quadranten
+   sind zwei Seiten (Leiste unten: „Plugins“); die Liste nutzt die ganze Höhe (--lh = Listenhöhe, Zeilenzahl in CL.rows). */
+#clstage{--lh:600px}
+#classic.cl-phone #clstage{width:680px;height:calc(var(--lh) + 168px)}
+#classic.cl-phone .cl-head{width:680px}
+#classic.cl-phone #cl-time{left:300px}#classic.cl-phone #cl-tout{left:509px}#classic.cl-phone #cl-tin{left:595px}
+#classic.cl-phone #cl-left{height:calc(var(--lh) + 40px)}
+#classic.cl-phone .cl-bar{top:var(--lh)}#classic.cl-phone .cl-vl{height:var(--lh)}
+#classic.cl-phone #cl-nav{top:calc(var(--lh) + 126px);width:680px}
+#classic.cl-phone #cl-nav button:disabled{display:none}
+#cl-nav button[data-pg]{display:none}#classic.cl-phone #cl-nav button[data-pg]{display:block}
+#classic.cl-phone .cl-quad{left:0}
+#classic.cl-phone:not(.pg-plug) .cl-quad{visibility:hidden}#classic.cl-phone.pg-plug #cl-left{display:none}
+#classic.cl-phone #cl-log{left:0;height:calc(var(--lh) + 37px)}
+#classic.cl-phone .cl-mt{zoom:1.5}
 #cl-log pre{flex:1;overflow:auto;margin:0;padding:10px;font-size:12px;white-space:pre-wrap}#cl-log button{padding:10px;border-top:1px solid #333}
 #clcard{border:1px solid #2b302d;border-radius:14px;padding:12px;width:min(420px,94vw);--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;--acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;color-scheme:dark;background:var(--bg);color:var(--ink)}
 .cl-badge{border-radius:50%;background:#000}.cl-bdg>svg{width:100%;height:100%;display:block}
@@ -398,7 +413,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div id="cl-left"></div>
   <div class="cl-quad" style="top:87px"><div id="cl-q1c"></div><div id="cl-q1b" class="cl-qb"></div></div>
   <div class="cl-quad" style="top:408px"><div id="cl-q2c"></div><div id="cl-q2b" class="cl-qb"></div></div>
-  <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
+  <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-pg="1">Plugins</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
   <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
@@ -459,7 +474,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.34";
+const VERSION = "0.9.36";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1883,7 +1898,11 @@ function chartHover(e) {
   if (h !== d.hover) { d.hover = h; renderHost(H); }
 }
 function hoverHooks(body) { [["mousemove", chartHover], ["mouseleave", chartHover], ["mousemove", barHover], ["mouseleave", barHover]].forEach(([t, f]) => body.addEventListener(t, f));
-  [["touchstart", chartHover], ["touchmove", chartHover], ["touchstart", barHover], ["touchmove", barHover]].forEach(([t, f]) => body.addEventListener(t, f, { passive: true })); }
+  /* v0.9.35: Finger ziehen. Das Neuzeichnen ersetzt das berührte Element; touchmove geht danach nur noch an dieses
+     (entfernte) Element. Deshalb dort mithören und das Ziel über die Fingerposition neu bestimmen. */
+  const fwd = e => { const t = e.touches[0], el = t && document.elementFromPoint(t.clientX, t.clientY); if (!el || !body.contains(el)) return;
+    const ev = { type: e.type, target: el, touches: e.touches }; chartHover(ev); barHover(ev); };
+  body.addEventListener("touchstart", e => { const el = e.target; fwd(e); el.addEventListener("touchmove", fwd, { passive: true }); }, { passive: true }); }
 window.addEventListener("resize", () => HOSTS.forEach(h => { if (h.plug && /^(0-3|1-16)$/.test(h.plug.cls)) renderHost(h); }));
 
 /* 1-16 Balkendiagramme (Original: hs_client_framework BarChartFrame / ArchiveDataSource):
@@ -2284,7 +2303,7 @@ function buildNav() {
   $("startsel").onchange = e => store.set("start", e.target.value);
   $("cpbtn").onclick = camProxyDlg;
   $("clstylesel").onchange = e => clSetStyle(e.target.value);
-  $("uisel").onchange = e => { clSetUi(e.target.value); if (e.target.value === "classic" && !clWide()) { e.target.value = "modern"; alert("Die klassische Ansicht braucht ein breites Fenster (ab 900 Pixel)."); } };
+  $("uisel").onchange = e => clSetUi(e.target.value);
 }
 function viewData(v) {
   if (v === "fav") return { title: "Favoriten", crumb: "", items: [...favs].map(ref => ({ ref })) };
@@ -2343,9 +2362,10 @@ let CLSTYLE = store.get("clstyle", "modern");                          // Optik 
 document.documentElement.classList.toggle("cl-gira", CLSTYLE === "gira");
 function clSetStyle(st) { CLSTYLE = st; store.set("clstyle", st); document.documentElement.classList.toggle("cl-gira", st === "gira");
   const b = document.querySelector('#cl-sys [data-sysa="style"]'); if (b) b.textContent = "Stil: " + (st === "gira" ? "Gira" : "Modern"); }
-const CL = { tpl: null, lang: {}, lay: {}, grid: {}, loading: null, err: "", qsel: { 1: 0, 2: 0 }, qoff: { 1: 0, 2: 0 }, top: {}, hosts: {}, press: null };
-const clWide = () => window.innerWidth >= 900;
-const clOn = () => CLASSIC && clWide() && P_ && !$("app").classList.contains("hidden-force");
+const CL = { tpl: null, lang: {}, lay: {}, grid: {}, loading: null, err: "", qsel: { 1: 0, 2: 0 }, qoff: { 1: 0, 2: 0 }, top: {}, hosts: {}, press: null, rows: 15, page: "left", s: 1 };
+const clWide = () => window.innerWidth >= 900;                         // breit (Tablet, PC): alle vier Quadranten
+const clPhone = () => !clWide();                                       // schmal (Handy): eine Spalte, siehe clScale
+const clOn = () => CLASSIC && P_ && !$("app").classList.contains("hidden-force");
 async function clLoad() {
   if (CL.loading) return CL.loading;
   CL.loading = (async () => {
@@ -2533,21 +2553,24 @@ function clLeft() {
   if (!v) return { title: "Menü", html: "" };
   const top = CL.top[cur] || 0;
   if (cur.startsWith("m:")) {
-    const per = cur === "m:0" && v.items.length <= 24 ? 24 : 21, items = v.items.slice(top, top + per);
-    let h = items.map((m, i) => clMenuTile(m, i % 3, Math.floor(i / 3))).join("");
-    if (per === 21) h += clBar(cur !== "m:0", top > 0, top + per < v.items.length, per);
+    // Kacheln: breit 3 Spalten je 80 hoch, Handy 2 Spalten in 1,5-facher Größe (CSS zoom) – ohne Blättern passt eine Reihe mehr
+    const cols = clPhone() ? 2 : 3, th = clPhone() ? 120 : 80, LH = CL.rows * 40, full = Math.floor((LH + 40) / th) * cols, part = Math.floor(LH / th) * cols;
+    const bar = !(cur === "m:0" && v.items.length <= full), per = bar ? part : full, items = v.items.slice(top, top + per);
+    let h = items.map((m, i) => clMenuTile(m, i % cols, Math.floor(i / cols))).join("");
+    if (bar) h += clBar(cur !== "m:0", top > 0, top + per < v.items.length, per);
     return { title: v.title, html: h };
   }
+  const R = CL.rows;
   if (v.rooms) {
-    const sh = v.rooms.slice(top, top + 15);
-    const rows = sh.map((r, i) => `<button class="cl-lrow" data-mv="r:${esc(r.id)}" style="top:${i * 40}px">${esc(r.name)}</button>`).join("") + Array.from({ length: 15 - sh.length }, (_, k) => `<div class="cl-row" style="top:${(sh.length + k) * 40}px"></div>`).join("");
-    return { title: v.title, html: rows + clBar(true, top > 0, top + 15 < v.rooms.length, 15) };
+    const sh = v.rooms.slice(top, top + R);
+    const rows = sh.map((r, i) => `<button class="cl-lrow" data-mv="r:${esc(r.id)}" style="top:${i * 40}px">${esc(r.name)}</button>`).join("") + Array.from({ length: R - sh.length }, (_, k) => `<div class="cl-row" style="top:${(sh.length + k) * 40}px"></div>`).join("");
+    return { title: v.title, html: rows + clBar(true, top > 0, top + R < v.rooms.length, R) };
   }
   const list = v.items.filter(i => P_.els[i.ref] && P_.els[i.ref].kind !== "spacer");
-  const shown = list.slice(top, top + 15);
-  const rows = shown.map((it, i) => clRow(it.ref, P_.els[it.ref], it.label, i)).join("") + Array.from({ length: 15 - shown.length }, (_, k) => `<div class="cl-row" style="top:${(shown.length + k) * 40}px"></div>`).join("");
+  const shown = list.slice(top, top + R);
+  const rows = shown.map((it, i) => clRow(it.ref, P_.els[it.ref], it.label, i)).join("") + Array.from({ length: R - shown.length }, (_, k) => `<div class="cl-row" style="top:${(shown.length + k) * 40}px"></div>`).join("");
   const lines = '<div class="cl-vl" style="left:340px"></div><div class="cl-vl" style="left:453px"></div><div class="cl-vl" style="left:566px"></div>';
-  return { title: v.title, html: lines + rows + (list.length ? "" : `<div class="cl-empty">${cur === "fav" ? "Noch keine Favoriten." : "Keine Elemente."}</div>`) + clBar(true, top > 0, top + 15 < list.length, 15) };
+  return { title: v.title, html: lines + rows + (list.length ? "" : `<div class="cl-empty">${cur === "fav" ? "Noch keine Favoriten." : "Keine Elemente."}</div>`) + clBar(true, top > 0, top + R < list.length, R) };
 }
 function clBar(back, up, down, per) {
   return `<div class="cl-bar"><button data-cl="back" ${back ? "" : "disabled"} style="left:0;width:226px">zurück</button>
@@ -2581,11 +2604,21 @@ function clHead() {
   $("cl-tout").innerHTML = `<span class="cl-ti">${qf("status_temp_out") || ""}</span>${t("temp_out")}`;
   $("cl-tin").innerHTML = `<span class="cl-ti">${qf("status_temp_in") || ""}</span>${t("temp_in")}`;
 }
-function clScale() { const s = Math.min(window.innerWidth / 1366, window.innerHeight / 768); const st = $("clstage");
-  st.style.transform = `scale(${s})`; st.style.left = Math.max(0, (window.innerWidth - 1366 * s) / 2) + "px"; st.style.top = Math.max(0, (window.innerHeight - 768 * s) / 2) + "px"; }
+/* Maßstab und Aufteilung. Breit: 1366 × 768 eingepasst. Handy: 680 breit auf die Fensterbreite, die Liste bekommt so viele
+   Zeilen, wie in die Höhe passen (mindestens 15). Rückgabe: true, wenn sich die Aufteilung geändert hat (neu zeichnen). */
+function clScale() {
+  const st = $("clstage"), C = $("classic"), ph = clPhone(), W = ph ? 680 : 1366; let s, rows = 15, H = 768;
+  if (ph) { s = window.innerWidth / 680; rows = Math.max(15, Math.floor((window.innerHeight / s - 168) / 40)); H = rows * 40 + 168; s = Math.min(s, window.innerHeight / H); }
+  else s = Math.min(window.innerWidth / 1366, window.innerHeight / 768);
+  const changed = rows !== CL.rows || ph !== C.classList.contains("cl-phone");
+  CL.rows = rows; CL.s = s; st.style.setProperty("--lh", rows * 40 + "px");
+  C.classList.toggle("cl-phone", ph); C.classList.toggle("pg-plug", ph && CL.page === "plug");
+  st.style.transform = `scale(${s})`; st.style.left = Math.max(0, (window.innerWidth - W * s) / 2) + "px"; st.style.top = ph ? "0" : Math.max(0, (window.innerHeight - H * s) / 2) + "px";
+  return changed;
+}
 let clTimer = null;
 function clShow(on) {
-  const show = on && clWide() && P_;
+  const show = on && P_;
   $("classic").classList.toggle("hidden", !show);
   $("app").classList.toggle("cl-hide", !!show);
   clearInterval(clTimer);
@@ -2599,7 +2632,9 @@ function clRender() {
   if (!CLASSIC || $("classic").classList.contains("hidden") || !P_) return;
   const L = clLeft(); $("cl-title").textContent = L.title; $("cl-left").innerHTML = L.html;
   [1, 2].forEach(q => { $("cl-q" + q + "c").innerHTML = clQuad(q); clQuadOpen(q); });
-  $("cl-nav").querySelectorAll("button[data-nav]").forEach(b => b.classList.toggle("act", (b.dataset.nav === "m:0" && cur.startsWith("m:")) || b.dataset.nav === cur));
+  const plugPage = clPhone() && CL.page === "plug"; $("classic").classList.toggle("pg-plug", plugPage); if (plugPage) $("cl-title").textContent = "Plugins";
+  $("cl-nav").querySelectorAll("button[data-nav]").forEach(b => b.classList.toggle("act", !plugPage && ((b.dataset.nav === "m:0" && cur.startsWith("m:")) || b.dataset.nav === cur)));
+  $("cl-nav").querySelector("button[data-pg]").classList.toggle("act", plugPage);
   clHead();
 }
 function clSetUi(mode) { CLASSIC = mode === "classic"; store.set("ui", mode); clShow(CLASSIC); if (!CLASSIC) { buildNav(); renderView(); } }
@@ -2799,7 +2834,7 @@ function clPopRender() {
   const row = CLASSIC && document.querySelector(`#classic .cl-row[data-ref="${CSS.escape(CLP.ref)}"]`), d = $("clpop");
   let s = Math.max(0.6, Math.min(1.8, (innerWidth - 24) / fw, (innerHeight - 24) / fh)), pos = "";
   if (row) {                                                   // wie im Windows-QC: Maßstab der Ansicht, mittig über der Liste, auf Höhe der Zeile
-    s = Math.min(s, Math.min(innerWidth / 1366, innerHeight / 768));
+    s = Math.min(s, CL.s);
     const rr = row.getBoundingClientRect(), x = Math.max(8, Math.min(innerWidth - fw * s - 8, rr.left + rr.width / 2 - fw * s / 2)),
       y = Math.max(8, Math.min(innerHeight - fh * s - 8, rr.top + rr.height / 2 - fh * s / 2));
     pos = `position:fixed;margin:0;left:${x}px;top:${y}px`; }
@@ -2866,22 +2901,24 @@ G.addEventListener("change", e => {
 });
 /* Klassisch: Klicks */
 function clPlugin(id) {
+  if (clPhone()) { CL.page = "plug"; $("classic").classList.add("pg-plug"); $("cl-title").textContent = "Plugins"; $("cl-nav").querySelectorAll("button").forEach(b => b.classList.toggle("act", !!b.dataset.pg)); }   // Handy: zur Plugin-Seite
   for (const q of [1, 2]) { const i = clQuadList(q).findIndex(p => p.id === id); if (i >= 0) { CL.qsel[q] = i; CL.qoff[q] = Math.max(0, Math.min(i - 1, clQuadList(q).length - 3)); clRender(); return; } }
   const H = CL.hosts[1]; $("cl-q1c").innerHTML = `<div class="cl-qctl"><button class="cl-tab act" style="left:57px;width:566px">${esc((PLUGS[id] || {}).title || "")}</button></div>`; openPlugin("", id, H);
 }
-function clFrame(title, url) { $("cl-title").textContent = title; $("cl-left").innerHTML = `<iframe src="${esc(url)}" referrerpolicy="no-referrer" style="position:absolute;left:0;top:0;width:680px;height:600px;border:0;background:#fff"></iframe>` + clBar(true, false, false, 15); }
+function clFrame(title, url) { $("cl-title").textContent = title; $("cl-left").innerHTML = `<iframe src="${esc(url)}" referrerpolicy="no-referrer" style="position:absolute;left:0;top:0;width:680px;height:${CL.rows * 40}px;border:0;background:#fff"></iframe>` + clBar(true, false, false, CL.rows); }
 $("classic").addEventListener("click", e => {
   const t = e.target.closest("button,[data-open]"); if (!t || t.disabled) return;
   if (t.dataset.m) { menuAct(t.dataset.m); return; }
   if (t.dataset.mv) { go(t.dataset.mv); return; }
   if (t.dataset.open) { const r = t.dataset.open; if (clPopFirst(r)) return; clCard(r); return; }   // Vorlage mit Popup: gleich das Popup (wie Klick auf den Wert)
-  if (t.dataset.nav) { go(t.dataset.nav); return; }
+  if (t.dataset.nav) { CL.page = "left"; go(t.dataset.nav); clRender(); return; }
+  if (t.dataset.pg) { CL.page = "plug"; clRender(); return; }
   if (t.dataset.tab) { CL.qsel[t.dataset.q] = +t.dataset.tab; clRender(); return; }
   if (t.dataset.qnav) { const q = t.dataset.q, n = clQuadList(q).length; CL.qsel[q] = Math.max(0, Math.min(n - 1, CL.qsel[q] + +t.dataset.qnav));
     if (CL.qsel[q] < CL.qoff[q]) CL.qoff[q] = CL.qsel[q]; if (CL.qsel[q] > CL.qoff[q] + 2) CL.qoff[q] = CL.qsel[q] - 2; clRender(); return; }
   if (t.dataset.cl) { const per = +t.dataset.per || 15, tp = CL.top[cur] || 0;
     if (t.dataset.cl === "back") { const prev = (CL.hist || []).pop(); cur = prev || "m:0"; store.set("view", cur); renderView(); return; }
-    CL.top[cur] = Math.max(0, tp + ({ pgup: -per, pgdn: per, up: -1, dn: 1 })[t.dataset.cl] * (cur.startsWith("m:") ? 3 : 1)); clRender(); return; }
+    CL.top[cur] = Math.max(0, tp + ({ pgup: -per, pgdn: per, up: -1, dn: 1 })[t.dataset.cl] * (cur.startsWith("m:") ? (clPhone() ? 2 : 3) : 1)); clRender(); return; }
   if (t.dataset.sys) { $("cl-sys").classList.toggle("hidden"); return; }
   if (t.dataset.sysa) { $("cl-sys").classList.add("hidden");
     if (t.dataset.sysa === "modern") clSetUi("modern");
@@ -2917,7 +2954,7 @@ $("cl-left").addEventListener("pointercancel", () => clUp(true));
 $("cl-left").addEventListener("contextmenu", e => { if (e.target.closest(".cl-z")) e.preventDefault(); });
 $("cl-left").addEventListener("click", e => { const p = e.target.closest(".cl-open"); if (p) clCard(p.dataset.ref); });
 $("clcardx").onclick = () => $("clcard").close();
-window.addEventListener("resize", () => { if (CLASSIC) { if (!clWide() !== $("classic").classList.contains("hidden")) clShow(true); else clScale(); } });
+window.addEventListener("resize", () => { if (CLASSIC && !$("classic").classList.contains("hidden") && clScale()) clRender(); });
 $("bnow").onclick = connectNow;
 /* ☰: am Handy klappt die Seitenleiste auf, am großen Bildschirm wird sie aus-/eingeblendet (wird gemerkt) */
 const navMobile = () => window.matchMedia("(max-width:760px)").matches;

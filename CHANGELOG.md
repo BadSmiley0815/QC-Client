@@ -3,6 +3,13 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.36 – Klassisch auf dem Handy
+- **Neu:** Die Ansicht Klassisch geht auch in schmalen Fenstern (Handy): eine Spalte, 680 breit. Menü/Liste und die beiden Plugin-Quadranten sind zwei Seiten, umgeschaltet mit „Plugins“ in der unteren Leiste; die Liste nutzt die ganze Höhe.
+- **Geändert:** Die Sperre „Klassisch erst ab 900 Pixel Breite“ entfällt.
+
+## 0.9.35 – Diagramme mit dem Finger
+- **Korrigiert:** Werte im Diagramm folgen beim Ziehen mit dem Finger (nach dem Neuzeichnen ging touchmove ins Leere).
+
 ## 0.9.34 – Wetterstation als Funktionsvorlage
 - **Neu:** Das Wetter-Plugin nimmt „Jetzt“ auch aus Elementen mit der eigenen Funktionsvorlage „Wetterstation“ (vorläufig 99-4, siehe [QC-Funktionsvorlagen](https://github.com/BadSmiley0815/QC-Funktionsvorlagen)); sie hat Vorrang vor einer Wertanzeige.
 
