@@ -1,0 +1,70 @@
+# Baut die Android-App (android/) und haengt die APK an das GitHub-Release.
+# Ausloeser: ein Versions-Tag (z. B. v0.9.38) oder von Hand ueber "Run workflow".
+# Braucht zwei Repository-Secrets (Settings > Secrets and variables > Actions), siehe android/README.md:
+#   ANDROID_KEYSTORE_B64   Signaturschluessel (qc-client.keystore) als Base64
+#   ANDROID_KEYSTORE_PASS  Passwort dazu (Inhalt von qc-client.keystore.pass)
+name: Android-APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Tag passt zur Version in qc.html
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: powershell
+        run: |
+          $m = Select-String -Path qc.html -Pattern 'const VERSION = "([0-9.]+)"' | Select-Object -First 1
+          $v = 'v' + $m.Matches[0].Groups[1].Value
+          if ($v -ne $env:GITHUB_REF_NAME) { throw "Tag $env:GITHUB_REF_NAME passt nicht zu VERSION $v in qc.html" }
+
+      - name: Signaturschluessel bereitstellen
+        shell: powershell
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+        run: |
+          # Ohne den festen Schluessel wird nicht gebaut: eine anders signierte APK liesse sich nicht als Update installieren.
+          if (-not $env:KS_B64 -or -not $env:KS_PASS) { throw 'Secrets ANDROID_KEYSTORE_B64 / ANDROID_KEYSTORE_PASS fehlen (siehe android/README.md).' }
+          $d = Join-Path $env:RUNNER_TEMP 'qc-tools'
+          New-Item -ItemType Directory -Force $d | Out-Null
+          [IO.File]::WriteAllBytes((Join-Path $d 'qc-client.keystore'), [Convert]::FromBase64String(($env:KS_B64 -replace '\s', '')))
+          [IO.File]::WriteAllText((Join-Path $d 'qc-client.keystore.pass'), $env:KS_PASS.Trim())
+
+      - name: APK bauen
+        shell: powershell
+        run: .\android\build.ps1 -ToolsDir (Join-Path $env:RUNNER_TEMP 'qc-tools')
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QC-Client-APK
+          path: android/build/*.apk
+          if-no-files-found: error
+
+      - name: APK an das Release haengen
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $tag = $env:GITHUB_REF_NAME
+          $apk = (Get-ChildItem android\build\*.apk | Select-Object -First 1).FullName
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) { gh release upload $tag $apk --clobber }
+          else { gh release create $tag $apk --title "QC-Client $tag" --notes "qc.html und Android-App (APK). Aenderungen: siehe CHANGELOG.md und android/CHANGELOG.md." }
+          if ($LASTEXITCODE -ne 0) { exit 1 }

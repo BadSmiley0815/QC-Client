@@ -237,7 +237,7 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 .cl-wxn{width:188px;flex:none;border-right:1px solid #000;padding:10px 14px;display:flex;flex-direction:column;gap:5px;background:#202020;--wxbg:#202020}
 .cl-wxn .wxfl{font-size:12px;color:#aaa;margin-top:-6px}.cl-wxn .h{font-size:14px;color:#aaa}.cl-wxn .h i{font-style:normal;font-size:12px}.cl-wxn .tt{display:flex;align-items:center;gap:6px}.cl-wxn .wi{width:56px;height:56px}
 .cl-wxn b{font-size:30px;font-weight:400;color:#eee;font-variant-numeric:tabular-nums}.cl-wxn b u{text-decoration:none;font-size:16px;margin-left:2px}
-.cl-wx .r{display:flex;gap:6px;align-items:center;font-size:13px;color:#ccc;white-space:nowrap}.cl-wx .r svg{width:15px;height:15px;color:#888;flex:none}
+.cl-wx .r{display:flex;gap:6px;align-items:center;font-size:13px;color:#ccc;white-space:nowrap}.cl-wx .r svg{width:15px;height:15px;color:#888;flex:none}.cl-wx .r.wr{white-space:normal;font-size:12px;line-height:1.25;align-items:flex-start}
 .cl-wxd{flex:1;min-width:0;border-right:1px solid #000;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px}.cl-wxd:last-child{border-right:0}
 .cl-wxd .wd{font-size:15px;color:#e6e6e6}.cl-wxd .dt{font-size:12px;color:#999}.cl-wxd .wi{width:50px;height:50px}
 .cl-wxd .tp{display:flex;gap:10px;font-size:19px;font-variant-numeric:tabular-nums}.cl-wxd .mx{color:#e8413c}.cl-wxd .mn{color:#3c8ce8}
@@ -474,7 +474,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.37";
+const VERSION = "0.9.38";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -843,7 +843,7 @@ async function onMsg(ev) {
     case "2": case "1": {
       const ko = p[1], val = p.length > 3 ? p.slice(2, -1).join("|") : p[2];
       V.set(ko, val);
-      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); if (HOSTS.some(h => h.plug && h.plug.tags.has(ko))) renderPlug(); }
+      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); HOSTS.forEach(h => { if (h.plug && h.plug.tags.has(ko)) renderHost(h); }); }   // v0.9.38: nur betroffene Anzeigeorte (sonst reisst der Kamera-Strom im anderen Quadranten ab)
       break;
     }
     case "10": TIMERS.set(p[1], { active: p[2] === "1", pts: new Map() }); break;                      // Uhr: aktiv|Anzahl|…
@@ -1618,13 +1618,14 @@ PLUGIN_TYPES["1-3"] = {
     if (d.edit) return clSub(["wxpg"], title, ["wxpg"]) + `<div class="cl-wxs">${T.settings(d)}</div>`;
     const sub = clSub(["wxpg", off > 0 ? -1 : undefined], title, ["wxpg", off + 4 < days.length ? 1 : undefined], gear);
     if (!days.length) return sub + `<div class="cl-wx"><div class="cl-qmsg">${d.fixed && d.set.lat === undefined ? wxNoLoc(d) : d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …"}</div></div>`;
-    const n = T.now(d), row = (ic, v) => v ? `<div class="r">${svg(ic)}<span>${v}</span></div>` : "";
+    const n = T.now(d), row = (ic, v, c = "") => v ? `<div class="r${c}">${svg(ic)}<span>${v}</span></div>` : "";
+    const luxL = n.luxTxt && n.luxTxt.length > 24;   // v0.9.38: vier Himmelsrichtungen passen nicht in eine Zeile der Spalte (188 px) -> kleiner und umbrechen
     return sub + `<div class="cl-wx"><div class="cl-wxn"><div class="h">Jetzt${n.tempSt ? "<i> · gemessen</i>" : ""}</div>
         <div class="tt">${n.code !== undefined ? wxIcon(n.code, n.day) : ""}<b>${n.temp === undefined ? "–" : fmt(n.temp, 1)}<u>${u}</u></b></div>${n.feel === undefined ? "" : `<div class="wxfl">gefühlt ${fmt(n.feel, 1)} ${u}</div>`}
         ${row("wind", n.wind === undefined ? "" : fmt(n.wind, 0) + " " + esc(n.windU) + " " + wxArrow(n.dir) + wxDir(n.dir))}
         ${row("drop", n.hum === undefined ? "" : fmt(n.hum, 0) + " %")}
         ${row("umb", n.rainB !== undefined ? (n.rainB ? "Regen" : "trocken") : n.rain === undefined ? "" : fmt(n.rain, 1) + " " + esc(n.rainU))}
-        ${row("dim", n.luxTxt ? esc(n.luxTxt) : n.lux === undefined ? "" : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"))}</div>
+        ${row("dim", n.luxTxt ? (luxL ? esc(n.luxTxt).split(" · ").map(x => x.replace(/ /g, "&nbsp;")).join("&nbsp;· ") : esc(n.luxTxt)) : n.lux === undefined ? "" : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"), luxL ? " wr" : "")}</div>
       ${days.slice(off, off + 4).map(x => `<div class="cl-wxd"><div class="wd">${esc(x.wd)}</div><div class="dt">${x.ds}</div>${wxIcon(x.code)}
         <div class="tp"><span class="mx">${fmt(x.mx, 0)}${u}</span><span class="mn">${fmt(x.mn, 0)}${u}</span></div>
         <div class="r">${svg("umb")}<span>${fmt(x.rs, 1)} l/m² · ${fmt(x.rp, 0)} %</span></div>
@@ -1641,11 +1642,11 @@ PLUGIN_TYPES["1-3"] = {
         catch (e) { d.hits = []; d.err = e.message; } break; }
       case "wxpick": { const h = d.hits && d.hits[+b.dataset.i]; if (!h) break;
         d.set = { ...d.set, name: h.name, lat: +h.latitude.toFixed(3), lon: +h.longitude.toFixed(3) }; save(); d.fc = null; d.at = null; d.edit = false; d.hits = null; d.off = 0;
-        renderPlug(); await T.load(d); break; }
+        renderHost(hostOfData(d)); await T.load(d); break; }
       case "wxgeo": {
         const p = await new Promise(res => { if (!navigator.geolocation) return res(null); navigator.geolocation.getCurrentPosition(res, () => res(null), { timeout: 10000 }); });
         if (!p) { d.hits = []; break; }
-        d.set = { ...d.set, name: "Mein Standort", lat: +p.coords.latitude.toFixed(3), lon: +p.coords.longitude.toFixed(3) }; save(); d.fc = null; d.at = null; d.edit = false; renderPlug(); await T.load(d); break; }
+        d.set = { ...d.set, name: "Mein Standort", lat: +p.coords.latitude.toFixed(3), lon: +p.coords.longitude.toFixed(3) }; save(); d.fc = null; d.at = null; d.edit = false; renderHost(hostOfData(d)); await T.load(d); break; }
       case "wxst": d.set = { ...d.set, st: b.value }; save(); d.stv = null; await T.station(d); break;
     }
   }
@@ -1915,7 +1916,7 @@ PLUGIN_TYPES["0-3"] = {
   },
   act: async (d, b) => {
     const k = b.dataset.k || b.dataset.d;
-    if (b.dataset.pa === "rg" && k && k !== d.cur) { d.cur = k; d.vals = null; d.hover = null; renderPlug(); await PLUGIN_TYPES["0-3"].load(d); }
+    if (b.dataset.pa === "rg" && k && k !== d.cur) { d.cur = k; d.vals = null; d.hover = null; renderHost(hostOfData(d)); await PLUGIN_TYPES["0-3"].load(d); }
   }
 };
 /* Fadenkreuz: Position im Diagramm -> Block */
@@ -2019,9 +2020,9 @@ PLUGIN_TYPES["1-16"] = {
   },
   act: async (d, b) => {
     const T = PLUGIN_TYPES["1-16"];
-    if (b.dataset.pa === "open") { const it = d.items[+b.dataset.i]; d.open = +b.dataset.i; d.cur = (it.ranges.find(r => r.k === "7d") || it.ranges[0] || {}).k; d.vals = null; d.hover = null; renderPlug(); await T.load(d); }
+    if (b.dataset.pa === "open") { const it = d.items[+b.dataset.i]; d.open = +b.dataset.i; d.cur = (it.ranges.find(r => r.k === "7d") || it.ranges[0] || {}).k; d.vals = null; d.hover = null; renderHost(hostOfData(d)); await T.load(d); }
     else if (b.dataset.pa === "back") { d.open = null; d.vals = null; }
-    else if (b.dataset.pa === "rg" && b.dataset.k !== d.cur) { d.cur = b.dataset.k; d.vals = null; d.hover = null; renderPlug(); await T.load(d); }
+    else if (b.dataset.pa === "rg" && b.dataset.k !== d.cur) { d.cur = b.dataset.k; d.vals = null; d.hover = null; renderHost(hostOfData(d)); await T.load(d); }
   }
 };
 function barHover(e) {
@@ -2238,7 +2239,7 @@ PLUGIN_TYPES["0-4"] = {
   },
   act: async (d, b) => {
     switch (b.dataset.pa) {
-      case "arc": d.cur = +b.dataset.i; d.msgs = null; renderPlug(); await PLUGIN_TYPES["0-4"].load(d); break;
+      case "arc": d.cur = +b.dataset.i; d.msgs = null; renderHost(hostOfData(d)); await PLUGIN_TYPES["0-4"].load(d); break;
       case "reload": await PLUGIN_TYPES["0-4"].load(d); break;
     }
   }
@@ -2287,12 +2288,12 @@ PLUGIN_TYPES["0-7"] = {
   },
   act: async (d, b) => {
     switch (b.dataset.pa) {
-      case "cam": d.cur = +b.dataset.i; d.pics = null; renderPlug(); await PLUGIN_TYPES["0-7"].load(d); break;
+      case "cam": d.cur = +b.dataset.i; d.pics = null; renderHost(hostOfData(d)); await PLUGIN_TYPES["0-7"].load(d); break;
       case "first": d.pos = 0; break;
       case "newer": d.pos = Math.max(0, d.pos - 1); break;
       case "older": d.pos = Math.min(d.pics.length - 1, d.pos + 1); break;
       case "pick": d.pos = +b.value; break;
-      case "reload": d.pics = null; renderPlug(); await PLUGIN_TYPES["0-7"].load(d); break;
+      case "reload": d.pics = null; renderHost(hostOfData(d)); await PLUGIN_TYPES["0-7"].load(d); break;
     }
   }
 };

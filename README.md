@@ -103,6 +103,10 @@ Eigene Funktionsvorlagen liegen im Repository [QC-Funktionsvorlagen](https://git
 
 Zum Ausprobieren geht auch: `qc.html` lokal im Browser öffnen und die HS-Adresse eintragen.
 
+## Android-App
+
+Für Android gibt es eine kleine Hülle, die `qc.html` mitbringt und das Zertifikat des HomeServers einmal bestätigen lässt: Quelltext, Bau und Installation unter [`android/`](android/README.md). Die fertige APK hängt – sobald das erste Release gebaut ist – an den [Releases](https://github.com/BadSmiley0815/QC-Client/releases).
+
 ## Tests
 
 Die Tests laufen gegen einen nachgebauten HomeServer mit einer erfundenen Demo-Visu

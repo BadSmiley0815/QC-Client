@@ -332,6 +332,13 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("OK schließt das Popup (action_up close)", !(await pg.isVisible("#clpop")));
   await pg.click('#cl-nav [data-sys]'); await pg.click('#cl-sys [data-sysa="modern"]'); await pg.waitForTimeout(200);
   ok("zurück auf Modern", !(await pg.isVisible("#classic")) && await pg.isVisible("#app main"));
+  ok("KO-Telegramm zeichnet nur den Anzeigeort neu, dessen Plugin das KO benutzt (v0.9.38)", await pg.evaluate(() => {
+    let n = { a: 0, b: 0 }; PLUGIN_TYPES.__t = { html: d => "<i>" + (++n[d.k]) + "</i>" };
+    const mk = (k, tag) => ({ body: document.createElement("div"), plug: { id: k, cls: "__t", data: { k }, tags: new Set([tag]) } });
+    const A = mk("a", "99991"), B = mk("b", "99992"); HOSTS.push(A, B);
+    WSI.onmessage({ data: "1|99991|1|0" }); WSI.onmessage({ data: "1|99991|2|0" });
+    HOSTS.splice(HOSTS.indexOf(A), 2); delete PLUGIN_TYPES.__t;
+    return n.a === 2 && n.b === 0; }));
   await pg.close();
   console.log("Rechte");
   pg = await start(b, "Gast");

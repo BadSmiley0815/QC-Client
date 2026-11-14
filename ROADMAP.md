@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.37 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.38 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -54,7 +54,7 @@ Status, Text, Zustandssymbol, Pegel, Müll, Link, Platzhalter, Zeitschaltuhren).
 ## 3 · GitHub
 
 - [ ] Demo-Modus (läuft ohne HS mit dem Testprojekt aus `test/`)
-- [ ] Releases mit Versionsnummer und ZIP
+- [ ] Releases mit Versionsnummer und ZIP (Android-APK: Bau per GitHub Actions bei Versions-Tag vorbereitet, `.github/workflows/android-apk.yml`; erster Lauf steht aus)
 - [ ] Automatische Tests (GitHub Actions, `test/run-tests.js`)
 
 ## 4 · Stufe 2 „extended“ (optional)

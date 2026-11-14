@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.38 – Kamera bleibt stehen, Helligkeit passt
+- **Korrigiert:** Das Kamerabild wurde immer wieder neu aufgebaut („0,0 Bilder/s“), wenn daneben ein Plugin mit oft sendenden KOs lief (Wetter 99-1 oder 1-3 mit Station, Wertanzeige 1-2). Ursache: Jedes Telegramm zeichnete alle Plugin-Anzeigeorte neu. Jetzt wird nur der Anzeigeort neu gezeichnet, dessen Plugin das KO benutzt; auch Bedienung in einem Plugin (Zeitraum, Archiv, Kamera wählen) lässt den anderen Quadranten in Ruhe.
+- **Korrigiert:** Klassisch, Wetter 99-1: Die Helligkeit je Himmelsrichtung („N … · O … · S … · W … klx“) ragte über die Spalte „Jetzt“ hinaus. Lange Texte (über 24 Zeichen) stehen jetzt kleiner und in zwei Zeilen.
+
 ## 0.9.37 – Eigenes Wetter-Plugin 99-1
 - **Neu:** Das eigene Plugin „Wetter“ (vorläufig 99-1, siehe [QC-Plugin](https://github.com/BadSmiley0815/QC-Plugin)) wird angezeigt – Anzeige wie beim Wetter 1-3 (Modern und Klassisch), aber Ort, Intervall, Einheiten und die KOs der Wetterstation kommen aus den Projektdaten der Instanz auf dem HS. Am Gerät wird nichts eingestellt (kein Zahnrad).
 - **Neu:** „Jetzt“ nimmt Stationswerte vor Open-Meteo: Temperatur (mit „gemessen“), gefühlte Temperatur, Feuchte, Wind (Umrechnung m/s ↔ km/h nach Einstellung), Windrichtung, Regen ja/nein, Helligkeit (ein Wert in lx oder je Himmelsrichtung in klx), Luftdruck (Pa oder hPa). Ohne Ort: Hinweis „Kein Ort eingestellt – im Experten eintragen.“

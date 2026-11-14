@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lange auf das App-Symbol drücken -> „Adresse ändern“ -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="setup" android:enabled="true"
+        android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/sc_addr">
+        <intent android:action="io.github.badsmiley0815.qcclient.SETUP"
+            android:targetPackage="io.github.badsmiley0815.qcclient"
+            android:targetClass="io.github.badsmiley0815.qcclient.MainActivity" />
+    </shortcut>
+</shortcuts>

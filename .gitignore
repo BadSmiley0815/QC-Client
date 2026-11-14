@@ -13,3 +13,5 @@ __pycache__/
 
 # Android-Huelle: Bau-Ausgabe
 android/build/
+# Bildschirmfotos vom eigenen Geraet/HS bleiben privat
+android/img/
