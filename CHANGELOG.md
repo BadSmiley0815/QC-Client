@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.34 – Wetterstation als Funktionsvorlage
+- **Neu:** Das Wetter-Plugin nimmt „Jetzt“ auch aus Elementen mit der eigenen Funktionsvorlage „Wetterstation“ (vorläufig 99-4, siehe [QC-Funktionsvorlagen](https://github.com/BadSmiley0815/QC-Funktionsvorlagen)); sie hat Vorrang vor einer Wertanzeige.
+
 ## 0.9.33 – Wetter
 - **Neu:** Plugin Wetter (1-3) als eigene Lösung statt des Gira-Diensts: Vorhersage für 7 Tage von Open-Meteo (Wetter-Symbol, Min/Max mit Temperaturbalken, Regenmenge und -wahrscheinlichkeit, Wind mit Richtungspfeil).
 - **Neu:** „Jetzt“ mit den Werten einer Wetterstation: eine Wertanzeige (1-2) auf dem HS liefert die KOs, erkannt an der Bezeichnung (Temperatur, Wind, Windrichtung, Regen, Feuchte, Helligkeit, Luftdruck); ohne Station die Außentemperatur der Kopfzeile bzw. Open-Meteo.

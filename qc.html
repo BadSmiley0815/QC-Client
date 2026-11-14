@@ -459,7 +459,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.33";
+const VERSION = "0.9.34";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1496,7 +1496,14 @@ function wxMap(groups) {                                                        
   return m;
 }
 const wxKey = d => "wx." + cfg.host + "." + d.id;
-const wxStId = d => { const s = d.set.st; if (s !== undefined) return PLUGS && PLUGS[s] && PLUGS[s].cls === "1-2" ? s : "";
+/* eigene Funktionsvorlage „Wetterstation“ – ID vorläufig (Entwickler-ID bei Gira angefragt), nur hier ändern */
+const WX_TPL = "99-4", WX_SLOTS = { temp: ["slot_temp", 1, "°C"], hum: ["slot_hum", 0, "%"], wind: ["slot_wind", 1, ""], dir: ["slot_wind_dir", 0, "°"],
+  rain: ["slot_rain", 0, ""], lux: ["slot_lux", 0, "lx"], press: ["slot_press", 0, "hPa"] };
+const wxEls = () => P_ ? Object.entries(P_.els).filter(([, e]) => e.tpl === WX_TPL) : [];
+const wxSrcTitle = id => id.startsWith("e:") ? (P_.els[id.slice(2)] || {}).name || "Wetterstation" : (PLUGS[id] || {}).title || "";
+const wxStId = d => { const s = d.set.st;
+  if (s !== undefined) return s.startsWith("e:") ? (P_ && P_.els[s.slice(2)] ? s : "") : PLUGS && PLUGS[s] && PLUGS[s].cls === "1-2" ? s : "";
+  const e = wxEls()[0]; if (e) return "e:" + e[0];
   const p = PLUGS && Object.values(PLUGS).find(p => p.cls === "1-2" && /wetter/i.test(p.title)); return p ? p.id : ""; };
 const wxGet = async u => { const r = await fetch(u); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
 PLUGIN_TYPES["1-3"] = {
@@ -1528,6 +1535,9 @@ PLUGIN_TYPES["1-3"] = {
   station: async d => {                                                             // aktuelle Werte aus einer Wertanzeige (1-2) des HS
     const id = wxStId(d); if (d.stId === id && d.stv) return; d.stId = id; d.stv = null; d.stm = {}; d.stErr = "";
     if (!id) return;
+    if (id.startsWith("e:")) { const el = P_.els[id.slice(2)];                       // Element mit der Vorlage „Wetterstation“
+      for (const [k, [slot, dec, u]] of Object.entries(WX_SLOTS)) { const ko = el.kos[slot]; if (ko && ko !== "0") d.stm[k] = { ko, t: slot, d: dec, u: k === "wind" ? d.wuTxt : u }; }
+      d.stv = [el]; const H = hostOfData(d); if (H) Object.values(d.stm).forEach(v => H.plug.tags.add(v.ko)); return; }
     try { const g = PLUGIN_TYPES["1-2"].read(new DOMParser().parseFromString(await hsGet("/quad/plugins/project/" + PLUGS[id].project), "text/xml"));
       d.stv = g; d.stm = wxMap(g); const H = hostOfData(d); if (H) Object.values(d.stm).forEach(v => H.plug.tags.add(v.ko));
     } catch (e) { d.stErr = e.message; log("··", "Wetter: Wertanzeige nicht geladen: " + e.message); }
@@ -1555,9 +1565,9 @@ PLUGIN_TYPES["1-3"] = {
       <div class="row"><input data-pa="wxq" type="search" placeholder="Ort suchen, z. B. Nürnberg" value="${esc(d.q)}" autocomplete="off">
         <button data-pa="wxfind">Suchen</button><button data-pa="wxgeo" title="Standort dieses Geräts verwenden">${svg("pin")}</button></div>
       ${d.hits ? (d.hits.length ? `<div class="hits">${d.hits.map((h, i) => `<button data-pa="wxpick" data-i="${i}">${esc(h.name)}<i>${esc([h.postcodes && h.postcodes[0], h.admin1, h.country].filter(Boolean).join(", "))}</i></button>`).join("")}</div>` : '<div class="lbl">Kein Ort gefunden.</div>') : ""}
-      <div class="lbl">Aktuelle Werte von einer Wetterstation (Wertanzeige auf dem HS)</div>
-      <div class="row"><select data-pa="wxst"><option value="">keine – nur Vorhersage</option>${st.map(p => `<option value="${esc(p.id)}" ${p.id === cur ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select></div>
-      ${cur ? `<div class="lbl">${d.stErr ? "Wertanzeige nicht geladen: " + esc(d.stErr) : Object.keys(L).map(k => `${L[k]}: ${d.stm[k] ? "<b>" + esc(d.stm[k].t || "✓") + "</b>" : "–"}`).join(" · ")}</div>` : ""}
+      <div class="lbl">Aktuelle Werte von einer Wetterstation (Vorlage „Wetterstation“ oder Wertanzeige auf dem HS)</div>
+      <div class="row"><select data-pa="wxst"><option value="">keine – nur Vorhersage</option>${wxEls().map(([r, e]) => `<option value="e:${esc(r)}" ${"e:" + r === cur ? "selected" : ""}>Vorlage Wetterstation: ${esc(e.name || r)}</option>`).join("")}${st.map(p => `<option value="${esc(p.id)}" ${p.id === cur ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select></div>
+      ${cur ? `<div class="lbl">${d.stErr ? "Wertanzeige nicht geladen: " + esc(d.stErr) : Object.keys(L).map(k => `${L[k]}: ${d.stm[k] ? "<b>" + esc(cur.startsWith("e:") ? "✓" : d.stm[k].t || "✓") + "</b>" : "–"}`).join(" · ")}</div>` : ""}
       <div class="row"><button data-pa="wxdone" ${d.set.lat ? "" : "disabled"}>Fertig</button></div></div>`;
   },
   html: d => {
@@ -1579,7 +1589,7 @@ PLUGIN_TYPES["1-3"] = {
         <div class="wxbar"><i style="left:${((x.mn - lo) / sp * 100).toFixed(0)}%;right:${((hi - x.mx) / sp * 100).toFixed(0)}%"></i></div>
         <div class="sm">${svg("umb")}${fmt(x.rs, 1)} mm · ${fmt(x.rp, 0)} %</div><div class="sm">${svg("wind")}${fmt(x.ws, 0)} ${esc(d.wuTxt)} ${wxArrow(x.wd2)}${wxDir(x.wd2)}</div></div>`).join("")}</div>`
         : `<p class="note">${d.set.lat ? (d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …") : "Noch kein Ort gewählt."}</p>`}
-      <p class="note wxsrc">Vorhersage: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0)${d.stv ? " · aktuelle Werte: Wertanzeige „" + esc(PLUGS[d.stId].title) + "“" : ""}</p></div>`;
+      <p class="note wxsrc">Vorhersage: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0)${d.stv ? " · aktuelle Werte: „" + esc(wxSrcTitle(d.stId)) + "“" : ""}</p></div>`;
   },
   /* Klassisch: Unterleiste ◀ Ort [Stand] ▶ mit Zahnrad; links „Jetzt“, rechts 4 Tage (Pfeile blättern) */
   htmlClassic: d => {

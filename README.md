@@ -86,7 +86,7 @@ Vorlagen-IDs bestehen aus **Entwickler-ID + Nummer** (z. B. `1-101`: Entwickler 
 
 Die hier verwendeten IDs **`99-…`** (Testvorlagen 99-3, 99-7 und die geplante Wetterstation 99-4) sind **vorläufig**: Eine eigene Entwickler-ID ist bei Gira angefragt.
 Sobald sie vergeben ist, werden alle eigenen Vorlagen in allen Dateien auf die neue ID umgestellt – Elemente, die eine 99-Vorlage verwenden, müssen danach im Experten neu zugewiesen werden.
-Die eigenen Funktionsvorlagen ziehen in ein eigenes Repository um.
+Die eigenen Funktionsvorlagen liegen im Repository [QC-Funktionsvorlagen](https://github.com/BadSmiley0815/QC-Funktionsvorlagen).
 
 ## Installation auf dem HomeServer
 
