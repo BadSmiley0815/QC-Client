@@ -3,6 +3,12 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.33 – Wetter
+- **Neu:** Plugin Wetter (1-3) als eigene Lösung statt des Gira-Diensts: Vorhersage für 7 Tage von Open-Meteo (Wetter-Symbol, Min/Max mit Temperaturbalken, Regenmenge und -wahrscheinlichkeit, Wind mit Richtungspfeil).
+- **Neu:** „Jetzt“ mit den Werten einer Wetterstation: eine Wertanzeige (1-2) auf dem HS liefert die KOs, erkannt an der Bezeichnung (Temperatur, Wind, Windrichtung, Regen, Feuchte, Helligkeit, Luftdruck); ohne Station die Außentemperatur der Kopfzeile bzw. Open-Meteo.
+- **Neu:** Ort je Gerät über Ortssuche oder Gerätestandort (Zahnrad); Intervall und Einheiten aus der Plugin-Einstellung des HS. Die Geräteportal-Kennung wird nicht verwendet.
+- **Neu:** Klassisch: „Jetzt“ links, 4 Tage rechts, mit ◀ ▶ blättern. Offline bleibt die letzte Vorhersage mit Stand stehen.
+
 ## 0.9.32 – Popup-Feinschliff
 - **Korrigiert:** Wertfelder in Popups zeigen die Bezeichnung nur noch, wenn das Layout dafür eine Zelle hat – wie im Original (bisher lag z. B. „Position Behang“ über dem Wert).
 - **Geändert:** Stil „Modern“: Schieberegler in Popups schlank (schmale Spur, Griff als Pille) statt breiter Balken.

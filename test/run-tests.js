@@ -26,7 +26,7 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
@@ -130,6 +130,34 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("Schlüssel nicht im Log", !(await pg.textContent("#log")).includes("K1"));
   await pg.click("#pclose");
   await pg.click("#cpbtn"); await pg.click("#cpdel"); ok("Proxy entfernen", (await pg.textContent("#cpbtn")).includes("aus"));
+  console.log("Plugin Wetter (1-3, Open-Meteo + Wertanzeige als Station)");
+  { const om = [];
+    await pg.route("https://api.open-meteo.com/**", r => { om.push(r.request().url()); const t = new Date(), D = i => { const x = new Date(t); x.setDate(t.getDate() + i); return x.toISOString().slice(0, 10); };
+      const days = [0, 1, 2, 3, 4, 5, 6];
+      r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({
+        current: { temperature_2m: 5.2, relative_humidity_2m: 80, weather_code: 3, wind_speed_10m: 12, wind_direction_10m: 90, precipitation: 0, is_day: 1 },
+        daily: { time: days.map(D), weather_code: [2, 3, 61, 71, 95, 45, 0], temperature_2m_max: [8, 8, 9, 4, 6, 7, 10], temperature_2m_min: [-3, -2, 4, 0, 1, 2, 3],
+          precipitation_sum: [0, 2, 5, 1, 0, 0, 0], precipitation_probability_max: [0, 66, 100, 40, 10, 5, 0], wind_speed_10m_max: [15, 15, 23, 10, 8, 9, 7], wind_direction_10m_dominant: [90, 180, 250, 0, 45, 300, 200] } }) }); });
+    await pg.route("https://geocoding-api.open-meteo.com/**", r => { om.push(r.request().url()); r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify({ results: [{ name: "Nürnberg", latitude: 49.45421, longitude: 11.07752, admin1: "Bayern", country: "Deutschland", postcodes: ["90402"] }] }) }); });
+    await pg.evaluate(() => { WSI.onmessage({ data: "2|9401|3.4|0" }); WSI.onmessage({ data: "2|9402|71|0" }); WSI.onmessage({ data: "2|9403|7.5|0" }); WSI.onmessage({ data: "2|9404|270|0" }); WSI.onmessage({ data: "2|9405|1|0" }); openPlugin("Wetter", "907"); });
+    await pg.waitForTimeout(500);
+    ok("ohne Ort: Einstellungen mit Ortssuche", await pg.isVisible('#pbody input[data-pa="wxq"]'));
+    ok("Wertanzeige „Wetterstation“ automatisch als Station gewählt, Werte erkannt", await pg.evaluate(() => { const t = document.querySelector("#pbody .wxset").textContent;
+      return document.querySelector('#pbody select[data-pa="wxst"]').value === "908" && /Temperatur: Temperatur/.test(t) && /Windrichtung: Richtung/.test(t) && /Wind: Geschwindigkeit/.test(t) && /Luftfeuchte: Feuchte/.test(t); }));
+    await pg.fill('#pbody input[data-pa="wxq"]', "Nürnberg"); await pg.press('#pbody input[data-pa="wxq"]', "Enter"); await pg.waitForTimeout(300);
+    ok("Ortssuche (Enter) zeigt Treffer", (await pg.textContent("#pbody .hits")).includes("90402"));
+    await pg.click('#pbody [data-pa="wxpick"]'); await pg.waitForTimeout(500);
+    const tx = await pg.textContent("#pbody");
+    ok("Vorhersage: 7 Tage ab Heute", await pg.locator("#pbody .wxd").count() === 7 && tx.includes("Heute") && tx.includes("Morgen"), tx.slice(0, 200));
+    ok("Jetzt: Werte der Station (3,4°, 71 %, 7,5 km/h W, Regen)", /3,4°/.test(tx) && tx.includes("71 %") && /8 km\/h/.test(tx) && tx.includes(" W") && tx.includes("Regen"), tx.slice(0, 300));
+    ok("Abfrage mit Einheiten aus der Plugin-Einstellung, ohne Portal-Kennung", om.some(u => u.includes("wind_speed_unit=kmh") && u.includes("latitude=49.454")) && !om.some(u => u.includes("GEHEIM")));
+    await pg.evaluate(() => WSI.onmessage({ data: "1|9401|4.6|0" })); await pg.waitForTimeout(80);
+    ok("Stationswert aktualisiert sich live", /4,6°/.test(await pg.textContent("#pbody .wxnow")));
+    ok("Ort wird je Gerät gespeichert", await pg.evaluate(() => (store.get("wx.hs.test.907", {}) || {}).name === "Nürnberg"));
+    ok("Klassisch: Jetzt + 4 Tage, blättern", await pg.evaluate(() => { const d = HOSTS[0].plug.data, h = PLUGIN_TYPES["1-3"].htmlClassic(d); return (h.match(/class="cl-wxd"/g) || []).length === 4 && h.includes('data-pa="wxpg"') && h.includes("cl-wxn"); }));
+    await pg.click("#pclose");
+  }
   console.log("Plugin Sonos (1-25, Sendewerte aus dem Original-Plugin)");
   await pg.click('#grid .mcard:has-text("Musik")'); await pg.waitForTimeout(300);
   ok("Titel und Interpret", (await pg.textContent("#pbody")).includes("Testlied") && (await pg.textContent("#pbody")).includes("Testband"));

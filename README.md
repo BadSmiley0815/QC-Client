@@ -59,7 +59,26 @@ Aufgenommen mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage
 
 ![Stil Gira](docs/img/klassisch_gira.png)
 
+**Wetter** – Vorhersage von Open-Meteo, „Jetzt“ mit den Werten der eigenen Wetterstation (Modern und Klassisch)
+
+![Wetter](docs/img/wetter.png)
+
+![Wetter Klassisch](docs/img/klassisch_wetter.png)
+
 Alle Versionen: [`CHANGELOG.md`](CHANGELOG.md) · mit Bildern: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
+
+## Wetter (Plugin 1-3)
+
+Der Client ersetzt den Gira-Wetterdienst durch eine eigene Lösung:
+
+- **Vorhersage:** [Open-Meteo](https://open-meteo.com/) (kostenlos, ohne Schlüssel, CC BY 4.0). Den Ort wählt man einmal je Gerät über das Zahnrad (Ortssuche oder Gerätestandort).
+- **Aktuelle Werte:** von einer Wetterstation am KNX (eigene oder Gira-Wetterstation, auch ein Logikbaustein). Angeschlossen wird sie über ein Plugin **Wertanzeige (1-2)** im Experten:
+  1. QuadClient → Plugins → neue Wertanzeige anlegen, Titel z. B. „Wetterstation“ (enthält der Titel „Wetter“, wird sie automatisch genommen). „Im QC sichtbar“ darf aus sein.
+  2. Einträge anlegen und die KOs zuweisen. Erkannt wird an der Bezeichnung (Gruppe + Wert):
+     Temperatur/Außen, Wind (Geschwindigkeit), Windrichtung (Grad, 0 = Nord), Regen (1 Bit = Regen ja/nein, sonst Menge), Feuchte, Helligkeit, Luftdruck.
+  3. Projekt übertragen. Im Client unter Zahnrad → „Aktuelle Werte von einer Wetterstation“ prüfen, welche Werte erkannt wurden.
+- Aus den Gira-Plugin-Einstellungen gelten Aktualisierungsintervall und Einheiten; die Geräteportal-Kennung wird nicht verwendet.
+- Ohne Internet bleibt die zuletzt geladene Vorhersage mit Zeitstempel stehen, die Stationswerte laufen weiter.
 
 ## Installation auf dem HomeServer
 

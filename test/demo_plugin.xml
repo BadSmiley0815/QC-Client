@@ -10,5 +10,7 @@
     <plugin_instance id="904" class="0-4" master_id="" title="Meldungen" group="3" project="0-4_904.xml" userdef="userdef904.dat" visibleinqc="1" />
     <plugin_instance id="905" class="0-3" master_id="" title="Klima" group="3" project="0-3_905.xml" userdef="userdef905.dat" visibleinqc="1" />
     <plugin_instance id="906" class="1-16" master_id="" title="Verbrauch" group="3" project="1-16_906.xml" userdef="userdef906.dat" visibleinqc="1" />
+    <plugin_instance id="907" class="1-3" master_id="" title="Wetter" group="3" project="1-3_907.xml" userdef="userdef907.dat" visibleinqc="1" />
+    <plugin_instance id="908" class="1-2" master_id="" title="Wetterstation" group="3" project="1-2_908.xml" userdef="userdef908.dat" visibleinqc="0" />
   </instances>
 </plugins>

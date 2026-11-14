@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.32 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.33 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -29,7 +29,8 @@ Stand: v0.9.32 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
     - [ ] SIP-Client für das Gira TKS (Türkommunikation im Browser: Klingeln, Sprechen, Türöffner, Bild)
     - [ ] Türkommunikations-Client für Gira (wie der Gira TKS-Client unter Windows)
     - [ ] Gira System 106 (Türstation) einbinden
-  - [ ] Wetter
+  - [x] Wetter (1-3) als eigene Lösung: Open-Meteo-Vorhersage + aktuelle Werte einer Wetterstation über eine Wertanzeige (v0.9.33)
+    - [ ] optional: Werte von einem HS-Logikbaustein (z. B. Gira-Dienst) – über dieselbe Wertanzeige anschließbar
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [x] Symbole aus der QC-Visu (v0.8.0)
 - [x] Eigene Symbole in Funktionsvorlagen: `tools/hsm-build.py` + Testvorlage 99-3 (im Windows-QC bestätigt; Client lädt sie ab v0.9.4 aus public)

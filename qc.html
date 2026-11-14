@@ -199,6 +199,34 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 .carch img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000;border-radius:10px}
 .chip svg{width:16px;height:16px;vertical-align:middle;display:inline-block}
 .chip.act{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+/* Wetter (1-3) */
+.wx{display:flex;flex-direction:column;gap:12px;--wxbg:var(--bg)}
+.wxh{display:flex;align-items:center;gap:10px}.wxh b{font-size:17px}.wxh span{color:var(--muted);font-size:13px;flex:1}.wxh .chip svg{width:18px;height:18px}
+.wxnow{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:12px 16px;background:var(--bg)}
+.wxnow .wi{width:72px;height:72px;flex:none}.wxnow .t{font-size:40px;font-weight:650;line-height:1;font-variant-numeric:tabular-nums}.wxnow .tx{color:var(--muted);font-size:13px;margin-top:4px}
+.wxchips{display:flex;flex-wrap:wrap;gap:8px 16px;margin-left:auto;font-size:15px}.wxchips span{display:flex;gap:6px;align-items:center;white-space:nowrap}
+.wxchips svg{width:17px;height:17px;color:var(--muted)}.wxchips i{font-style:normal;color:var(--muted);font-size:12px}
+.wxdays{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px}
+.wxd{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px}
+.wxd .wd{font-weight:600;font-size:14px}.wxd .dt{color:var(--muted);font-size:12px}.wxd .wi{width:48px;height:48px}
+.wxbar{position:relative;width:100%;height:6px;border-radius:3px;background:var(--line)}.wxbar i{position:absolute;top:0;bottom:0;border-radius:3px;background:linear-gradient(90deg,#3c8ce8,#e8a33c,#e8413c)}
+.wxt{display:flex;justify-content:space-between;width:100%;font-variant-numeric:tabular-nums;font-size:15px}.wxt .mx{color:#e8413c;font-weight:650}.wxt .mn{color:#3c8ce8;font-weight:650}
+.wxd .sm{color:var(--muted);font-size:12px;display:flex;gap:4px;align-items:center;white-space:nowrap}.wxd .sm svg{width:14px;height:14px}
+.wxarr{display:inline-block;width:12px;height:12px;vertical-align:-1px}.wxsrc a{color:inherit}
+.wxset{display:flex;flex-direction:column;gap:10px}.wxset .lbl{font-size:13px;color:var(--muted,#999)}.wxset .row{display:flex;gap:8px}
+.wxset input,.wxset select{flex:1;min-width:0;border:1px solid var(--line,#333);background:var(--bg,#111);color:var(--ink,#eee);border-radius:9px;padding:8px 10px;font:inherit}
+.wxset button,#classic .wxset button{border:1px solid var(--line,#444);background:var(--card,#2a2a2a);color:var(--ink,#eee);border-radius:9px;padding:8px 12px;font:inherit;cursor:pointer}
+.wxset button svg{width:18px;height:18px;vertical-align:-4px}.wxset button:disabled{opacity:.4}
+.wxset .hits{display:flex;flex-direction:column;gap:4px}.wxset .hits button{text-align:left;display:flex;justify-content:space-between;gap:10px}.wxset .hits i{font-style:normal;color:var(--muted,#999);font-size:13px}
+.cl-wx{position:absolute;left:0;top:42px;width:680px;height:232px;display:flex;--wxbg:#1c1c1c;color:#ddd}
+.cl-wxn{width:188px;flex:none;border-right:1px solid #000;padding:10px 14px;display:flex;flex-direction:column;gap:5px;background:#202020;--wxbg:#202020}
+.cl-wxn .h{font-size:14px;color:#aaa}.cl-wxn .h i{font-style:normal;font-size:12px}.cl-wxn .tt{display:flex;align-items:center;gap:6px}.cl-wxn .wi{width:56px;height:56px}
+.cl-wxn b{font-size:30px;font-weight:400;color:#eee;font-variant-numeric:tabular-nums}.cl-wxn b u{text-decoration:none;font-size:16px;margin-left:2px}
+.cl-wx .r{display:flex;gap:6px;align-items:center;font-size:13px;color:#ccc;white-space:nowrap}.cl-wx .r svg{width:15px;height:15px;color:#888;flex:none}
+.cl-wxd{flex:1;min-width:0;border-right:1px solid #000;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px}.cl-wxd:last-child{border-right:0}
+.cl-wxd .wd{font-size:15px;color:#e6e6e6}.cl-wxd .dt{font-size:12px;color:#999}.cl-wxd .wi{width:50px;height:50px}
+.cl-wxd .tp{display:flex;gap:10px;font-size:19px;font-variant-numeric:tabular-nums}.cl-wxd .mx{color:#e8413c}.cl-wxd .mn{color:#3c8ce8}
+.cl-wxs{position:absolute;left:0;top:42px;width:680px;height:232px;overflow:auto;padding:10px 14px;color:#ddd}
 .pval u{text-decoration:none;font-size:13px;color:var(--muted);font-weight:400;margin-left:3px}
 
 /* Anmeldung */
@@ -431,7 +459,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.32";
+const VERSION = "0.9.33";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -474,6 +502,10 @@ const P = {
   music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
   power:'<path d="M12 3v8M7 6.5a7 7 0 1 0 10 0"/>', group:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19a5 5 0 0 1 10 0M11 19a5 5 0 0 1 10 0"/>',
   minus2:'<path d="M4 12h16"/>', plus2:'<path d="M4 12h16M12 4v16"/>', left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5l1.6 2.6 3-.6.6 3 2.6 1.6-1.4 2.9 1.4 2.9-2.6 1.6-.6 3-3-.6L12 21.5l-1.6-2.6-3 .6-.6-3-2.6-1.6 1.4-2.9-1.4-2.9 2.6-1.6.6-3 3 .6z"/>',
+  pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  drop:'<path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/>', wind:'<path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/>',
+  umb:'<path d="M3 12a9 9 0 0 1 18 0zM12 12v7a2 2 0 0 1-4 0M12 3v0"/>',
   up:'<path d="M6 15l6-6 6 6"/>', down:'<path d="M6 9l6 6 6-6"/>', stop:'<rect x="7" y="7" width="10" height="10" rx="1.5"/>'
 };
 const svg = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${P[k] || P.info}</svg>`;
@@ -1430,6 +1462,169 @@ PLUGIN_TYPES["1-2"] = {
   }
 };
 
+/* 1-3 Wetter – eigene Lösung statt des Gira-Wetterdiensts (der braucht die Geräteportal-Kennung und läuft über http).
+   Vorhersage: Open-Meteo (kostenlos, ohne Schlüssel, direkt aus dem Browser) – der Ort wird je Gerät per Ortssuche gewählt.
+   Aktuelle Werte: wahlweise aus einer Wertanzeige (Plugin 1-2) auf dem HS – eigene oder Gira-Wetterstation, Logikbaustein o. Ä.
+   Die Werte werden an ihrer Bezeichnung erkannt (Temperatur, Wind, Windrichtung, Regen, Feuchte, Helligkeit, Luftdruck).
+   Aus der Plugin-Einstellung des HS gelten nur Intervall und Einheiten – die Portal-Kennung wird nicht verwendet. */
+const WXC = [[[0], "Klar", "sun"], [[1], "Überwiegend klar", "part"], [[2], "Teilweise bewölkt", "part"], [[3], "Bedeckt", "cloud"], [[45, 48], "Nebel", "fog"],
+  [[51, 53, 55, 56, 57], "Nieselregen", "drizzle"], [[61, 63, 66, 80, 81], "Regen", "rain"], [[65, 67, 82], "Starkregen", "rain"],
+  [[71, 73, 75, 77, 85, 86], "Schnee", "snow"], [[95, 96, 99], "Gewitter", "storm"]];
+const wxInfo = c => WXC.find(w => w[0].includes(+c)) || [[], "–", "cloud"];
+function wxIcon(c, day = true) {
+  const k = wxInfo(c)[2], R = a => a * Math.PI / 180;
+  const sun = (x, y, r) => `<g stroke="#f2b01e"><circle cx="${x}" cy="${y}" r="${r}"/>${[0, 45, 90, 135, 180, 225, 270, 315].map(a =>
+    `<path d="M${(x + Math.cos(R(a)) * (r + 4)).toFixed(1)} ${(y + Math.sin(R(a)) * (r + 4)).toFixed(1)}L${(x + Math.cos(R(a)) * (r + 8)).toFixed(1)} ${(y + Math.sin(R(a)) * (r + 8)).toFixed(1)}"/>`).join("")}</g>`;
+  const moon = (x, y, s) => `<path stroke="#c9d3e0" transform="translate(${x} ${y}) scale(${s})" d="M3-12a12 12 0 1 0 9 19A10 10 0 0 1 3-12z"/>`;
+  const sky = (x, y, r) => day ? sun(x, y, r) : moon(x, y, r / 11);
+  const cloud = dy => `<path transform="translate(0 ${dy})" fill="var(--wxbg,#1c1c1c)" d="M20 50h26a9 9 0 0 0 1.5-17.9A13 13 0 0 0 22.5 29.6 10.2 10.2 0 0 0 20 50z"/>`;
+  const low = { fog: '<path d="M14 50h36M18 56h28"/>', drizzle: '<path stroke="#5aa9ee" d="M24 50v2M32 52v2M40 50v2M28 57v2M36 57v2"/>',
+    rain: '<path stroke="#5aa9ee" d="M24 48l-3 7M33 48l-3 7M42 48l-3 7"/>', snow: '<path stroke="#8fb4d8" d="M24 52h5M26.5 49.5v5M36 52h5M38.5 49.5v5M30 58h5M32.5 55.5v5"/>',
+    storm: '<path stroke="#f2b01e" d="M33 46l-5 8h7l-5 8"/>' }[k];
+  const body = k === "sun" ? sky(32, 32, 11) : k === "part" ? sky(24, 22, 8) + cloud(4) : k === "cloud" ? cloud(-2) : cloud(-8) + (low || "");
+  return `<svg class="wi" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+}
+const wxDir = g => g === undefined || g === null || isNaN(g) ? "" : ["N", "NO", "O", "SO", "S", "SW", "W", "NW"][Math.round(((+g % 360) + 360) % 360 / 45) % 8];
+const wxArrow = g => g === undefined || g === null || isNaN(g) ? "" :            // zeigt, wohin der Wind weht (wie im Original)
+  `<svg class="wxarr" viewBox="0 0 24 24" style="transform:rotate(${(+g + 180) % 360}deg)"><path d="M12 3l5 15-5-3-5 3z" fill="currentColor"/></svg>`;
+const WXF = [["dir", /richtung/i], ["wind", /wind|böe|boe/i], ["rain", /regen|niederschlag/i], ["hum", /feucht/i], ["lux", /hell|lux|licht|dämmer/i],
+  ["press", /druck/i], ["temp", /temp|außen|aussen/i]];
+function wxMap(groups) {                                                          // Werte einer Wertanzeige den Wetterfeldern zuordnen
+  const m = {};
+  for (const g of groups) for (const v of g.vals) { const t = g.cap + " " + v.t;
+    const f = WXF.find(([k, re]) => !m[k] && re.test(t) && !(k === "temp" && /taupunkt|innen|soll|gefühlt/i.test(t))); if (f && v.ko) m[f[0]] = v; }
+  return m;
+}
+const wxKey = d => "wx." + cfg.host + "." + d.id;
+const wxStId = d => { const s = d.set.st; if (s !== undefined) return PLUGS && PLUGS[s] && PLUGS[s].cls === "1-2" ? s : "";
+  const p = PLUGS && Object.values(PLUGS).find(p => p.cls === "1-2" && /wetter/i.test(p.title)); return p ? p.id : ""; };
+const wxGet = async u => { const r = await fetch(u); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
+PLUGIN_TYPES["1-3"] = {
+  name: "Wetter",
+  read: x => { const p = x.querySelector("project"), a = k => (p && p.getAttribute(k)) || "";
+    const wu = { "km/h": "kmh", "m/s": "ms", "mph": "mph", "kn": "kn", "knoten": "kn" }[a("windSpeedUnit").toLowerCase()] || "kmh";
+    return { iv: Math.max(15, parseInt(a("interval"), 10) || 60), tu: /f/i.test(a("temperatureUnit")) ? "fahrenheit" : "celsius",
+      wuTxt: { kmh: "km/h", ms: "m/s", mph: "mph", kn: "kn" }[wu], wu, set: {}, fc: null, at: null, err: "", edit: false, q: "", hits: null, off: 0, stv: null, stm: {} }; },
+  tags: () => [],
+  start: (d, h) => { d.id = h.plug.id; d.set = store.get(wxKey(d), {}) || {}; if (!d.set.lat) d.edit = true;
+    const c = store.get(wxKey(d) + ".c", null); if (c && c.k === d.set.lat + "," + d.set.lon) { d.fc = c.fc; d.at = new Date(c.at); } },
+  load: async d => {
+    const T = PLUGIN_TYPES["1-3"]; await T.station(d);
+    if (d.set.lat) {
+      const k = d.set.lat + "," + d.set.lon;
+      if (!d.fc || !d.at || Date.now() - d.at > d.iv * 60000 * 0.9) {
+        try {
+          d.fc = await wxGet(`https://api.open-meteo.com/v1/forecast?latitude=${d.set.lat}&longitude=${d.set.lon}&timezone=auto&forecast_days=7`
+            + "&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,is_day"
+            + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant"
+            + `&wind_speed_unit=${d.wu}&temperature_unit=${d.tu}`);
+          d.at = new Date(); d.err = ""; store.set(wxKey(d) + ".c", { k, at: +d.at, fc: d.fc });
+        } catch (e) { d.err = e.message; log("··", "Wetter: Vorhersage nicht geladen: " + e.message); }
+      }
+    }
+    clearTimeout(d.timer);
+    d.timer = setTimeout(async () => { if (!plugAlive(d)) return; await T.load(d); const H = hostOfData(d); if (H && !H.body.contains(document.activeElement)) renderHost(H); }, d.iv * 60000);
+  },
+  station: async d => {                                                             // aktuelle Werte aus einer Wertanzeige (1-2) des HS
+    const id = wxStId(d); if (d.stId === id && d.stv) return; d.stId = id; d.stv = null; d.stm = {}; d.stErr = "";
+    if (!id) return;
+    try { const g = PLUGIN_TYPES["1-2"].read(new DOMParser().parseFromString(await hsGet("/quad/plugins/project/" + PLUGS[id].project), "text/xml"));
+      d.stv = g; d.stm = wxMap(g); const H = hostOfData(d); if (H) Object.values(d.stm).forEach(v => H.plug.tags.add(v.ko));
+    } catch (e) { d.stErr = e.message; log("··", "Wetter: Wertanzeige nicht geladen: " + e.message); }
+  },
+  now: d => {                                                                       // „Jetzt“: Station vor Vorhersage
+    const c = (d.fc && d.fc.current) || {}, m = d.stm, sv = k => m[k] ? num(m[k].ko) : undefined, o = {};
+    const hk = P_ && P_.header && P_.header.temp_out, ht = hk ? num(hk) : undefined;
+    o.temp = sv("temp") ?? (d.tu === "celsius" ? ht : undefined) ?? c.temperature_2m; o.tempSt = sv("temp") !== undefined || (d.tu === "celsius" && ht !== undefined);
+    o.wind = sv("wind") ?? c.wind_speed_10m; o.dir = sv("dir") ?? c.wind_direction_10m; o.hum = sv("hum") ?? c.relative_humidity_2m;
+    const r = sv("rain"); if (r !== undefined) { const v = m.rain; o.rainB = v.d === 0 && (r === 0 || r === 1) && !/mm|l\/m/i.test(v.u) ? r : undefined; o.rain = o.rainB === undefined ? r : undefined; o.rainU = v.u || "mm"; }
+    else if (c.precipitation !== undefined) { o.rain = c.precipitation; o.rainU = "mm"; }
+    o.lux = sv("lux"); o.luxU = m.lux && m.lux.u; o.press = sv("press"); o.pressU = m.press && m.press.u;
+    o.windU = m.wind && sv("wind") !== undefined ? (m.wind.u || d.wuTxt) : d.wuTxt; o.code = c.weather_code; o.day = c.is_day !== 0; return o;
+  },
+  days: d => { const f = d.fc && d.fc.daily; if (!f || !f.time) return [];
+    return f.time.map((t, i) => { const [y, mo, da] = t.split("-").map(Number), dt = new Date(y, mo - 1, da), td = new Date(); td.setHours(0, 0, 0, 0);
+      const diff = Math.round((dt - td) / 864e5);
+      return { dt, wd: diff === 0 ? "Heute" : diff === 1 ? "Morgen" : dt.toLocaleDateString("de-DE", { weekday: "long" }), ds: dt.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
+        code: f.weather_code[i], mx: f.temperature_2m_max[i], mn: f.temperature_2m_min[i], rs: f.precipitation_sum[i], rp: f.precipitation_probability_max[i],
+        ws: f.wind_speed_10m_max[i], wd2: f.wind_direction_10m_dominant[i] }; }).filter(x => Math.round((x.dt - new Date().setHours(0, 0, 0, 0)) / 864e5) >= 0); },
+  settings: d => {
+    const st = PLUGS ? Object.values(PLUGS).filter(p => p.cls === "1-2") : [], cur = wxStId(d), L = { temp: "Temperatur", wind: "Wind", dir: "Windrichtung", rain: "Regen", hum: "Luftfeuchte", lux: "Helligkeit", press: "Luftdruck" };
+    return `<div class="wxset">
+      <div class="lbl">Ort für die Vorhersage${d.set.name ? ` – jetzt: <b>${esc(d.set.name)}</b>` : ""}</div>
+      <div class="row"><input data-pa="wxq" type="search" placeholder="Ort suchen, z. B. Nürnberg" value="${esc(d.q)}" autocomplete="off">
+        <button data-pa="wxfind">Suchen</button><button data-pa="wxgeo" title="Standort dieses Geräts verwenden">${svg("pin")}</button></div>
+      ${d.hits ? (d.hits.length ? `<div class="hits">${d.hits.map((h, i) => `<button data-pa="wxpick" data-i="${i}">${esc(h.name)}<i>${esc([h.postcodes && h.postcodes[0], h.admin1, h.country].filter(Boolean).join(", "))}</i></button>`).join("")}</div>` : '<div class="lbl">Kein Ort gefunden.</div>') : ""}
+      <div class="lbl">Aktuelle Werte von einer Wetterstation (Wertanzeige auf dem HS)</div>
+      <div class="row"><select data-pa="wxst"><option value="">keine – nur Vorhersage</option>${st.map(p => `<option value="${esc(p.id)}" ${p.id === cur ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select></div>
+      ${cur ? `<div class="lbl">${d.stErr ? "Wertanzeige nicht geladen: " + esc(d.stErr) : Object.keys(L).map(k => `${L[k]}: ${d.stm[k] ? "<b>" + esc(d.stm[k].t || "✓") + "</b>" : "–"}`).join(" · ")}</div>` : ""}
+      <div class="row"><button data-pa="wxdone" ${d.set.lat ? "" : "disabled"}>Fertig</button></div></div>`;
+  },
+  html: d => {
+    const T = PLUGIN_TYPES["1-3"], gear = `<button class="chip" data-pa="wxset" title="Einstellungen">${svg("gear")}</button>`;
+    const head = `<div class="wxh"><b>${esc(d.set.name || "Wetter")}</b><span>${d.at ? "Stand " + d.at.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : ""}${d.err ? " · offline (" + esc(d.err) + ")" : ""}</span>${d.edit ? "" : gear}</div>`;
+    if (d.edit) return `<div class="wx">${head}${T.settings(d)}</div>`;
+    const n = T.now(d), days = T.days(d), lo = Math.min(...days.map(x => x.mn)), hi = Math.max(...days.map(x => x.mx)), sp = hi - lo || 1, u = d.tu === "celsius" ? "°" : "°F";
+    const chip = (ic, v, t) => v === undefined || v === "" ? "" : `<span>${svg(ic)}${v}<i>${t}</i></span>`;
+    return `<div class="wx">${head}
+      <div class="wxnow">${n.code !== undefined ? wxIcon(n.code, n.day) : ""}<div><div class="t">${n.temp === undefined ? "–" : fmt(n.temp, 1)}${u}</div>
+        <div class="tx">${n.code !== undefined ? esc(wxInfo(n.code)[1]) : ""}${n.tempSt ? " · gemessen" : ""}</div></div>
+        <div class="wxchips">${chip("wind", n.wind === undefined ? undefined : fmt(n.wind, 0) + " " + esc(n.windU) + " " + wxArrow(n.dir) + wxDir(n.dir), "Wind")}
+          ${chip("drop", n.hum === undefined ? undefined : fmt(n.hum, 0) + " %", "Feuchte")}
+          ${chip("umb", n.rainB !== undefined ? (n.rainB ? "Regen" : "trocken") : n.rain === undefined ? undefined : fmt(n.rain, 1) + " " + esc(n.rainU), "Niederschlag")}
+          ${chip("dim", n.lux === undefined ? undefined : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"), "Helligkeit")}
+          ${chip("gauge", n.press === undefined ? undefined : fmt(n.press, 0) + " " + esc(n.pressU || "hPa"), "Luftdruck")}</div></div>
+      ${days.length ? `<div class="wxdays">${days.map(x => `<div class="wxd"><div class="wd">${esc(x.wd)}</div><div class="dt">${x.ds}</div>${wxIcon(x.code)}
+        <div class="wxt"><span class="mn">${fmt(x.mn, 0)}${u}</span><span class="mx">${fmt(x.mx, 0)}${u}</span></div>
+        <div class="wxbar"><i style="left:${((x.mn - lo) / sp * 100).toFixed(0)}%;right:${((hi - x.mx) / sp * 100).toFixed(0)}%"></i></div>
+        <div class="sm">${svg("umb")}${fmt(x.rs, 1)} mm · ${fmt(x.rp, 0)} %</div><div class="sm">${svg("wind")}${fmt(x.ws, 0)} ${esc(d.wuTxt)} ${wxArrow(x.wd2)}${wxDir(x.wd2)}</div></div>`).join("")}</div>`
+        : `<p class="note">${d.set.lat ? (d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …") : "Noch kein Ort gewählt."}</p>`}
+      <p class="note wxsrc">Vorhersage: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0)${d.stv ? " · aktuelle Werte: Wertanzeige „" + esc(PLUGS[d.stId].title) + "“" : ""}</p></div>`;
+  },
+  /* Klassisch: Unterleiste ◀ Ort [Stand] ▶ mit Zahnrad; links „Jetzt“, rechts 4 Tage (Pfeile blättern) */
+  htmlClassic: d => {
+    const T = PLUGIN_TYPES["1-3"], days = T.days(d), off = Math.min(d.off, Math.max(0, days.length - 4)), u = d.tu === "celsius" ? "°C" : "°F";
+    const gear = `<button data-pa="wxset" class="cl-sa" style="left:57px" title="Einstellungen">${svg("gear")}</button>`;
+    const title = esc(d.set.name || "Wetter") + (d.at ? `&nbsp;&nbsp;[${d.at.toLocaleDateString("de-DE")} ${d.at.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}]` : "") + (d.err ? " · offline" : "");
+    if (d.edit) return clSub(["wxpg"], title, ["wxpg"]) + `<div class="cl-wxs">${T.settings(d)}</div>`;
+    const sub = clSub(["wxpg", off > 0 ? -1 : undefined], title, ["wxpg", off + 4 < days.length ? 1 : undefined], gear);
+    if (!days.length) return sub + `<div class="cl-wx"><div class="cl-qmsg">${d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …"}</div></div>`;
+    const n = T.now(d), row = (ic, v) => v ? `<div class="r">${svg(ic)}<span>${v}</span></div>` : "";
+    return sub + `<div class="cl-wx"><div class="cl-wxn"><div class="h">Jetzt${n.tempSt ? "<i> · gemessen</i>" : ""}</div>
+        <div class="tt">${n.code !== undefined ? wxIcon(n.code, n.day) : ""}<b>${n.temp === undefined ? "–" : fmt(n.temp, 1)}<u>${u}</u></b></div>
+        ${row("wind", n.wind === undefined ? "" : fmt(n.wind, 0) + " " + esc(n.windU) + " " + wxArrow(n.dir) + wxDir(n.dir))}
+        ${row("drop", n.hum === undefined ? "" : fmt(n.hum, 0) + " %")}
+        ${row("umb", n.rainB !== undefined ? (n.rainB ? "Regen" : "trocken") : n.rain === undefined ? "" : fmt(n.rain, 1) + " " + esc(n.rainU))}
+        ${row("dim", n.lux === undefined ? "" : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"))}</div>
+      ${days.slice(off, off + 4).map(x => `<div class="cl-wxd"><div class="wd">${esc(x.wd)}</div><div class="dt">${x.ds}</div>${wxIcon(x.code)}
+        <div class="tp"><span class="mx">${fmt(x.mx, 0)}${u}</span><span class="mn">${fmt(x.mn, 0)}${u}</span></div>
+        <div class="r">${svg("umb")}<span>${fmt(x.rs, 1)} l/m² · ${fmt(x.rp, 0)} %</span></div>
+        <div class="r">${svg("wind")}<span>${fmt(x.ws, 0)} ${esc(d.wuTxt)} ${wxArrow(x.wd2)}${wxDir(x.wd2)}</span></div></div>`).join("")}</div>`;
+  },
+  act: async (d, b) => {
+    const T = PLUGIN_TYPES["1-3"], save = () => store.set(wxKey(d), d.set), H = hostOfEl(b);
+    switch (b.dataset.pa) {
+      case "wxset": d.edit = true; d.hits = null; break;
+      case "wxdone": d.edit = false; break;
+      case "wxpg": d.off = Math.max(0, d.off + (+b.dataset.d || 0)); break;
+      case "wxfind": { const f = H && H.body.querySelector('input[data-pa="wxq"]'); d.q = f ? f.value.trim() : d.q; if (!d.q) break;
+        try { const r = await wxGet("https://geocoding-api.open-meteo.com/v1/search?count=6&language=de&format=json&name=" + encodeURIComponent(d.q)); d.hits = r.results || []; }
+        catch (e) { d.hits = []; d.err = e.message; } break; }
+      case "wxpick": { const h = d.hits && d.hits[+b.dataset.i]; if (!h) break;
+        d.set = { ...d.set, name: h.name, lat: +h.latitude.toFixed(3), lon: +h.longitude.toFixed(3) }; save(); d.fc = null; d.at = null; d.edit = false; d.hits = null; d.off = 0;
+        renderPlug(); await T.load(d); break; }
+      case "wxgeo": {
+        const p = await new Promise(res => { if (!navigator.geolocation) return res(null); navigator.geolocation.getCurrentPosition(res, () => res(null), { timeout: 10000 }); });
+        if (!p) { d.hits = []; break; }
+        d.set = { ...d.set, name: "Mein Standort", lat: +p.coords.latitude.toFixed(3), lon: +p.coords.longitude.toFixed(3) }; save(); d.fc = null; d.at = null; d.edit = false; renderPlug(); await T.load(d); break; }
+      case "wxst": d.set = { ...d.set, st: b.value }; save(); d.stv = null; await T.station(d); break;
+    }
+  }
+};
+document.addEventListener("input", e => { const f = e.target.closest && e.target.closest('input[data-pa="wxq"]'), H = f && hostOfEl(f); if (H && H.plug && H.plug.data) H.plug.data.q = f.value; });
+document.addEventListener("keydown", e => { const f = e.key === "Enter" && e.target.closest && e.target.closest('input[data-pa="wxq"]'); if (!f) return;
+  e.preventDefault(); const b = f.parentElement.querySelector('[data-pa="wxfind"]'); if (b) b.click(); });
+
 /* 1-25 Sonos / Universal-Player. Sendewerte aus dem Original-Plugin (Player.WriteTag):
    Play/Pause/Stopp/Weiter/Lauter = 1 · Zurück bzw. Leiser = 0, wenn sie dasselbe KO wie Weiter bzw. Lauter nutzen, sonst 1
    Abspielen/Pause = ein Knopf: spielt -> Pause-KO, sonst Play-KO · ist der Player Gruppen-Mitglied (Slave), stoppt der Knopf
@@ -2365,7 +2560,7 @@ function clQuadOpen(q) {
   if (!p) { H.plug = null; H.body.innerHTML = '<div class="cl-qmsg">Keine Plugins für diesen Bereich.</div>'; return; }
   if (H.plug && H.plug.id === p.id) return;
   if (!PLUGIN_TYPES[p.cls]) { if (H.plug && H.plug.data) clearTimeout(H.plug.data.timer); H.plug = null;
-    H.body.innerHTML = `<div class="cl-qmsg"><b>${esc(p.title)}</b><span>${p.cls === "1-3" ? "Wetter fragt einen Gira-Dienst über unverschlüsseltes http ab – das erlaubt der Browser nicht. Geplant: Wetterdaten über den HS bereitstellen." : "Dieses Plugin kann der Client noch nicht."}</span></div>`; return; }
+    H.body.innerHTML = `<div class="cl-qmsg"><b>${esc(p.title)}</b><span>Dieses Plugin kann der Client noch nicht.</span></div>`; return; }
   openPlugin(p.title, p.id, H);
 }
 function clHead() {
