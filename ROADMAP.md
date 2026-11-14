@@ -33,6 +33,8 @@ Stand: v0.9.33 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
     - [ ] optional: Werte von einem HS-Logikbaustein (z. B. Gira-Dienst) – über dieselbe Wertanzeige anschließbar
 - [x] „Jetzt verbinden“-Knopf im Hinweis „Verbindung getrennt“ (v0.5.6)
 - [x] Symbole aus der QC-Visu (v0.8.0)
+- [ ] Eigene Entwickler-ID von Gira (angefragt 14.11.2026) – bis dahin vorläufig 99-…; danach alle eigenen Vorlagen umstellen, Vorlagen in eigenes Repository
+  - [ ] Funktionsvorlage „Wetterstation“ (vorläufig 99-4): KOs für Temperatur, Feuchte, Wind, Windrichtung, Regen, Helligkeit, Luftdruck; Zeile + Popup im normalen QC, Wetter-Plugin des Clients liest sie für „Jetzt“
 - [x] Eigene Symbole in Funktionsvorlagen: `tools/hsm-build.py` + Testvorlage 99-3 (im Windows-QC bestätigt; Client lädt sie ab v0.9.4 aus public)
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil

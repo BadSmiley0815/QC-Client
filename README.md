@@ -80,6 +80,14 @@ Der Client ersetzt den Gira-Wetterdienst durch eine eigene Lösung:
 - Aus den Gira-Plugin-Einstellungen gelten Aktualisierungsintervall und Einheiten; die Geräteportal-Kennung wird nicht verwendet.
 - Ohne Internet bleibt die zuletzt geladene Vorhersage mit Zeitstempel stehen, die Stationswerte laufen weiter.
 
+## Eigene Funktionsvorlagen – vorläufige IDs
+
+Vorlagen-IDs bestehen aus **Entwickler-ID + Nummer** (z. B. `1-101`: Entwickler 1 = Gira, Vorlage 101). Die Entwickler-ID vergibt Gira auf Anfrage.
+
+Die hier verwendeten IDs **`99-…`** (Testvorlagen 99-3, 99-7 und die geplante Wetterstation 99-4) sind **vorläufig**: Eine eigene Entwickler-ID ist bei Gira angefragt.
+Sobald sie vergeben ist, werden alle eigenen Vorlagen in allen Dateien auf die neue ID umgestellt – Elemente, die eine 99-Vorlage verwenden, müssen danach im Experten neu zugewiesen werden.
+Die eigenen Funktionsvorlagen ziehen in ein eigenes Repository um.
+
 ## Installation auf dem HomeServer
 
 1. `qc.html` im Experte-Projektordner ablegen unter
