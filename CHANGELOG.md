@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.31 – Wertanzeige ohne Scrollen
+- **Geändert:** Die Wertanzeige in der klassischen Ansicht teilt den Quadranten unter allen Kacheln auf (2 Spalten, Zeilenhöhe nach Anzahl); Schrift, Wert und Symbol passen sich an – kein Scrollen mehr.
+
 ## 0.9.30 – Symbole der Plugins
 - **Korrigiert:** Die Kacheln der Wertanzeige (Plugin 1-2) zeigten keine Symbole. Plugin-Symbole liegen auf dem HS je Plugin unter `/quad/plugins/design_0/icons/<Plugin>_icons.xaml.zip` – der Client lädt sie jetzt von dort (z. B. `1-2_strom`, `1-2_zaehler`, `1-2_helligkeit`). Der Symbol-Zwischenspeicher wird dafür einmal neu aufgebaut.
 
