@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.25 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.26 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -36,7 +36,8 @@ Stand: v0.9.25 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil
     - [x] Importierte Vorlagen (z. B. 176-x): Popups aus der Vorlage, PIN, Werteingabe (v0.9.8) – Ablageort public_templates.xml am HS noch bestätigen
-    - [ ] Gira-Vorlagen (Slider, Auswahl, Farbe …) – bisher moderne Kachel
+    - [x] Gira-Vorlagen: Popups mit Tasten, Wertfeldern, Schiebereglern (v0.9.26)
+    - [ ] Gira-Popups mit Szene lernen/abrufen, Abläufen, Navigation, PIN-Verwaltung – bisher Einstellungsfenster
   - [x] Plugins in den Quadranten im Original-Stil (Diagramm, Sonos, Kamera – v0.9.1)
   - [ ] Farbbalken bei RGB-Zeilen, MyTouch, Notiz
 - [ ] Fernzugriff über Gira S1 testen

@@ -3,6 +3,10 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.26 – Gira-Popups im Original-Stil
+- **Neu:** Auch bei Gira-Vorlagen (Jalousie, Heizung, Dimmer, Szenen-Popup …) öffnet das Antippen eines Felds jetzt das Popup der Vorlage im Original-Stil (bzw. Stil „Modern“) statt des modernen Einstellungsfensters – sofern der Client alle Elemente und Aktionen des Popups beherrscht (Tasten, Wertfelder, Schieberegler, Texte, Symbole; Setzen, Umschalten, Schritt, Schließen, weiteres Popup). Popups mit Szene lernen/abrufen, Abläufen, Navigation oder PIN-Verwaltung öffnen vorerst weiter das Einstellungsfenster. Der Name einer Funktion öffnet weiterhin das Einstellungsfenster.
+- **Geändert:** PIN-Abfrage vor solchen Popups und Aktionen direkt aus der Vorlage (PIN-KO), auch bei Gira-Vorlagen.
+
 ## 0.9.25 – Jalousie in der klassischen Ansicht
 - **Korrigiert:** Die Pfeiltasten der Jalousie (1-107) reagierten in der klassischen Ansicht nicht. Die Vorlage legt die Tasten-Aktionen in eine Gruppe („nur ohne Sperre“), die der Client bei Klickflächen und Aktionen nicht durchsucht hat. Betrifft alle Vorlagen mit Aktionen in Gruppen.
 

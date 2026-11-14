@@ -427,7 +427,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.25";
+const VERSION = "0.9.26";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2377,7 +2377,7 @@ function clExec(ref, A, n, pinOk) {
   const { el, X } = A; if (!X.enabled(n) || !X.cond(n)) return;
   const type = n.getAttribute("type"), slot = n.getAttribute("slot"), ko = slot && el.kos[slot], pk = n.getAttribute("pin_slot");
   if (pk && !pinOk) {
-    if (clOwn(el) && el.kos[pk]) { clPinAsk(el, el.kos[pk]).then(ok => { if (ok) { clExec(ref, A, n, true); clPopRender(); } }); return "stop"; }
+    if (el.kos[pk] && (clOwn(el) || type !== "popup" || clPopOk(el, n.getAttribute("id")))) { clPinAsk(el, el.kos[pk]).then(ok => { if (ok) { clExec(ref, A, n, true); clPopRender(); } }); return "stop"; }
     if (needPin(el)) { clCard(ref); return "stop"; }
   }
   if (/^(set|toggle|step_up|step_down)$/.test(type || "") && !ko) return;              // Slot nicht verbunden: Aktion entfällt (wie im Original)
@@ -2391,7 +2391,7 @@ function clExec(ref, A, n, pinOk) {
     if (bs !== "" && isFinite(bv)) nv = type === "step_up" ? Math.min(bv, nv) : Math.max(bv, nv);
     send(ko, +nv.toFixed(4)); }
   else if (type === "close") { if (CLP) clPopClose(); }
-  else if (type === "popup" && clOwn(el) && clPop(ref, n.getAttribute("id"))) return "stop";
+  else if (type === "popup" && (clOwn(el) || clPopOk(el, n.getAttribute("id"))) && clPop(ref, n.getAttribute("id"))) return "stop";
   else { clCard(ref); return "stop"; }                                                   // Popup, Szene lernen … -> moderne Kachel
 }
 async function clPinAsk(el, ko) {
@@ -2445,6 +2445,17 @@ function clGeo(n, popLay) {
   if (!g) return c ? [px(c, "left"), px(c, "top"), px(c, "width", 110), px(c, "height", 40), c, ln] : [21, 21, 280, 24, null, ln];   // ohne Lage: wie die Überschrift
   if (c && (c.left || c.top || c.width)) return [g[0] + px(c, "left"), g[1] + px(c, "top"), c.width ? Math.min(px(c, "width"), g[2] - px(c, "left")) : g[2] - px(c, "left"), c.height ? px(c, "height") : g[3] - px(c, "top"), c, ln];
   return [...g, c, ln];
+}
+/* Kann der Client dieses Popup einer Gira-Vorlage selbst zeichnen und bedienen? Nur dann ersetzt es das moderne Einstellungsfenster.
+   Szenen lernen, Abläufe, Navigation, PIN-Popups u. Ä. bleiben vorerst beim Einstellungsfenster. */
+const CLP_EL = /^(text|text_dyn|icon|icon_dyn|button|edit|slider|group|content|case|visible|action_up|action_down|action_repeat)$/;
+const CLP_ACT = /^(set|toggle|step_up|step_down|close|popup)$/;
+function clPopOk(el, id, seen = new Set()) {
+  const P = clPopNode(el, id); if (!P || seen.has(String(id))) return !!P; seen.add(String(id));
+  for (const n of P.querySelectorAll("*")) { if (!CLP_EL.test(n.localName)) return false;
+    if (/^action_/.test(n.localName)) { const t = n.getAttribute("type"); if (!CLP_ACT.test(t || "")) return false;
+      if (t === "popup" && !clPopOk(el, n.getAttribute("id"), seen)) return false; } }
+  return true;
 }
 function clPopNode(el, id) { const T = clTpl(el); return T && [...T.children].find(n => n.localName === "popup" && n.getAttribute("id") === String(id)); }
 function clPop(ref, id) {
