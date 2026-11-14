@@ -116,7 +116,7 @@ html:not(.cl-gira) #classic,html:not(.cl-gira) #clpop{font-family:"Segoe UI Vari
 html:not(.cl-gira) #classic .cl-mt{background:linear-gradient(180deg,#2a2d2b,#1f2120);border-radius:10px;box-shadow:inset 0 1px 0 #ffffff14,0 2px 6px #0008;transition:transform .08s,filter .15s}
 html:not(.cl-gira) #classic .cl-mt:active,html:not(.cl-gira) #classic .cl-mt.down{transform:scale(.97);filter:brightness(1.25)}
 html:not(.cl-gira) #classic .cl-mt.empty{background:#1b1d1c;box-shadow:none}
-html:not(.cl-gira) .cl-cnt{border-radius:9px;font-weight:600}
+html:not(.cl-gira) .cl-cnt{border-radius:9px;font-weight:600}html:not(.cl-gira) .cl-led{top:54px;left:14px;width:12px;height:12px}
 html:not(.cl-gira) .cl-pg{border-top-color:#9cc200aa}
 html:not(.cl-gira) #cl-nav button.act{background:linear-gradient(180deg,#2a2d2b,#1f2120);box-shadow:inset 0 2px 0 #9cc200}
 .cl-scn{height:40px;z-index:2;background:#1a1c1b}html.cl-gira .cl-scn{background:#1e1e1e}.cl-scc{inset:0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:#e6e6e6;pointer-events:none;white-space:nowrap;overflow:hidden}
@@ -427,7 +427,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.27";
+const VERSION = "0.9.28";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {

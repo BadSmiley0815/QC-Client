@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.28 – Menü-LED
+- **Geändert:** Stil „Modern“: Die Zustands-LED der Menü-Kacheln sitzt etwas höher, auf Höhe der Zähler, statt am unteren Rand der abgerundeten Kachel.
+
 ## 0.9.27 – Kamera-Ströme erholen sich selbst
 - **Korrigiert:** Lief ein Live-Strom (Kamera-Proxy) länger, konnte er abreißen – Bild halb weiß, „0,0 Bilder/s“, und es tat sich nichts mehr. Ein Wächter verbindet jetzt neu, sobald 8 s lang kein neues Bild kommt (auch bei schnellen Endpunkt-Kameras); das Protokoll vermerkt es. Nach dem Wechsel aus dem Hintergrund startet der Wächter neu, statt sofort zu verbinden.
 
