@@ -3,6 +3,12 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.32 – Popup-Feinschliff
+- **Korrigiert:** Wertfelder in Popups zeigen die Bezeichnung nur noch, wenn das Layout dafür eine Zelle hat – wie im Original (bisher lag z. B. „Position Behang“ über dem Wert).
+- **Geändert:** Stil „Modern“: Schieberegler in Popups schlank (schmale Spur, Griff als Pille) statt breiter Balken.
+- **Geändert:** Antippen des Namens öffnet bei Gira-Vorlagen dasselbe Popup wie das Antippen des Werts (z. B. Dimmer) statt des Einstellungsfensters.
+- **Neu:** Öffnet ein Gira-Popup noch das Einstellungsfenster, nennt das Protokoll den Grund (z. B. „Aktion „sc_learn““).
+
 ## 0.9.31 – Wertanzeige ohne Scrollen
 - **Geändert:** Die Wertanzeige in der klassischen Ansicht teilt den Quadranten unter allen Kacheln auf (2 Spalten, Zeilenhöhe nach Anzahl); Schrift, Wert und Symbol passen sich an – kein Scrollen mehr.
 

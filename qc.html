@@ -142,6 +142,10 @@ html:not(.cl-gira) .clp-e:not(.ro):active{border-color:#9cc200}
 html:not(.cl-gira) .clp-et{color:#9aa29d}
 html:not(.cl-gira) .clp-s .bg{border-radius:9px;background:#151716;border:1px solid #ffffff1a}html:not(.cl-gira) .clp-s .bg svg{display:none}
 html:not(.cl-gira) .clp-s .bar{background:linear-gradient(90deg,#84a600,#a8ce14);border-radius:9px}html:not(.cl-gira) .clp-s .bar svg{display:none}
+html:not(.cl-gira) .clp-s.v .bg,html:not(.cl-gira) .clp-s.v .bar{left:calc(50% - 7px);right:auto;width:14px}html:not(.cl-gira) .clp-s.v .bar{border-radius:0 0 9px 9px}
+html:not(.cl-gira) .clp-s:not(.v) .bg,html:not(.cl-gira) .clp-s:not(.v) .bar{top:calc(50% - 7px);bottom:auto;height:14px}
+html:not(.cl-gira) .clp-s.v .kn{left:calc(50% - 17px);right:auto;width:34px;height:12px;margin:0 0 -6px;border-radius:6px;box-shadow:0 1px 4px #000a}
+html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34px;width:12px;margin-left:-6px;border-radius:6px;box-shadow:0 1px 4px #000a}
 #clpop{outline:none;padding:0;border:0;background:transparent;overflow:visible;max-width:none;max-height:none}#clpop::backdrop{background:#0009}
 .clp-st{position:relative;transform-origin:0 0;color:#e6e6e6;font-family:Arial,"Segoe UI",Helvetica,sans-serif;user-select:none;-webkit-user-select:none}
 .clp-st.plain{background:#1d211f;border:1px solid #3a3f3c;border-radius:6px}
@@ -427,7 +431,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.31";
+const VERSION = "0.9.32";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2433,6 +2437,8 @@ function clExec(ref, A, n, pinOk) {
     send(ko, +nv.toFixed(4)); }
   else if (type === "close") { if (CLP) clPopClose(); }
   else if (type === "popup" && (clOwn(el) || clPopOk(el, n.getAttribute("id"))) && clPop(ref, n.getAttribute("id"))) return "stop";
+  else if (type === "popup") { clPopOk.why = clPopNode(el, n.getAttribute("id")) ? clPopOk.why : "Popup fehlt in der Vorlage";
+    log("··", `Popup ${el.tpl}${el.variant ? "_" + el.variant : ""} #${n.getAttribute("id")} noch nicht im Original-Stil: ${clPopOk.why || "?"}`); clCard(ref); return "stop"; }
   else { clCard(ref); return "stop"; }                                                   // Popup, Szene lernen … -> moderne Kachel
 }
 async function clPinAsk(el, ko) {
@@ -2493,8 +2499,8 @@ const CLP_EL = /^(text|text_dyn|icon|icon_dyn|button|edit|slider|group|content|c
 const CLP_ACT = /^(set|toggle|step_up|step_down|close|popup)$/;
 function clPopOk(el, id, seen = new Set()) {
   const P = clPopNode(el, id); if (!P || seen.has(String(id))) return !!P; seen.add(String(id));
-  for (const n of P.querySelectorAll("*")) { if (!CLP_EL.test(n.localName)) return false;
-    if (/^action_/.test(n.localName)) { const t = n.getAttribute("type"); if (!CLP_ACT.test(t || "")) return false;
+  for (const n of P.querySelectorAll("*")) { if (!CLP_EL.test(n.localName)) { clPopOk.why = "Element <" + n.localName + ">"; return false; }
+    if (/^action_/.test(n.localName)) { const t = n.getAttribute("type"); if (!CLP_ACT.test(t || "")) { clPopOk.why = "Aktion „" + t + "“"; return false; }
       if (t === "popup" && !clPopOk(el, n.getAttribute("id"), seen)) return false; } }
   return true;
 }
@@ -2515,7 +2521,7 @@ function clPopFirst(ref) {
   for (const P of T.children) { if (P.localName !== "panel" || !X.cond(P)) continue;
     for (const a of clActs(P, X)) if (a.localName === "action_up" || a.localName === "action_down") {
       if (a.getAttribute("type") === "popup" && X.enabled(a) && X.cond(a)) { clExec(ref, { el, X, acts: [a] }, a); return true; } } }
-  const p = [...T.children].find(n => n.localName === "popup"); return p ? clPop(ref, p.getAttribute("id")) : false;
+  const p = [...T.children].find(n => n.localName === "popup"); return p && (clOwn(el) || clPopOk(el, p.getAttribute("id"))) ? clPop(ref, p.getAttribute("id")) : false;
 }
 function clPopRender() {
   if (!CLP) return; const el = P_.els[CLP.ref], P = el && clPopNode(el, CLP.id); if (!P) { clPopClose(); return; }
@@ -2580,7 +2586,7 @@ function clPopRender() {
       const bgI = qf((EL.bg || {}).ico, true), vc = EL.value || {}, ic = EL.info || {};
       const vfs = CL_FONT[vc.font_id] || 22, ifs = CL_FONT[ic.font_id] || 13;
       h += `<div class="cl-a clp-e${mod ? "" : " ro"}${bgI ? " img" : ""}" ${mod ? `data-e="${i}"` : ""} style="left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px">${bgI ? `<div class="cl-a clp-bi" style="inset:0">${bgI}</div>` : ""}
-        ${ti ? `<div class="cl-a cl-t clp-et" style="left:${px(ic, "left", 7)}px;top:${px(ic, "top", 5)}px;font-size:${ifs}px">${esc(ti)}</div>` : ""}
+        ${ti && (EL.info || !Object.keys(EL).length) ? `<div class="cl-a cl-t clp-et" style="left:${px(ic, "left", 7)}px;top:${px(ic, "top", 5)}px;font-size:${ifs}px">${esc(ti)}</div>` : ""}
         <div class="cl-a cl-t" style="right:${Math.max(6, r[2] - px(vc, "left", 2) - px(vc, "width", r[2] - 8))}px;bottom:${Math.max(2, r[3] / 2 - vfs * .75)}px;font-size:${vfs}px;text-align:right;white-space:nowrap">${esc(val)}${u ? `<small style="font-size:${Math.round(vfs * .62)}px;margin-left:2px">${esc(u)}</small>` : ""}</div></div>`; }
     else skipped++;
   }
@@ -2663,7 +2669,7 @@ $("classic").addEventListener("click", e => {
   const t = e.target.closest("button,[data-open]"); if (!t || t.disabled) return;
   if (t.dataset.m) { menuAct(t.dataset.m); return; }
   if (t.dataset.mv) { go(t.dataset.mv); return; }
-  if (t.dataset.open) { const r = t.dataset.open; if (clOwn(P_.els[r]) && clPopFirst(r)) return; clCard(r); return; }   // Vorlage mit eigenem Popup: gleich das Popup
+  if (t.dataset.open) { const r = t.dataset.open; if (clPopFirst(r)) return; clCard(r); return; }   // Vorlage mit Popup: gleich das Popup (wie Klick auf den Wert)
   if (t.dataset.nav) { go(t.dataset.nav); return; }
   if (t.dataset.tab) { CL.qsel[t.dataset.q] = +t.dataset.tab; clRender(); return; }
   if (t.dataset.qnav) { const q = t.dataset.q, n = clQuadList(q).length; CL.qsel[q] = Math.max(0, Math.min(n - 1, CL.qsel[q] + +t.dataset.qnav));
