@@ -340,6 +340,36 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     HOSTS.splice(HOSTS.indexOf(A), 2); delete PLUGIN_TYPES.__t;
     return n.a === 2 && n.b === 0; }));
   await pg.close();
+  console.log("Klassisch auf dem Handy: ein Plugin in voller Größe (v0.9.40)");
+  {
+    const p3 = await start(b, "Demo"); await p3.selectOption("#uisel", "classic"); await p3.waitForTimeout(500);
+    await p3.evaluate(() => { PLUGS["900"].quad = "1"; PLUGS["905"].quad = "1"; PLUGS["901"].quad = "2"; clRender(); });
+    await p3.waitForTimeout(600);
+    ok("breit: zwei Quadranten mit je einem Plugin", await p3.evaluate(() => !!CL.hosts[1].plug && !!CL.hosts[2].plug && CL.hosts[1].classic === true));
+    await p3.setViewportSize({ width: 400, height: 860 }); await p3.waitForTimeout(400);
+    ok("Handy, Menü-Seite: kein Plugin läuft", await p3.evaluate(() => !CL.hosts[1].plug && !CL.hosts[2].plug));
+    await p3.click("#cl-nav button[data-pg]"); await p3.waitForTimeout(800);
+    const st = () => p3.evaluate(() => { const b = document.getElementById("cl-q1b").getBoundingClientRect(), q2 = document.getElementById("cl-q2b"), nav = document.getElementById("cl-nav").getBoundingClientRect(), sel = document.querySelector(".cl-psel");
+      const el = document.querySelector("#cl-q1b *"); return { w: Math.round(b.width), top: Math.round(b.top), bottom: Math.round(b.bottom), nav: Math.round(nav.top), q2: q2.getClientRects().length, sel: sel && sel.textContent, title: document.getElementById("cl-title").textContent,
+        id: CL.hosts[1].plug && CL.hosts[1].plug.id, h2: !!CL.hosts[2].plug, raw: document.getElementById("cl-q1b").classList.contains("cl-raw"), fs: el ? parseFloat(getComputedStyle(el).fontSize) * el.getBoundingClientRect().width / (el.offsetWidth || 1) : 0 }; });
+    let r = await st();
+    ok("ein Plugin über die ganze Breite, zweiter Quadrant weg", r.w >= 398 && r.w <= 401 && r.q2 === 0 && !r.h2 && r.id === "900", JSON.stringify(r));
+    ok("Inhalt reicht bis zur unteren Leiste", Math.abs(r.bottom - r.nav) <= 3 && r.bottom - r.top > 500, JSON.stringify(r));
+    ok("Auswahlzeile und Titel nennen das Plugin", r.sel === r.title && r.sel.length > 0, JSON.stringify(r));
+    ok("Inhalt in normaler Schriftgröße (nicht verkleinert), bewegliche Darstellung", r.fs >= 12 && !r.raw, JSON.stringify(r));
+    if (process.env.QC_SHOT) await p3.screenshot({ path: process.env.QC_SHOT + "1.png" });
+    await p3.click('button[data-pnav="1"]'); await p3.waitForTimeout(800); r = await st();
+    ok("› blättert zum nächsten Plugin (Diagramm)", r.id === "905" && r.sel === r.title, JSON.stringify(r));
+    if (process.env.QC_SHOT) await p3.screenshot({ path: process.env.QC_SHOT + "2.png" });
+    await p3.click('button[data-pnav="1"]'); await p3.waitForTimeout(800); r = await st();
+    ok("› blättert weiter in die Plugins des zweiten Quadranten (Kamera), dann Ende", r.id === "901" && await p3.isDisabled('button[data-pnav="1"]'), JSON.stringify(r));
+    if (process.env.QC_SHOT) await p3.screenshot({ path: process.env.QC_SHOT + "3.png" });
+    await p3.click('#cl-nav button[data-nav="m:0"]'); await p3.waitForTimeout(300);
+    ok("zurück im Menü: Plugin beendet", await p3.evaluate(() => !CL.hosts[1].plug));
+    await p3.setViewportSize({ width: 1200, height: 900 }); await p3.waitForTimeout(900);
+    ok("wieder breit: beide Quadranten laufen in der klassischen Darstellung", await p3.evaluate(() => !!CL.hosts[1].plug && !!CL.hosts[2].plug && CL.hosts[1].classic && CL.hosts[2].classic && document.getElementById("cl-q2b").getClientRects().length > 0));
+    await p3.close();
+  }
   console.log("Anmeldung gescheitert: Meldung und Diagnose (v0.9.39)");
   for (const [fall, up] of [["abgelehnt", true], ["nicht erreichbar", false]]) {
     const p2 = await b.newPage();

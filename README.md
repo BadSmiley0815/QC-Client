@@ -107,6 +107,10 @@ Zum Ausprobieren geht auch: `qc.html` lokal im Browser öffnen und die HS-Adress
 
 Für Android gibt es eine kleine Hülle, die `qc.html` mitbringt und das Zertifikat des HomeServers einmal bestätigen lässt: Quelltext, Bau und Installation unter [`android/`](android/README.md). Die fertige APK hängt – sobald das erste Release gebaut ist – an den [Releases](https://github.com/BadSmiley0815/QC-Client/releases).
 
+<p><img src="docs/img/android_menue.png" alt="Android-App: Menü der klassischen Ansicht" width="240"> <img src="docs/img/android_raum.png" alt="Android-App: Raum" width="240"> <img src="docs/img/android_modern.png" alt="Android-App: Ansicht Modern" width="240"></p>
+
+Bilder aus dem Emulator mit der Demo-Visu.
+
 ## Tests
 
 Die Tests laufen gegen einen nachgebauten HomeServer mit einer erfundenen Demo-Visu

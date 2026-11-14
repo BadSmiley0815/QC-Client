@@ -6,6 +6,20 @@ eigenes Symbol, ohne Adresszeile, ohne Zertifikatswarnung bei jedem Start.
 Giras eigene Apps laden keine fremden Plugins; mit dieser App läuft der QC-Client samt
 eigenen Plugins auch auf dem Handy.
 
+## Vorschau
+
+Aufgenommen im Android-Emulator mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage.
+
+<p>
+<img src="../docs/img/android_menue.png" alt="Klassische Ansicht auf dem Handy: Menü" width="24%">
+<img src="../docs/img/android_raum.png" alt="Klassische Ansicht: Funktionen eines Raums" width="24%">
+<img src="../docs/img/android_modern.png" alt="Ansicht Modern" width="24%">
+<img src="../docs/img/android_zertifikat.png" alt="Zertifikat des HomeServers bestätigen" width="24%">
+</p>
+
+Von links: Menü und Raum in der Ansicht „Klassisch“ (auf dem Handy eine Spalte), Ansicht „Modern“,
+einmalige Bestätigung des HomeServer-Zertifikats.
+
 ## Wie sie arbeitet
 
 - `qc.html` steckt in der App. Sie wird dem WebView unter der Adresse des HomeServers gereicht

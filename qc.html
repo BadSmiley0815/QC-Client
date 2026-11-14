@@ -119,6 +119,17 @@ html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) 
 #classic.cl-phone #cl-nav button:disabled{display:none}
 #cl-nav button[data-pg]{display:none}#classic.cl-phone #cl-nav button[data-pg]{display:block}
 #classic.cl-phone .cl-quad{left:0}
+/* v0.9.40 – Handy: EIN Plugin über die ganze Seite (wie die Gira-App) statt zwei verkleinerter Quadranten. Eine Auswahlzeile
+   blättert durch alle Plugins; der Inhalt ist die bewegliche Darstellung der Ansicht Modern in echten Pixeln (--pz hebt den
+   Maßstab der Bühne wieder auf), dunkel wie die klassische Ansicht. */
+#classic.cl-phone .cl-quad + .cl-quad{display:none}
+#classic.cl-phone .cl-quad{top:87px!important;height:calc(var(--lh) + 37px)}
+#classic.cl-phone .cl-qctl{height:64px}
+#classic.cl-phone .cl-qa{height:64px;width:72px}#classic.cl-phone .cl-qa svg{width:28px;height:28px}
+.cl-psel{position:absolute;left:72px;top:6px;width:536px;height:58px;display:grid;place-items:center;background:#2b2b2b;border-radius:6px 6px 0 0;font-size:26px;color:#e6e6e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}
+#classic.cl-phone .cl-qb{zoom:var(--pz);top:calc(64px / var(--pz));width:calc(680px / var(--pz));height:calc((var(--lh) - 27px) / var(--pz));padding:10px;background:#141615;font-size:15px;
+  color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
+  --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df;color:var(--ink)}
 #classic.cl-phone:not(.pg-plug) .cl-quad{visibility:hidden}#classic.cl-phone.pg-plug #cl-left{display:none}
 #classic.cl-phone #cl-log{left:0;height:calc(var(--lh) + 37px)}
 #classic.cl-phone .cl-mt{zoom:1.5}
@@ -477,7 +488,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.39";
+const VERSION = "0.9.40";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2663,9 +2674,30 @@ function clQuad(q) {
 function clQuadOpen(q) {
   const list = clQuadList(q), p = list[Math.min(CL.qsel[q], list.length - 1)], H = CL.hosts[q]; if (!H) return;
   if (!p) { H.plug = null; H.body.innerHTML = '<div class="cl-qmsg">Keine Plugins für diesen Bereich.</div>'; return; }
+  if (!H.classic) { H.classic = true; if (H.plug && H.plug.id === p.id) { renderHost(H); return; } }   // kam aus der Handy-Aufteilung
   if (H.plug && H.plug.id === p.id) return;
   if (!PLUGIN_TYPES[p.cls]) { if (H.plug && H.plug.data) clearTimeout(H.plug.data.timer); H.plug = null;
     H.body.innerHTML = `<div class="cl-qmsg"><b>${esc(p.title)}</b><span>Dieses Plugin kann der Client noch nicht.</span></div>`; return; }
+  openPlugin(p.title, p.id, H);
+}
+/* v0.9.40 – Handy: ein Plugin. Auswahlzeile über alle Plugins beider Quadranten; läuft nur, solange die Plugin-Seite offen ist. */
+const clPlugAll = () => [...clQuadList(1), ...clQuadList(2)];
+function clPhoneCur() { const all = clPlugAll(); let p = PLUGS && PLUGS[CL.pid]; if (!p) { p = all[0]; CL.pid = p ? p.id : null; } return { all, p, i: p ? all.findIndex(x => x.id === p.id) : -1 }; }
+function clPhoneSel() {
+  const { all, p, i } = clPhoneCur();
+  return `<div class="cl-qctl"><button class="cl-qa" data-pnav="-1" style="left:0" ${i > 0 ? "" : "disabled"}>${svg("left")}</button><div class="cl-psel">${p ? esc(p.title) : ""}</div>
+    <button class="cl-qa" data-pnav="1" style="left:608px" ${i < all.length - 1 ? "" : "disabled"}>${svg("right")}</button></div>`;
+}
+function clHostClose(H) { if (!H) return; if (H.plug && H.plug.data) clearTimeout(H.plug.data.timer); H.plug = null; H.body.innerHTML = ""; }
+function clPhoneOpen() {
+  const H = CL.hosts[1]; if (!H) return;
+  clHostClose(CL.hosts[2]);
+  if (CL.page !== "plug") { clHostClose(H); return; }
+  const { p } = clPhoneCur();
+  if (!p) { clHostClose(H); H.body.innerHTML = '<div class="cl-qmsg">Keine Plugins vorhanden.</div>'; return; }
+  if (H.plug && H.plug.id === p.id) { if (H.classic) { H.classic = false; renderHost(H); } return; }
+  H.classic = false;
+  if (!PLUGIN_TYPES[p.cls]) { clHostClose(H); H.body.innerHTML = `<div class="cl-qmsg"><b>${esc(p.title)}</b><span>Dieses Plugin kann der Client noch nicht.</span></div>`; return; }
   openPlugin(p.title, p.id, H);
 }
 function clHead() {
@@ -2683,7 +2715,7 @@ function clScale() {
   if (ph) { s = window.innerWidth / 680; rows = Math.max(15, Math.floor((window.innerHeight / s - 168) / 40)); H = rows * 40 + 168; s = Math.min(s, window.innerHeight / H); }
   else s = Math.min(window.innerWidth / 1366, window.innerHeight / 768);
   const changed = rows !== CL.rows || ph !== C.classList.contains("cl-phone");
-  CL.rows = rows; CL.s = s; st.style.setProperty("--lh", rows * 40 + "px");
+  CL.rows = rows; CL.s = s; st.style.setProperty("--lh", rows * 40 + "px"); st.style.setProperty("--pz", ph ? String(1 / s) : "1");
   C.classList.toggle("cl-phone", ph); C.classList.toggle("pg-plug", ph && CL.page === "plug");
   st.style.transform = `scale(${s})`; st.style.left = Math.max(0, (window.innerWidth - W * s) / 2) + "px"; st.style.top = ph ? "0" : Math.max(0, (window.innerHeight - H * s) / 2) + "px";
   return changed;
@@ -2703,8 +2735,9 @@ function clShow(on) {
 function clRender() {
   if (!CLASSIC || $("classic").classList.contains("hidden") || !P_) return;
   const L = clLeft(); $("cl-title").textContent = L.title; $("cl-left").innerHTML = L.html;
-  [1, 2].forEach(q => { $("cl-q" + q + "c").innerHTML = clQuad(q); clQuadOpen(q); });
-  const plugPage = clPhone() && CL.page === "plug"; $("classic").classList.toggle("pg-plug", plugPage); if (plugPage) $("cl-title").textContent = "Plugins";
+  if (clPhone()) { $("cl-q1c").innerHTML = clPhoneSel(); clPhoneOpen(); }
+  else [1, 2].forEach(q => { $("cl-q" + q + "c").innerHTML = clQuad(q); clQuadOpen(q); });
+  const plugPage = clPhone() && CL.page === "plug"; $("classic").classList.toggle("pg-plug", plugPage); if (plugPage) $("cl-title").textContent = (clPhoneCur().p || {}).title || "Plugins";
   $("cl-nav").querySelectorAll("button[data-nav]").forEach(b => b.classList.toggle("act", !plugPage && ((b.dataset.nav === "m:0" && cur.startsWith("m:")) || b.dataset.nav === cur)));
   $("cl-nav").querySelector("button[data-pg]").classList.toggle("act", plugPage);
   clHead();
@@ -2973,7 +3006,7 @@ G.addEventListener("change", e => {
 });
 /* Klassisch: Klicks */
 function clPlugin(id) {
-  if (clPhone()) { CL.page = "plug"; $("classic").classList.add("pg-plug"); $("cl-title").textContent = "Plugins"; $("cl-nav").querySelectorAll("button").forEach(b => b.classList.toggle("act", !!b.dataset.pg)); }   // Handy: zur Plugin-Seite
+  if (clPhone()) { CL.page = "plug"; CL.pid = id; clRender(); return; }   // Handy: Plugin-Seite mit genau diesem Plugin
   for (const q of [1, 2]) { const i = clQuadList(q).findIndex(p => p.id === id); if (i >= 0) { CL.qsel[q] = i; CL.qoff[q] = Math.max(0, Math.min(i - 1, clQuadList(q).length - 3)); clRender(); return; } }
   const H = CL.hosts[1]; $("cl-q1c").innerHTML = `<div class="cl-qctl"><button class="cl-tab act" style="left:57px;width:566px">${esc((PLUGS[id] || {}).title || "")}</button></div>`; openPlugin("", id, H);
 }
@@ -2985,6 +3018,7 @@ $("classic").addEventListener("click", e => {
   if (t.dataset.open) { const r = t.dataset.open; if (clPopFirst(r)) return; clCard(r); return; }   // Vorlage mit Popup: gleich das Popup (wie Klick auf den Wert)
   if (t.dataset.nav) { CL.page = "left"; go(t.dataset.nav); clRender(); return; }
   if (t.dataset.pg) { CL.page = "plug"; clRender(); return; }
+  if (t.dataset.pnav) { const { all, i } = clPhoneCur(), n = all[Math.max(0, Math.min(all.length - 1, i + +t.dataset.pnav))]; if (n) { CL.pid = n.id; clRender(); } return; }
   if (t.dataset.tab) { CL.qsel[t.dataset.q] = +t.dataset.tab; clRender(); return; }
   if (t.dataset.qnav) { const q = t.dataset.q, n = clQuadList(q).length; CL.qsel[q] = Math.max(0, Math.min(n - 1, CL.qsel[q] + +t.dataset.qnav));
     if (CL.qsel[q] < CL.qoff[q]) CL.qoff[q] = CL.qsel[q]; if (CL.qsel[q] > CL.qoff[q] + 2) CL.qoff[q] = CL.qsel[q] - 2; clRender(); return; }

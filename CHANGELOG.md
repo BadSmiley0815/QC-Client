@@ -3,6 +3,12 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.40 – Klassisch auf dem Handy: ein Plugin in voller Größe
+- **Geändert:** Die Plugin-Seite der klassischen Ansicht zeigt auf dem Handy nur noch **ein** Plugin über die ganze Seite (nach dem Vorbild der Gira-App) statt zwei verkleinerter Quadranten. Eine Auswahlzeile „‹ Name ›“ blättert durch alle Plugins; der Titel nennt das Plugin. Der Inhalt nutzt die bewegliche Darstellung in normaler Schriftgröße (Diagramm, Kamera, Wetter … über die volle Breite).
+- **Geändert:** Auf dem Handy läuft ein Plugin nur, solange die Plugin-Seite offen ist (Kamera-Ströme enden beim Wechsel zu Menü oder Liste).
+- Auf Tablet und PC (ab 900 Pixel) bleibt es bei vier Quadranten.
+- README: Vorschaubilder der Android-App.
+
 ## 0.9.39 – Anmeldung: klare Meldung und Diagnose
 - **Neu:** Scheitert die Anmeldung, prüft der Client, ob der HomeServer überhaupt erreichbar ist, und sagt genauer, woran es liegt: Adresse/Zertifikat (HS nicht erreichbar), Anmeldung abgelehnt (Benutzer/Passwort, Benutzer ohne QuadClient, Sperre) oder keine Antwort.
 - **Neu:** Unter der Meldung steht ein Diagnosetext mit Knopf „Diagnose kopieren“ – für Rückfragen. Er enthält Version, Art des Aufrufs, Ergebnis des HTTPS-Abrufs, Code und Dauer der WebSocket-Verbindung, Browser und die letzten Protokollzeilen, aber weder Adresse noch Benutzername oder Passwort.
