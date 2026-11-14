@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.29 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.30 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -23,7 +23,7 @@ Stand: v0.9.29 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
   - [x] Meldungsarchiv (v0.6.3)
   - [x] Diagramme (v0.7.0, am HS bestätigt)
   - [x] Balkendiagramme (v0.7.1)
-  - [ ] Energieverbrauch (1-4) – zurückgestellt. Im Original ein Kostenrechner (Tarif, Abschlag, Prognose),
+  - [ ] Energieverbrauch (1-4) – zurückgestellt (14.11.: lieber später als eigene, neue Lösung statt Nachbau). Im Original ein Kostenrechner (Tarif, Abschlag, Prognose),
         der Einstellungen auf den HS zurückschreibt. Erster Schritt: reine Verbrauchsansicht mit Vorjahresvergleich, ohne Schreiben.
   - [ ] Sprechanlage
     - [ ] SIP-Client für das Gira TKS (Türkommunikation im Browser: Klingeln, Sprechen, Türöffner, Bild)

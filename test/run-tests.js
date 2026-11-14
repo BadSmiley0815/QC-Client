@@ -30,6 +30,7 @@ async function start(b, user, extra = []) {
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
+    if (u.includes("/quad/plugins/design_0/icons/1-2_icons.xaml.zip")) return r.fulfill({ status: 200, contentType: "application/zip", body: T("demo_plugin_1-2_icons.xaml.zip") });
     if (u.includes("/quad/public/design_0/public_icons.xaml.zip")) { publicHits++; return r.fulfill({ status: 404, body: "" }); }
     if (n === "client_icons.xaml.zip") return r.fulfill({ status: u.includes("/quad/client/design_0/") ? 200 : 404, contentType: "application/zip", body: T("demo_icons.xaml.zip") });
     if (n === "1-2_900.xml" && !u.includes("/quad/plugins/project/")) return r.fulfill({ status: 404, body: "" });
@@ -92,6 +93,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
 
   await pg.click('#grid .mcard:has-text("Zähler")'); await pg.waitForTimeout(300);
   ok("Wertanzeige öffnet, Webseite zu", await pg.isVisible("#plug") && !(await pg.isVisible("#frame")));
+  await pg.waitForTimeout(400); ok("Kachel-Symbol aus dem Symbolpaket des Plugins (/quad/plugins/design_0/icons/1-2_icons.xaml.zip)", await pg.evaluate(() => QCI.has("1-2_strom")));
   ok("Werte formatiert", (await pg.textContent("#pbody")).includes("8.450kWh") && (await pg.textContent("#pbody")).includes("47.503,78kWh"), await pg.textContent("#pbody"));
   await pg.evaluate(() => WSI.onmessage({ data: "1|9003|6600.0|0" })); await pg.waitForTimeout(50);
   ok("Wert aktualisiert sich live", (await pg.textContent("#pbody")).includes("6.600kWh"));
