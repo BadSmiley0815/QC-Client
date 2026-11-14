@@ -340,6 +340,23 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     HOSTS.splice(HOSTS.indexOf(A), 2); delete PLUGIN_TYPES.__t;
     return n.a === 2 && n.b === 0; }));
   await pg.close();
+  console.log("Anmeldung gescheitert: Meldung und Diagnose (v0.9.39)");
+  for (const [fall, up] of [["abgelehnt", true], ["nicht erreichbar", false]]) {
+    const p2 = await b.newPage();
+    await p2.route("https://hs.test/**", r => { const u = r.request().url();
+      if (u.includes("qc.html")) return r.fulfill({ status: 200, contentType: "text/html", body: T("../qc.html") });
+      return up ? r.fulfill({ status: 200, body: "ok" }) : r.abort(); });
+    await p2.addInitScript(() => { window.WebSocket = class { constructor() { this.readyState = 3; setTimeout(() => this.onclose && this.onclose({ code: 1006, reason: "", wasClean: false }), 30); } send() {} close() {} }; });
+    await p2.goto("https://hs.test/opt/hs-client/qc.html");
+    await p2.fill("#lhost", "hs.test"); await p2.fill("#luser", "GeheimerBenutzer"); await p2.fill("#lpass", "GeheimesPasswort"); await p2.check("#lremember"); await p2.click("button[type=submit]");
+    await p2.waitForTimeout(700);
+    const m = await p2.textContent("#lmsg"), d = await p2.textContent("#ldiag");
+    ok("Fall „" + fall + "“: passende Meldung", up ? m.includes("hat die Anmeldung aber abgelehnt") : m.includes("nicht erreichbar"), m);
+    ok("Fall „" + fall + "“: Diagnose mit Version, Code und HTTPS-Ergebnis", await p2.isVisible("#ldiagbox") && d.includes("QC-Client 0.9.") && d.includes("Code 1006") && d.includes(up ? "HTTPS-Abruf: erreichbar" : "HTTPS-Abruf: NICHT erreichbar"), d);
+    ok("Fall „" + fall + "“: Diagnose ohne Adresse, Benutzer und Passwort", !d.includes("hs.test") && !d.includes("GeheimerBenutzer") && !d.includes("GeheimesPasswort"), d);
+    ok("Fall „" + fall + "“: gemerktes Passwort verworfen (kein Selbst-Anmelden beim Neuladen)", await p2.evaluate(() => !JSON.stringify(localStorage).includes("GeheimesPasswort")));
+    await p2.close();
+  }
   console.log("Rechte");
   pg = await start(b, "Gast");
   ok("Gast sieht Gruppe-1-Einträge nicht", await pg.locator("#grid .mcard", { hasText: "Garten" }).count() === 0);

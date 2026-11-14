@@ -257,6 +257,7 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 .btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 .msg{margin-top:12px;font-size:13px;min-height:1em}
 .msg.err{color:var(--err)}
+#ldiagbox{margin-top:10px}#ldiag{margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font:11px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;user-select:text}
 
 /* App */
 #app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
@@ -403,6 +404,8 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
       <div class="chk"><input type="checkbox" id="lremember"><label for="lremember" style="margin:0">Passwort auf diesem Gerät merken</label></div>
       <button class="btn wide" type="submit">Verbinden</button>
       <div class="msg" id="lmsg"></div>
+      <div id="ldiagbox" class="hidden"><pre id="ldiag"></pre><button class="btn" type="button" id="ldcopy">Diagnose kopieren</button>
+        <div class="note" style="margin-top:6px">Für eine Rückfrage: diesen Text mitschicken. Er enthält weder Adresse noch Benutzername oder Passwort.</div></div>
       <div class="note" style="margin-top:8px">Beim ersten Mal ggf. <a id="lcert" target="_blank" rel="noopener">die HS-Adresse öffnen</a> und die Zertifikatswarnung bestätigen.</div>
     </form>
   </div>
@@ -474,7 +477,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.38";
+const VERSION = "0.9.39";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -770,7 +773,7 @@ const b64 = s => btoa(unescape(encodeURIComponent(s)));
 function connect() {
   clearTimeout(retryTimer); clearInterval(kaTimer); clearInterval(tickTimer);
   if (ws) { ws.onclose = null; try { ws.close(); } catch (e) {} }
-  gotHello = false;
+  gotHello = false; connT = Date.now();
   const url = "wss://" + cfg.host + "/quad/ws?authorization=" + encodeURIComponent(b64(cfg.user + ":" + cfg.pass));
   setState("off", P_ ? "Verbinde …" : null);
   log("··", "verbinde mit " + cfg.host);
@@ -784,14 +787,14 @@ function connect() {
     if (gotHello || !ws) return;
     log("··", "keine Anmeldebestätigung nach 10 s");
     const w = ws; ws = null; w.onclose = null; try { w.close(); } catch (e) {}
-    if (!P_) { fail("Keine Antwort auf die Anmeldung – Benutzername oder Passwort falsch? Nach einem Fehlversuch sperrt der HS kurz, dann 1–2 Minuten warten."); return; }
+    if (!P_) { loginDiag("timeout"); return; }
     schedule(90, "Anmeldung nicht bestätigt (Passwort geändert?)", { label: "Jetzt verbinden" });
   }, 10000);
   ws.onclose = ev => {
     clearTimeout(loginTimer);
     clearInterval(kaTimer);
     log("··", "getrennt, Code " + ev.code + (gotHello ? "" : " (vor der Anmeldung)"));
-    if (!gotHello && !P_) { fail("Anmeldung fehlgeschlagen. Benutzer/Passwort prüfen. Nach einem Fehlversuch sperrt der HS kurz – 1–2 Minuten warten."); return; }
+    if (!gotHello && !P_) { loginDiag("close", ev); return; }
     if (gotHello) { schedule(Math.min(30, 2 ** retry++), "Verbindung unterbrochen"); return; }
     // Vor der Anmeldung gescheitert: ist der HS weg (Neustart) oder lehnt er die Anmeldung ab (Sperre)?
     reachable(cfg.host).then(up => {
@@ -816,6 +819,39 @@ async function reachable(host) {
 }
 /* „Jetzt verbinden“: Countdown abbrechen und sofort neu verbinden */
 function connectNow() { log("··", "Neuverbindung von Hand"); retry = 0; connect(); }
+/* v0.9.39: Erste Anmeldung gescheitert – Ursache eingrenzen (HS erreichbar? Verbindung abgelehnt oder keine Antwort?), eine
+   passende Meldung zeigen und darunter einen Diagnosetext zum Kopieren. Der Text nennt weder Adresse noch Benutzer noch Passwort. */
+let connT = 0;
+async function loginDiag(kind, ev) {
+  const my = connT, ms = Date.now() - connT, host = cfg.host, hn = host.replace(/:\d+$/, ""), port = (host.match(/:(\d+)$/) || [])[1];
+  const same = location.protocol === "https:" && location.hostname === hn;
+  store.set("login", { host: cfg.host, user: cfg.user });   // gemerktes Passwort verwerfen: sonst meldet jedes Neuladen wieder an und verlängert die Sperre des HS
+  fail("Anmeldung fehlgeschlagen – prüfe die Verbindung …");
+  const t1 = Date.now(), up = await reachable(host), upMs = Date.now() - t1;
+  let quad = "";
+  if (same && up) try { quad = "HTTP " + (await fetch("/quad/client/quad_plugin.xml?probe=" + Date.now(), { cache: "no-store" })).status; } catch (e) { quad = "Fehler (" + e.name + ")"; }
+  if (my !== connT || gotHello) return;
+  const link = "Unten „die HS-Adresse öffnen“ antippen, die Warnung bestätigen, hierher zurück und erneut verbinden.";
+  const msg = !up ? "Der HomeServer ist unter dieser Adresse nicht erreichbar. Entweder stimmt die Adresse nicht (nur IP oder Name, Port nur wenn nicht 443), oder dieser Browser hat das Zertifikat des HomeServers noch nicht bestätigt. " + link
+    : kind === "timeout" ? "Der HomeServer ist erreichbar, antwortet aber nicht auf die Anmeldung. Meist ist der Benutzername oder das Passwort falsch, oder der HS sperrt nach einem Fehlversuch: 2 Minuten warten und dann genau einmal neu versuchen."
+    : "Der HomeServer ist erreichbar, hat die Anmeldung aber abgelehnt. Bitte prüfen: 1. Benutzername und Passwort (Groß-/Kleinschreibung). Es muss ein Benutzer sein, mit dem auch der Gira QuadClient funktioniert – nicht der Zugang für den Experten. 2. Nach einem Fehlversuch sperrt der HS kurz: 2 Minuten warten und dann genau einmal neu versuchen.";
+  fail(msg);
+  const odd = s => /[^\x20-\x7e]/.test(s) ? "ja" : "nein", sp = s => s !== s.trim() || / {2}/.test(s) ? "ja" : "nein";
+  const esc2 = s => s.split(host).join("<HS>").split(hn).join("<HS>");
+  $("ldiag").textContent = [
+    "QC-Client " + VERSION + " · " + new Date().toLocaleString("de-DE"),
+    "Seite: " + (location.protocol === "file:" ? "lokal geöffnet (Datei)" : location.protocol + " " + (same ? "vom HomeServer selbst" : "von anderer Adresse") + " · Pfad " + location.pathname),
+    "Adresse: " + (/^[\d.]+$/.test(hn) ? "IP" : "Name") + ", Port " + (port || "nicht angegeben (443)"),
+    "HTTPS-Abruf: " + (up ? "erreichbar" : "NICHT erreichbar (Adresse, Netz oder Zertifikat)") + " nach " + upMs + " ms",
+    quad ? "QuadClient-Daten ohne Anmeldung: " + quad : "",
+    "WebSocket: " + (kind === "timeout" ? "offen, aber keine Antwort nach 10 s" : "geschlossen, Code " + (ev && ev.code) + (ev && ev.reason ? " („" + ev.reason + "“)" : "") + ", " + (ev && ev.wasClean ? "sauber" : "nicht sauber") + ", nach " + ms + " ms"),
+    "Benutzername: " + cfg.user.length + " Zeichen, Sonderzeichen " + odd(cfg.user) + ", Leerzeichen am Rand " + sp(cfg.user),
+    "Passwort: " + (cfg.pass ? "eingegeben" : "LEER") + ", Sonderzeichen " + odd(cfg.pass) + ", Leerzeichen am Rand " + sp(cfg.pass),
+    "Browser: " + navigator.userAgent,
+    "Protokoll:", ...$("log").textContent.split("\n").filter(Boolean).slice(0, 8).reverse().map(l => "  " + esc2(l))
+  ].filter(Boolean).join("\n");
+  $("ldiagbox").classList.remove("hidden");
+}
 function fail(msg) {
   $("lmsg").textContent = msg; $("lmsg").className = "msg err";
   $("app").classList.add("hidden"); $("login").classList.remove("hidden");
@@ -3016,12 +3052,16 @@ $("logout").onclick = () => {
   cfg.pass = ""; store.set("login", { host: cfg.host, user: cfg.user });
   $("lpass").value = ""; $("app").classList.add("hidden"); $("login").classList.remove("hidden"); $("lmsg").textContent = "";
 };
+$("ldcopy").onclick = async () => { const t = $("ldiag").textContent, b = $("ldcopy");
+  try { await navigator.clipboard.writeText(t); b.textContent = "Kopiert"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("ldiag")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = document.execCommand("copy") ? "Kopiert" : "Text ist markiert – bitte kopieren"; }
+  setTimeout(() => b.textContent = "Diagnose kopieren", 2500); };
 $("lhost").oninput = () => $("lcert").href = "https://" + $("lhost").value.trim() + "/";
 $("lform").onsubmit = e => {
   e.preventDefault();
   cfg = { host: $("lhost").value.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, ""), user: $("luser").value.trim(), pass: $("lpass").value };
   store.set("login", $("lremember").checked ? cfg : { host: cfg.host, user: cfg.user });
-  $("lmsg").className = "msg"; $("lmsg").textContent = "Verbinde …";
+  $("lmsg").className = "msg"; $("lmsg").textContent = "Verbinde …"; $("ldiagbox").classList.add("hidden");
   const cached = store.get("proj4." + cfg.host, null);
   if (cached) { P_ = cached.p; projId = cached.id; KOIX = null; }
   connect();

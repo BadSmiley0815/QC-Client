@@ -81,7 +81,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <header class="hero">
   <div>
     <div class="kicker"><i></i> QC-Client · qc.html</div>
-    <h1>Der QuadClient im Browser – Version 0.9.38</h1>
+    <h1>Der QuadClient im Browser – Version 0.9.39</h1>
     <p class="lead">Eigener HTML5-Client für den Gira HomeServer. Er lädt die vorhandene QC-Visu, nutzt die QC-Benutzerrechte und läuft auf jedem Gerät mit Browser – ohne App, ohne Zusatzdateien.</p>
     <div class="pills">
       <span class="pill">Aufruf: <b>https://&lt;HS-IP&gt;/opt/hs-client/qc.html</b></span>
@@ -144,6 +144,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <h2>Änderungen</h2>
 <p class="sub">Neueste Version oben. <span class="tag t-neu">neu</span> <span class="tag t-fix">korrigiert</span> <span class="tag t-offen">noch offen</span></p>
 <div class="tl">
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.39</span>Anmeldung: klare Meldung und Diagnose</h3><ul><li><span class="tag t-neu">neu</span> Scheitert die Anmeldung, sagt der Client genauer, woran es liegt: HomeServer nicht erreichbar (Adresse, Zertifikat), Anmeldung abgelehnt (Benutzer/Passwort, Sperre) oder keine Antwort.</li><li><span class="tag t-neu">neu</span> Diagnosetext mit Knopf „Diagnose kopieren“ für Rückfragen – ohne Adresse, Benutzername und Passwort.</li><li><span class="tag t-fix">korrigiert</span> Ein gemerktes Passwort wird nach einer gescheiterten Anmeldung verworfen; das Neuladen der Seite verlängert die Sperre des HS nicht mehr.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.38</span>Kamera bleibt stehen, Helligkeit passt</h3><ul><li><span class="tag t-fix">korrigiert</span> Das Kamerabild wurde immer wieder neu aufgebaut, wenn daneben ein Plugin mit oft sendenden KOs lief (Wetter mit Station, Wertanzeige). Jetzt wird nur der Anzeigeort neu gezeichnet, dessen Plugin das KO benutzt.</li><li><span class="tag t-fix">korrigiert</span> Klassisch, Wetter 99-1: Die Helligkeit je Himmelsrichtung ragte über die Spalte „Jetzt“ hinaus – lange Texte stehen jetzt kleiner und in zwei Zeilen.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.37</span>Eigenes Wetter-Plugin 99-1</h3><ul><li><span class="tag t-neu">neu</span> Das eigene Plugin „Wetter“ (vorläufig 99-1) wird angezeigt: Ort, Einheiten und die KOs der Wetterstation kommen aus der Einstellung im Experten – am Gerät muss nichts mehr eingegeben werden. Dazu gefühlte Temperatur, Helligkeit je Himmelsrichtung und Luftdruck.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.36</span>Klassische Ansicht auf dem Handy</h3><ul><li><span class="tag t-neu">neu</span> Die klassische Ansicht läuft jetzt auch auf dem Handy: Im schmalen Fenster zeigt sie eine Spalte statt vier Quadranten – Menü und Listen über die ganze Höhe, die Plugins als eigene Seite (Leiste unten: „Plugins“). Auf Tablet und PC bleibt es bei vier Quadranten.</li></ul></div></div>

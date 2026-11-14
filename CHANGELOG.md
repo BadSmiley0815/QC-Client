@@ -3,6 +3,11 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.39 – Anmeldung: klare Meldung und Diagnose
+- **Neu:** Scheitert die Anmeldung, prüft der Client, ob der HomeServer überhaupt erreichbar ist, und sagt genauer, woran es liegt: Adresse/Zertifikat (HS nicht erreichbar), Anmeldung abgelehnt (Benutzer/Passwort, Benutzer ohne QuadClient, Sperre) oder keine Antwort.
+- **Neu:** Unter der Meldung steht ein Diagnosetext mit Knopf „Diagnose kopieren“ – für Rückfragen. Er enthält Version, Art des Aufrufs, Ergebnis des HTTPS-Abrufs, Code und Dauer der WebSocket-Verbindung, Browser und die letzten Protokollzeilen, aber weder Adresse noch Benutzername oder Passwort.
+- **Korrigiert:** Ein gemerktes Passwort wird nach einer gescheiterten Anmeldung verworfen. Bisher meldete sich die Seite bei jedem Neuladen von selbst wieder an und verlängerte so die Sperre des HS.
+
 ## 0.9.38 – Kamera bleibt stehen, Helligkeit passt
 - **Korrigiert:** Das Kamerabild wurde immer wieder neu aufgebaut („0,0 Bilder/s“), wenn daneben ein Plugin mit oft sendenden KOs lief (Wetter 99-1 oder 1-3 mit Station, Wertanzeige 1-2). Ursache: Jedes Telegramm zeichnete alle Plugin-Anzeigeorte neu. Jetzt wird nur der Anzeigeort neu gezeichnet, dessen Plugin das KO benutzt; auch Bedienung in einem Plugin (Zeitraum, Archiv, Kamera wählen) lässt den anderen Quadranten in Ruhe.
 - **Korrigiert:** Klassisch, Wetter 99-1: Die Helligkeit je Himmelsrichtung („N … · O … · S … · W … klx“) ragte über die Spalte „Jetzt“ hinaus. Lange Texte (über 24 Zeichen) stehen jetzt kleiner und in zwei Zeilen.
