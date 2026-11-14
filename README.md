@@ -80,6 +80,10 @@ Der Client ersetzt den Gira-Wetterdienst durch eine eigene Lösung:
 - Aus den Gira-Plugin-Einstellungen gelten Aktualisierungsintervall und Einheiten; die Geräteportal-Kennung wird nicht verwendet.
 - Ohne Internet bleibt die zuletzt geladene Vorhersage mit Zeitstempel stehen, die Stationswerte laufen weiter.
 
+## Wetter (eigenes Plugin 99-1)
+
+Wer das eigene Plugin „Wetter“ aus [QC-Plugin](https://github.com/BadSmiley0815/QC-Plugin) im Experten einrichtet (Ort, Einheiten, KOs der Wetterstation), bekommt dieselbe Anzeige ohne Eingabe am Gerät: Der Client liest die Einstellungen der Instanz vom HomeServer. Stationswerte haben Vorrang vor Open-Meteo; zusätzlich gibt es gefühlte Temperatur, Helligkeit je Himmelsrichtung und Luftdruck. Die ID 99-1 ist vorläufig (siehe unten).
+
 ## Eigene Funktionsvorlagen – vorläufige IDs
 
 Vorlagen-IDs bestehen aus **Entwickler-ID + Nummer** (z. B. `1-101`: Entwickler 1 = Gira, Vorlage 101). Die Entwickler-ID vergibt Gira auf Anfrage.

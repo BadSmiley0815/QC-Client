@@ -235,7 +235,7 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 .wxset .hits{display:flex;flex-direction:column;gap:4px}.wxset .hits button{text-align:left;display:flex;justify-content:space-between;gap:10px}.wxset .hits i{font-style:normal;color:var(--muted,#999);font-size:13px}
 .cl-wx{position:absolute;left:0;top:42px;width:680px;height:232px;display:flex;--wxbg:#1c1c1c;color:#ddd}
 .cl-wxn{width:188px;flex:none;border-right:1px solid #000;padding:10px 14px;display:flex;flex-direction:column;gap:5px;background:#202020;--wxbg:#202020}
-.cl-wxn .h{font-size:14px;color:#aaa}.cl-wxn .h i{font-style:normal;font-size:12px}.cl-wxn .tt{display:flex;align-items:center;gap:6px}.cl-wxn .wi{width:56px;height:56px}
+.cl-wxn .wxfl{font-size:12px;color:#aaa;margin-top:-6px}.cl-wxn .h{font-size:14px;color:#aaa}.cl-wxn .h i{font-style:normal;font-size:12px}.cl-wxn .tt{display:flex;align-items:center;gap:6px}.cl-wxn .wi{width:56px;height:56px}
 .cl-wxn b{font-size:30px;font-weight:400;color:#eee;font-variant-numeric:tabular-nums}.cl-wxn b u{text-decoration:none;font-size:16px;margin-left:2px}
 .cl-wx .r{display:flex;gap:6px;align-items:center;font-size:13px;color:#ccc;white-space:nowrap}.cl-wx .r svg{width:15px;height:15px;color:#888;flex:none}
 .cl-wxd{flex:1;min-width:0;border-right:1px solid #000;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px}.cl-wxd:last-child{border-right:0}
@@ -474,7 +474,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.36";
+const VERSION = "0.9.37";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1520,6 +1520,10 @@ const wxStId = d => { const s = d.set.st;
   if (s !== undefined) return s.startsWith("e:") ? (P_ && P_.els[s.slice(2)] ? s : "") : PLUGS && PLUGS[s] && PLUGS[s].cls === "1-2" ? s : "";
   const e = wxEls()[0]; if (e) return "e:" + e[0];
   const p = PLUGS && Object.values(PLUGS).find(p => p.cls === "1-2" && /wetter/i.test(p.title)); return p ? p.id : ""; };
+/* eigenes Plugin „Wetter“ (Repo QC-Plugin) – ID vorläufig, nur hier ändern. Anzeige wie 1-3, Einstellungen aber vom HS (siehe unten). */
+const WX_PLUG = "99-1";
+const wxT = d => PLUGIN_TYPES[d.fixed ? WX_PLUG : "1-3"];
+const wxNoLoc = d => d.fixed ? "Kein Ort eingestellt – im Experten eintragen." : "Noch kein Ort gewählt.";
 const wxGet = async u => { const r = await fetch(u); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
 PLUGIN_TYPES["1-3"] = {
   name: "Wetter",
@@ -1531,16 +1535,16 @@ PLUGIN_TYPES["1-3"] = {
   start: (d, h) => { d.id = h.plug.id; d.set = store.get(wxKey(d), {}) || {}; if (!d.set.lat) d.edit = true;
     const c = store.get(wxKey(d) + ".c", null); if (c && c.k === d.set.lat + "," + d.set.lon) { d.fc = c.fc; d.at = new Date(c.at); } },
   load: async d => {
-    const T = PLUGIN_TYPES["1-3"]; await T.station(d);
-    if (d.set.lat) {
+    const T = wxT(d); await T.station(d);
+    if (d.set.lat !== undefined && d.set.lat !== "") {
       const k = d.set.lat + "," + d.set.lon;
       if (!d.fc || !d.at || Date.now() - d.at > d.iv * 60000 * 0.9) {
         try {
           d.fc = await wxGet(`https://api.open-meteo.com/v1/forecast?latitude=${d.set.lat}&longitude=${d.set.lon}&timezone=auto&forecast_days=7`
-            + "&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,is_day"
+            + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,is_day"
             + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant"
             + `&wind_speed_unit=${d.wu}&temperature_unit=${d.tu}`);
-          d.at = new Date(); d.err = ""; store.set(wxKey(d) + ".c", { k, at: +d.at, fc: d.fc });
+          d.at = new Date(); d.err = ""; store.set(d.ck || wxKey(d) + ".c", { k, at: +d.at, fc: d.fc });
         } catch (e) { d.err = e.message; log("··", "Wetter: Vorhersage nicht geladen: " + e.message); }
       }
     }
@@ -1586,48 +1590,48 @@ PLUGIN_TYPES["1-3"] = {
       <div class="row"><button data-pa="wxdone" ${d.set.lat ? "" : "disabled"}>Fertig</button></div></div>`;
   },
   html: d => {
-    const T = PLUGIN_TYPES["1-3"], gear = `<button class="chip" data-pa="wxset" title="Einstellungen">${svg("gear")}</button>`;
+    const T = wxT(d), gear = d.fixed ? "" : `<button class="chip" data-pa="wxset" title="Einstellungen">${svg("gear")}</button>`;
     const head = `<div class="wxh"><b>${esc(d.set.name || "Wetter")}</b><span>${d.at ? "Stand " + d.at.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : ""}${d.err ? " · offline (" + esc(d.err) + ")" : ""}</span>${d.edit ? "" : gear}</div>`;
     if (d.edit) return `<div class="wx">${head}${T.settings(d)}</div>`;
     const n = T.now(d), days = T.days(d), lo = Math.min(...days.map(x => x.mn)), hi = Math.max(...days.map(x => x.mx)), sp = hi - lo || 1, u = d.tu === "celsius" ? "°" : "°F";
     const chip = (ic, v, t) => v === undefined || v === "" ? "" : `<span>${svg(ic)}${v}<i>${t}</i></span>`;
     return `<div class="wx">${head}
       <div class="wxnow">${n.code !== undefined ? wxIcon(n.code, n.day) : ""}<div><div class="t">${n.temp === undefined ? "–" : fmt(n.temp, 1)}${u}</div>
-        <div class="tx">${n.code !== undefined ? esc(wxInfo(n.code)[1]) : ""}${n.tempSt ? " · gemessen" : ""}</div></div>
+        <div class="tx">${n.code !== undefined ? esc(wxInfo(n.code)[1]) : ""}${n.tempSt ? " · gemessen" : ""}</div>${n.feel === undefined ? "" : `<div class="tx">gefühlt ${fmt(n.feel, 1)} ${u === "°" ? "°C" : u}</div>`}</div>
         <div class="wxchips">${chip("wind", n.wind === undefined ? undefined : fmt(n.wind, 0) + " " + esc(n.windU) + " " + wxArrow(n.dir) + wxDir(n.dir), "Wind")}
           ${chip("drop", n.hum === undefined ? undefined : fmt(n.hum, 0) + " %", "Feuchte")}
           ${chip("umb", n.rainB !== undefined ? (n.rainB ? "Regen" : "trocken") : n.rain === undefined ? undefined : fmt(n.rain, 1) + " " + esc(n.rainU), "Niederschlag")}
-          ${chip("dim", n.lux === undefined ? undefined : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"), "Helligkeit")}
+          ${chip("dim", n.luxTxt ? esc(n.luxTxt) : n.lux === undefined ? undefined : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"), "Helligkeit")}
           ${chip("gauge", n.press === undefined ? undefined : fmt(n.press, 0) + " " + esc(n.pressU || "hPa"), "Luftdruck")}</div></div>
       ${days.length ? `<div class="wxdays">${days.map(x => `<div class="wxd"><div class="wd">${esc(x.wd)}</div><div class="dt">${x.ds}</div>${wxIcon(x.code)}
         <div class="wxt"><span class="mn">${fmt(x.mn, 0)}${u}</span><span class="mx">${fmt(x.mx, 0)}${u}</span></div>
         <div class="wxbar"><i style="left:${((x.mn - lo) / sp * 100).toFixed(0)}%;right:${((hi - x.mx) / sp * 100).toFixed(0)}%"></i></div>
         <div class="sm">${svg("umb")}${fmt(x.rs, 1)} mm · ${fmt(x.rp, 0)} %</div><div class="sm">${svg("wind")}${fmt(x.ws, 0)} ${esc(d.wuTxt)} ${wxArrow(x.wd2)}${wxDir(x.wd2)}</div></div>`).join("")}</div>`
-        : `<p class="note">${d.set.lat ? (d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …") : "Noch kein Ort gewählt."}</p>`}
-      <p class="note wxsrc">Vorhersage: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0)${d.stv ? " · aktuelle Werte: „" + esc(wxSrcTitle(d.stId)) + "“" : ""}</p></div>`;
+        : `<p class="note">${d.set.lat ? (d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …") : wxNoLoc(d)}</p>`}
+      <p class="note wxsrc">Vorhersage: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0)${d.stv ? " · aktuelle Werte: " + (d.fixed ? "Wetterstation am HomeServer" : "„" + esc(wxSrcTitle(d.stId)) + "“") : ""}</p></div>`;
   },
   /* Klassisch: Unterleiste ◀ Ort [Stand] ▶ mit Zahnrad; links „Jetzt“, rechts 4 Tage (Pfeile blättern) */
   htmlClassic: d => {
-    const T = PLUGIN_TYPES["1-3"], days = T.days(d), off = Math.min(d.off, Math.max(0, days.length - 4)), u = d.tu === "celsius" ? "°C" : "°F";
-    const gear = `<button data-pa="wxset" class="cl-sa" style="left:57px" title="Einstellungen">${svg("gear")}</button>`;
+    const T = wxT(d), days = T.days(d), off = Math.min(d.off, Math.max(0, days.length - 4)), u = d.tu === "celsius" ? "°C" : "°F";
+    const gear = d.fixed ? "" : `<button data-pa="wxset" class="cl-sa" style="left:57px" title="Einstellungen">${svg("gear")}</button>`;
     const title = esc(d.set.name || "Wetter") + (d.at ? `&nbsp;&nbsp;[${d.at.toLocaleDateString("de-DE")} ${d.at.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}]` : "") + (d.err ? " · offline" : "");
     if (d.edit) return clSub(["wxpg"], title, ["wxpg"]) + `<div class="cl-wxs">${T.settings(d)}</div>`;
     const sub = clSub(["wxpg", off > 0 ? -1 : undefined], title, ["wxpg", off + 4 < days.length ? 1 : undefined], gear);
-    if (!days.length) return sub + `<div class="cl-wx"><div class="cl-qmsg">${d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …"}</div></div>`;
+    if (!days.length) return sub + `<div class="cl-wx"><div class="cl-qmsg">${d.fixed && d.set.lat === undefined ? wxNoLoc(d) : d.err ? "Vorhersage nicht erreichbar: " + esc(d.err) : "Lade Vorhersage …"}</div></div>`;
     const n = T.now(d), row = (ic, v) => v ? `<div class="r">${svg(ic)}<span>${v}</span></div>` : "";
     return sub + `<div class="cl-wx"><div class="cl-wxn"><div class="h">Jetzt${n.tempSt ? "<i> · gemessen</i>" : ""}</div>
-        <div class="tt">${n.code !== undefined ? wxIcon(n.code, n.day) : ""}<b>${n.temp === undefined ? "–" : fmt(n.temp, 1)}<u>${u}</u></b></div>
+        <div class="tt">${n.code !== undefined ? wxIcon(n.code, n.day) : ""}<b>${n.temp === undefined ? "–" : fmt(n.temp, 1)}<u>${u}</u></b></div>${n.feel === undefined ? "" : `<div class="wxfl">gefühlt ${fmt(n.feel, 1)} ${u}</div>`}
         ${row("wind", n.wind === undefined ? "" : fmt(n.wind, 0) + " " + esc(n.windU) + " " + wxArrow(n.dir) + wxDir(n.dir))}
         ${row("drop", n.hum === undefined ? "" : fmt(n.hum, 0) + " %")}
         ${row("umb", n.rainB !== undefined ? (n.rainB ? "Regen" : "trocken") : n.rain === undefined ? "" : fmt(n.rain, 1) + " " + esc(n.rainU))}
-        ${row("dim", n.lux === undefined ? "" : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"))}</div>
+        ${row("dim", n.luxTxt ? esc(n.luxTxt) : n.lux === undefined ? "" : fmt(n.lux, 0) + " " + esc(n.luxU || "lx"))}</div>
       ${days.slice(off, off + 4).map(x => `<div class="cl-wxd"><div class="wd">${esc(x.wd)}</div><div class="dt">${x.ds}</div>${wxIcon(x.code)}
         <div class="tp"><span class="mx">${fmt(x.mx, 0)}${u}</span><span class="mn">${fmt(x.mn, 0)}${u}</span></div>
         <div class="r">${svg("umb")}<span>${fmt(x.rs, 1)} l/m² · ${fmt(x.rp, 0)} %</span></div>
         <div class="r">${svg("wind")}<span>${fmt(x.ws, 0)} ${esc(d.wuTxt)} ${wxArrow(x.wd2)}${wxDir(x.wd2)}</span></div></div>`).join("")}</div>`;
   },
   act: async (d, b) => {
-    const T = PLUGIN_TYPES["1-3"], save = () => store.set(wxKey(d), d.set), H = hostOfEl(b);
+    const T = wxT(d), save = () => store.set(wxKey(d), d.set), H = hostOfEl(b);
     switch (b.dataset.pa) {
       case "wxset": d.edit = true; d.hits = null; break;
       case "wxdone": d.edit = false; break;
@@ -1645,6 +1649,37 @@ PLUGIN_TYPES["1-3"] = {
       case "wxst": d.set = { ...d.set, st: b.value }; save(); d.stv = null; await T.station(d); break;
     }
   }
+};
+/* 99-1 Wetter (eigenes Plugin, Repo QC-Plugin): dieselbe Anzeige wie 1-3, aber Ort, Einheiten und KOs kommen aus den Projektdaten
+   der Instanz auf dem HS – nichts wird je Gerät eingestellt (kein Zahnrad).
+   <project version="1" name lat lon interval tu="celsius|fahrenheit" wu="kmh|ms" kowu="ms|kmh"><ko id="temp|feel|hum|wind|dir|rain|lux|lux_n|lux_e|lux_s|lux_w|press" tag="KO-ID"/>…
+   „Jetzt“: Stationswert vor Open-Meteo. Temperatur-KOs sind °C, das Wind-KO sendet in kowu, Luftdruck über 2000 gilt als Pa. */
+PLUGIN_TYPES[WX_PLUG] = { ...PLUGIN_TYPES["1-3"],
+  read: x => { const p = x.querySelector("project"), a = k => ((p && p.getAttribute(k)) || "").trim(), wu = a("wu") === "ms" ? "ms" : "kmh", kos = {};
+    x.querySelectorAll("project > ko").forEach(k => { const t = (k.getAttribute("tag") || "").trim(); if (t && t !== "0") kos[k.getAttribute("id")] = t; });
+    const lat = parseFloat(a("lat")), lon = parseFloat(a("lon")), loc = a("lat") !== "" && a("lon") !== "" && isFinite(lat) && isFinite(lon);
+    return { fixed: true, iv: Math.min(1440, Math.max(15, parseInt(a("interval"), 10) || 60)), tu: a("tu") === "fahrenheit" ? "fahrenheit" : "celsius", wu, wuTxt: wu === "ms" ? "m/s" : "km/h",
+      kowu: a("kowu") === "kmh" ? "kmh" : "ms", kos, set: loc ? { name: a("name"), lat, lon } : { name: a("name") },
+      fc: null, at: null, err: "", edit: false, q: "", hits: null, off: 0, stv: Object.keys(kos).length ? [kos] : null, stm: {} }; },
+  tags: d => Object.values(d.kos),
+  start: (d, h) => { d.id = h.plug.id; if (d.set.lat === undefined) return;                      // letzte Vorhersage: Schlüssel aus Ort und Einheiten
+    d.ck = "wx9." + cfg.host + "." + [d.set.lat, d.set.lon, d.tu, d.wu].join(","); const c = store.get(d.ck, null);
+    if (c && c.k === d.set.lat + "," + d.set.lon) { d.fc = c.fc; d.at = new Date(c.at); } },
+  station: async () => {},
+  now: d => {
+    const c = (d.fc && d.fc.current) || {}, sv = k => d.kos[k] ? num(d.kos[k]) : undefined, o = {}, tc = t => t === undefined ? undefined : d.tu === "fahrenheit" ? t * 9 / 5 + 32 : t;
+    const t = sv("temp"), w = sv("wind"), r = sv("rain"), p = sv("press");
+    o.temp = tc(t) ?? c.temperature_2m; o.tempSt = t !== undefined; o.feel = tc(sv("feel")) ?? c.apparent_temperature;
+    o.wind = w === undefined ? c.wind_speed_10m : d.kowu === d.wu ? w : d.kowu === "ms" ? w * 3.6 : w / 3.6; o.windU = d.wuTxt;
+    o.dir = sv("dir") ?? c.wind_direction_10m; o.hum = sv("hum") ?? c.relative_humidity_2m;
+    if (r !== undefined) o.rainB = r ? 1 : 0; else if (c.precipitation !== undefined) { o.rain = c.precipitation; o.rainU = "mm"; }
+    const sides = [["N", "lux_n"], ["O", "lux_e"], ["S", "lux_s"], ["W", "lux_w"]].filter(([, k]) => sv(k) !== undefined);   // Helligkeit je Himmelsrichtung in klx
+    if (sides.length) o.luxTxt = sides.map(([n, k]) => n + " " + fmt(sv(k) / 1000, sv(k) < 10000 ? 1 : 0)).join(" · ") + " klx";
+    else if (sv("lux") !== undefined) { o.lux = sv("lux"); o.luxU = "lx"; }
+    if (p !== undefined) { o.press = p > 2000 ? p / 100 : p; o.pressU = "hPa"; }
+    o.code = c.weather_code; o.day = c.is_day !== 0; return o;
+  },
+  act: async (d, b) => { if (b.dataset.pa === "wxpg") d.off = Math.max(0, d.off + (+b.dataset.d || 0)); }
 };
 document.addEventListener("input", e => { const f = e.target.closest && e.target.closest('input[data-pa="wxq"]'), H = f && hostOfEl(f); if (H && H.plug && H.plug.data) H.plug.data.q = f.value; });
 document.addEventListener("keydown", e => { const f = e.key === "Enter" && e.target.closest && e.target.closest('input[data-pa="wxq"]'); if (!f) return;

@@ -10,3 +10,6 @@ users.xml
 export*.csv
 node_modules/
 __pycache__/
+
+# Android-Huelle: Bau-Ausgabe
+android/build/

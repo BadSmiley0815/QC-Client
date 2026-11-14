@@ -3,12 +3,19 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
-## 0.9.36 – Klassisch auf dem Handy
-- **Neu:** Die Ansicht Klassisch geht auch in schmalen Fenstern (Handy): eine Spalte, 680 breit. Menü/Liste und die beiden Plugin-Quadranten sind zwei Seiten, umgeschaltet mit „Plugins“ in der unteren Leiste; die Liste nutzt die ganze Höhe.
-- **Geändert:** Die Sperre „Klassisch erst ab 900 Pixel Breite“ entfällt.
+## 0.9.37 – Eigenes Wetter-Plugin 99-1
+- **Neu:** Das eigene Plugin „Wetter“ (vorläufig 99-1, siehe [QC-Plugin](https://github.com/BadSmiley0815/QC-Plugin)) wird angezeigt – Anzeige wie beim Wetter 1-3 (Modern und Klassisch), aber Ort, Intervall, Einheiten und die KOs der Wetterstation kommen aus den Projektdaten der Instanz auf dem HS. Am Gerät wird nichts eingestellt (kein Zahnrad).
+- **Neu:** „Jetzt“ nimmt Stationswerte vor Open-Meteo: Temperatur (mit „gemessen“), gefühlte Temperatur, Feuchte, Wind (Umrechnung m/s ↔ km/h nach Einstellung), Windrichtung, Regen ja/nein, Helligkeit (ein Wert in lx oder je Himmelsrichtung in klx), Luftdruck (Pa oder hPa). Ohne Ort: Hinweis „Kein Ort eingestellt – im Experten eintragen.“
+- **Neu:** Die letzte Vorhersage bleibt mit Zeitstempel stehen, wenn Open-Meteo nicht erreichbar ist; gespeichert je Ort und Einheiten.
+- Das Wetter-Plugin 1-3 mit seiner Einstellung je Gerät bleibt unverändert.
 
-## 0.9.35 – Diagramme mit dem Finger
-- **Korrigiert:** Werte im Diagramm folgen beim Ziehen mit dem Finger (nach dem Neuzeichnen ging touchmove ins Leere).
+## 0.9.36 – Klassische Ansicht auf dem Handy
+- **Neu:** Die klassische Ansicht läuft auch im schmalen Fenster (unter 900 Pixel Breite, also auf dem Handy): eine Spalte statt vier Quadranten. Menü und Listen nutzen die ganze Höhe (Menü in zwei Spalten mit größeren Kacheln, Listen mit so vielen Zeilen, wie passen); die beiden Plugin-Quadranten sind eine eigene Seite, erreichbar über „Plugins“ in der Leiste unten. Ein Plugin aus dem Menü öffnet direkt diese Seite.
+- **Geändert:** Die Meldung „Die klassische Ansicht braucht ein breites Fenster“ entfällt. Auf Tablet und PC (ab 900 Pixel) bleibt es bei vier Quadranten; beim Drehen des Geräts wechselt die Aufteilung von selbst.
+
+## 0.9.35 – Diagramme mit dem Finger abfahren
+- **Korrigiert:** Auf dem Handy folgte das Fadenkreuz in Diagrammen (0-3) und Balkendiagrammen (1-16) dem Finger nicht – nur Antippen ging. Ursache: Das Neuzeichnen ersetzte das berührte Element, weitere Fingerbewegungen kamen nicht mehr an. Jetzt läuft das Fadenkreuz beim Ziehen mit.
+- **Neu:** QC-Client als Android-App: kleine Hülle unter [`android/`](android/README.md), die `qc.html` mitbringt und das Zertifikat des HomeServers einmal bestätigen lässt. Eigene Änderungen der Hülle: [`android/CHANGELOG.md`](android/CHANGELOG.md).
 
 ## 0.9.34 – Wetterstation als Funktionsvorlage
 - **Neu:** Das Wetter-Plugin nimmt „Jetzt“ auch aus Elementen mit der eigenen Funktionsvorlage „Wetterstation“ (vorläufig 99-4, siehe [QC-Funktionsvorlagen](https://github.com/BadSmiley0815/QC-Funktionsvorlagen)); sie hat Vorrang vor einer Wertanzeige.
