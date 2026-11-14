@@ -24,4 +24,6 @@
         <cell name="txt2" left="60" top="5" width="35" height="16" font_id="501" align="2" />
       </layout>
       <layout name="pan_dimbar"><cell name="down1" left="1" top="1" width="110" height="40" /><cell name="text" left="67" top="13" width="38" height="16" align="2" font_id="501" /></layout>
+      <layout name="pan_ico_val_h"><cell name="icon" left="15" top="0" width="40" height="40" /><cell name="txt1" left="35" top="12" width="60" height="16" font_id="501" align="2" /></layout>
+      <layout name="pan_2ico_2val_v"><cell name="icon1_small" left="16" top="0" width="26" height="26" /><cell name="icon2_small" left="68" top="0" width="26" height="26" /><cell name="txt1" left="10" top="22" width="45" height="16" font_id="508" align="1" /><cell name="txt2" left="55" top="22" width="45" height="16" font_id="508" align="1" /></layout>
 </layouts></templates></design>

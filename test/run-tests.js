@@ -143,7 +143,9 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await pg.evaluate(() => { WSI.onmessage({ data: "2|9401|3.4|0" }); WSI.onmessage({ data: "2|9402|71|0" }); WSI.onmessage({ data: "2|9403|7.5|0" }); WSI.onmessage({ data: "2|9404|270|0" }); WSI.onmessage({ data: "2|9405|1|0" }); openPlugin("Wetter", "907"); });
     await pg.waitForTimeout(500);
     ok("ohne Ort: Einstellungen mit Ortssuche", await pg.isVisible('#pbody input[data-pa="wxq"]'));
-    ok("Wertanzeige „Wetterstation“ automatisch als Station gewählt, Werte erkannt", await pg.evaluate(() => { const t = document.querySelector("#pbody .wxset").textContent;
+    ok("Vorlage Wetterstation (99-4) im Projekt automatisch als Station gewählt", await pg.evaluate(() => document.querySelector('#pbody select[data-pa="wxst"]').value === "e:1091" && /Temperatur: ✓/.test(document.querySelector("#pbody .wxset").textContent)));
+    await pg.selectOption('#pbody select[data-pa="wxst"]', "908"); await pg.waitForTimeout(300);
+    ok("Wertanzeige als Station wählbar, Werte an der Bezeichnung erkannt", await pg.evaluate(() => { const t = document.querySelector("#pbody .wxset").textContent;
       return document.querySelector('#pbody select[data-pa="wxst"]').value === "908" && /Temperatur: Temperatur/.test(t) && /Windrichtung: Richtung/.test(t) && /Wind: Geschwindigkeit/.test(t) && /Luftfeuchte: Feuchte/.test(t); }));
     await pg.fill('#pbody input[data-pa="wxq"]', "Nürnberg"); await pg.press('#pbody input[data-pa="wxq"]', "Enter"); await pg.waitForTimeout(300);
     ok("Ortssuche (Enter) zeigt Treffer", (await pg.textContent("#pbody .hits")).includes("90402"));
@@ -157,11 +159,9 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     ok("Ort wird je Gerät gespeichert", await pg.evaluate(() => (store.get("wx.hs.test.907", {}) || {}).name === "Nürnberg"));
     ok("Klassisch: Jetzt + 4 Tage, blättern", await pg.evaluate(() => { const d = HOSTS[0].plug.data, h = PLUGIN_TYPES["1-3"].htmlClassic(d); return (h.match(/class="cl-wxd"/g) || []).length === 4 && h.includes('data-pa="wxpg"') && h.includes("cl-wxn"); }));
     ok("Vorlage Wetterstation (99-4) als Quelle: Werte aus ihren Slots", await pg.evaluate(async () => {
-      P_.els.wx1 = { tpl: "99-4", name: "Wetterstation Dach", kos: { slot_temp: "9501", slot_rain: "9502", slot_wind_dir: "9503" }, par: {} };
-      WSI.onmessage({ data: "2|9501|-1.5|0" }); WSI.onmessage({ data: "2|9502|0|0" }); WSI.onmessage({ data: "2|9503|180|0" });
-      const d = HOSTS[0].plug.data; d.set = { ...d.set, st: undefined }; d.stv = null; await PLUGIN_TYPES["1-3"].station(d); renderHost(HOSTS[0]);
+      const d = HOSTS[0].plug.data; d.set = { ...d.set, st: "e:1091" }; d.stv = null; await PLUGIN_TYPES["1-3"].station(d); renderHost(HOSTS[0]);
       const t = document.querySelector("#pbody .wxnow").textContent, src = document.querySelector("#pbody .wxsrc").textContent;
-      delete P_.els.wx1; return d.stId === "e:wx1" && /-1,5°/.test(t) && t.includes("trocken") && t.includes(" S") && src.includes("Wetterstation Dach"); }));
+      return d.stId === "e:1091" && /4,6°/.test(t) && t.includes("Regen") && t.includes(" W") && src.includes("Wetterstation"); }));
     await pg.click("#pclose");
   }
   console.log("Plugin Sonos (1-25, Sendewerte aus dem Original-Plugin)");

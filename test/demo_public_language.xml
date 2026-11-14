@@ -1,2 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<language><text key="#99-7_left" default="Left"><lang id="de" value="Links" /></text></language>
+<language><text key="#99-7_left" default="Left"><lang id="de" value="Links" /></text><text key="#99-4_tplname" default="Wetterstation">
+    <lang id="de" value="Wetterstation" />
+    <lang id="en" value="Weather station" />
+  </text><text key="#99-4_temp" default="Temperatur">
+    <lang id="de" value="Temperatur" />
+    <lang id="en" value="Temperature" />
+  </text><text key="#99-4_hum" default="Luftfeuchte">
+    <lang id="de" value="Luftfeuchte" />
+    <lang id="en" value="Humidity" />
+  </text><text key="#99-4_wind" default="Wind">
+    <lang id="de" value="Wind" />
+    <lang id="en" value="Wind" />
+  </text><text key="#99-4_wind_dir" default="Windrichtung">
+    <lang id="de" value="Windrichtung" />
+    <lang id="en" value="Wind direction" />
+  </text><text key="#99-4_rain" default="Niederschlag">
+    <lang id="de" value="Niederschlag" />
+    <lang id="en" value="Precipitation" />
+  </text><text key="#99-4_rain_yes" default="Regen">
+    <lang id="de" value="Regen" />
+    <lang id="en" value="Rain" />
+  </text><text key="#99-4_rain_no" default="trocken">
+    <lang id="de" value="trocken" />
+    <lang id="en" value="dry" />
+  </text><text key="#99-4_lux" default="Helligkeit">
+    <lang id="de" value="Helligkeit" />
+    <lang id="en" value="Brightness" />
+  </text><text key="#99-4_press" default="Luftdruck">
+    <lang id="de" value="Luftdruck" />
+    <lang id="en" value="Air pressure" />
+  </text></language>

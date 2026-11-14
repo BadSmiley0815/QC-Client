@@ -38,4 +38,68 @@
       </button>
     </popup>
   </template>
+  <!-- Wetterstation 99-4 (aus QC-Funktionsvorlagen, ID vorläufig) -->
+  <template id="99-4">
+
+  <panel pos="1" click="1" layout="pan_ico_val_h">
+    <icon cell="icon" ico="99-4_tpl_ico_temp" />
+    <text_dyn layout="pan_ico_val_h.txt1" len="4" prec="1" unit="°C">
+      <content value_slot="slot_temp" />
+    </text_dyn>
+    <action_up click="1" type="popup" id="1" />
+  </panel>
+
+  <panel pos="2" click="1" layout="pan_2ico_2val_v">
+    <icon layout="pan_2ico_2val_v.icon1_small" ico="99-4_tpl_ico_wind" />
+    <text_dyn layout="pan_2ico_2val_v.txt1" len="4" prec="0" unit="$99-4_par_wind_unit">
+      <content value_slot="slot_wind" />
+    </text_dyn>
+    <icon_dyn layout="pan_2ico_2val_v.icon2_small" ico="99-4_tpl_ico_hum">
+      <content case_slot="slot_rain">
+        <case from="1" from_type="2" to="1" to_type="2" ico="99-4_tpl_ico_rain" />
+        <case from="0" from_type="2" to="0" to_type="2" ico="99-4_tpl_ico_hum" />
+      </content>
+    </icon_dyn>
+    <text_dyn layout="pan_2ico_2val_v.txt2" len="3" prec="0" unit="%">
+      <content value_slot="slot_hum" />
+    </text_dyn>
+    <action_up click="1" type="popup" id="1" />
+  </panel>
+
+  <!-- Popup: alle Werte, Bezeichnung links, Wert rechts -->
+  <popup id="1" layout="pop_green.form" ico="tpl_pop_bg">
+    <text layout="pop_green.caption" value="$99-4_par_caption" />
+
+    <text grid="grid1.A1-A5" layout="pop_btn_full.text1" align="0" value="#99-4_temp" />
+    <text_dyn grid="grid1.A1-A5" layout="pop_btn_full.text1" align="2" len="5" prec="1" unit="°C"><content value_slot="slot_temp" /></text_dyn>
+
+    <text grid="grid1.B1-B5" layout="pop_btn_full.text1" align="0" value="#99-4_hum" />
+    <text_dyn grid="grid1.B1-B5" layout="pop_btn_full.text1" align="2" len="5" prec="0" unit="%"><content value_slot="slot_hum" /></text_dyn>
+
+    <text grid="grid1.C1-C5" layout="pop_btn_full.text1" align="0" value="#99-4_wind" />
+    <text_dyn grid="grid1.C1-C5" layout="pop_btn_full.text1" align="2" len="5" prec="1" unit="$99-4_par_wind_unit"><content value_slot="slot_wind" /></text_dyn>
+
+    <text grid="grid1.D1-D5" layout="pop_btn_full.text1" align="0" value="#99-4_wind_dir" />
+    <text_dyn grid="grid1.D1-D5" layout="pop_btn_full.text1" align="2" len="5" prec="0" unit="°"><content value_slot="slot_wind_dir" /></text_dyn>
+
+    <text grid="grid1.E1-E5" layout="pop_btn_full.text1" align="0" value="#99-4_rain" />
+    <text_dyn grid="grid1.E1-E5" layout="pop_btn_full.text1" align="2" value="–">
+      <content case_slot="slot_rain">
+        <case from="1" from_type="2" to="1" to_type="2" value="#99-4_rain_yes" />
+        <case from="0" from_type="2" to="0" to_type="2" value="#99-4_rain_no" />
+      </content>
+    </text_dyn>
+
+    <text grid="grid1.F1-F5" layout="pop_btn_full.text1" align="0" value="#99-4_lux" />
+    <text_dyn grid="grid1.F1-F5" layout="pop_btn_full.text1" align="2" len="6" prec="0" unit="$99-4_par_lux_unit"><content value_slot="slot_lux" /></text_dyn>
+
+    <text grid="grid1.G1-G5" layout="pop_btn_full.text1" align="0" value="#99-4_press" />
+    <text_dyn grid="grid1.G1-G5" layout="pop_btn_full.text1" align="2" len="6" prec="0" unit="$99-4_par_press_unit"><content value_slot="slot_press" /></text_dyn>
+
+    <button layout="pop_btn_ok" grid="grid1.G6-H6" type="1" text="OK">
+      <action_up type="close" />
+    </button>
+  </popup>
+
+</template>
 </templates>

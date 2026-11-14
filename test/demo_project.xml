@@ -22,6 +22,7 @@
       <device id="1006" text="Leselampe" visibleinqc="1" />
       <device id="1012" text="Lichtszenen" visibleinqc="1" />
       <device id="1090" text="Lamellen" visibleinqc="1" />
+      <device id="1091" text="Wetterstation" visibleinqc="1" />
     </device_group>
     <device_group id="13" title="Küche">
       <device id="1007" text="LED-Streifen" visibleinqc="1" />
@@ -209,6 +210,17 @@
       <set parameter="par_driven_passiv" value="" type="Text" />
       <set parameter="par_driven_open" value="" type="Text" />
       <set parameter="par_driven_close" value="" type="Text" />
+    </device>
+    <device id="1091" txt="Wetterstation" symbol="tpl_ico_craft_general.xaml" template="99-4">
+      <connect slot="slot_temp" tag="9401" />
+      <connect slot="slot_hum" tag="9402" />
+      <connect slot="slot_wind" tag="9403" />
+      <connect slot="slot_wind_dir" tag="9404" />
+      <connect slot="slot_rain" tag="9405" />
+      <set parameter="99-4_par_caption" value="Wetterstation" />
+      <set parameter="99-4_par_wind_unit" value="km/h" />
+      <set parameter="99-4_par_lux_unit" value="lx" />
+      <set parameter="99-4_par_press_unit" value="hPa" />
     </device>
     <device id="1090" txt="Lamellen" symbol="tpl_ico_craft_general.xaml" template="99-7_1">
       <connect slot="slot_h" tag="190" />
