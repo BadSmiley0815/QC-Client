@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- Erfundenes Mini-Addin für die Tests (eigener Code): spricht das Addin-Protokoll über postMessage.
+     Umschlag { type, data, id, source }, source "drone" = Addin; Antworten kommen als type "response-<id>". -->
+<meta charset="utf-8">
+<body>
+<div id="cfg">warte …</div>
+<script>
+  let n = 0, started = false;
+  window.CFG = null; window.GOT = []; window.RES = {};
+  const wait = {};
+  const post = (type, data, id) => parent.postMessage({ type, data, id: id || "demo-" + Date.now() + "-" + (++n), source: "drone" }, "*");
+  const ask = (type, data) => new Promise(ok => { const id = "demo-" + Date.now() + "-" + (++n); wait["response-" + id] = ok; post(type, data, id); });
+  window.ask = ask;
+  window.setDp = (id, value) => ask("set-datapoint", { id, value });
+  addEventListener("message", async e => {
+    const m = e.data; if (e.source !== parent || !m || m.source !== "hive") return;
+    if (wait[m.type]) { wait[m.type](m.data); delete wait[m.type]; return; }
+    GOT.push({ type: m.type, data: m.data });
+    if (m.type === "handshake" || m.type === "ping") {
+      post("response-" + m.id);
+      if (!started) { started = true;
+        CFG = await ask("get-configuration");
+        document.documentElement.dataset.theme = CFG.theme;
+        const st = document.createElement("style"); st.textContent = CFG.styleSheet; document.head.appendChild(st);
+        document.getElementById("cfg").textContent = "Außen: " + CFG.datapoints.aussen;
+      }
+    }
+    if (m.type === "value-changed") document.getElementById("cfg").textContent = "Außen: " + m.data.newValue;
+  });
+</script>
+</body>

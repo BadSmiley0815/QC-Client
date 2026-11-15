@@ -1,0 +1,20 @@
+{
+  "project": {
+    "api_version": "1.0",
+    "views": { "homeserver": "True", "homeserver_half": "True", "homeserver_full": "True", "homeserver_mobile": "True" },
+    "datapoints": {
+      "entry": [
+        { "@node": "config", "@id": "password", "@type": "string", "#text": "DEMO" },
+        { "@node": "select", "@id": "intervall", "@type": "string", "#text": "60" },
+        { "@node": "datapoint", "@id": "aussen", "@type": "number", "#text": "9401" },
+        { "@node": "select", "@id": "quelle", "@type": "string", "entry": { "@node": "option", "@id": "station", "entry": { "@node": "datapoint", "@id": "feuchte", "@type": "number", "#text": "9402" } } }
+      ],
+      "repeats": {
+        "repeat": [
+          { "@id": "tag", "entry": [ { "@node": "config", "@id": "name", "@type": "string", "#text": "heute" } ] },
+          { "@id": "tag", "entry": [ { "@node": "config", "@id": "name", "@type": "string", "#text": "morgen" }, { "@node": "datapoint", "@id": "wind", "@type": "number", "#text": "9403" } ] }
+        ]
+      }
+    }
+  }
+}

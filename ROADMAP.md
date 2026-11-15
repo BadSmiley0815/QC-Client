@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.41 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.43 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -19,10 +19,17 @@ Stand: v0.9.41 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
   - [x] Kamera live (v0.7.2) – Bilder über den HS (KO-Gateway-Endpunkt) oder Kameras ohne Anmeldung per https; Digest/http nur eingeschränkt
     - [x] Endpunkt-Kameras fast live, bis 5 Bilder/s (v0.9.2)
     - [x] Kamera-Proxy über Logikbaustein 14783 (v0.9.3; Baustein am HS bestätigt: 3 Axis-Kameras, Standbild + MJPEG-Strom)
+    - [x] Eigenes Kamera-Plugin 99-2 „RTSP/ONVIF/MJPG“: Standbild/MJPEG wie 0-2 (v0.9.43; nachgebauter HS, echter HS offen)
   - [x] Kamera-Archiv (v0.6.2, am HS bestätigt)
   - [x] Meldungsarchiv (v0.6.3)
   - [x] Diagramme (v0.7.0, am HS bestätigt)
   - [x] Balkendiagramme (v0.7.1)
+  - [ ] **Gira-Addins** (Webseiten des neuen Gira-HTML5-Clients, ab Experte 4.13 auf dem HS) im Client anzeigen
+    - [x] Gastgeber-Kern und Wettervorhersage hinter Schalter (v0.9.42; am nachgebauten HS und mit Giras Wetter-Addin im Testbrowser, echter HS offen)
+    - [ ] Einstellungen „für alle“ auf dem HS speichern (Schreibzugriff – erst nach Entscheidung)
+    - [ ] Diagramm, Meldungsarchiv, Kamera-Archiv (Archivdaten), danach Kamera
+    - [ ] Android-App: Laden des Addins aus der lokalen Seite prüfen
+    - [ ] Vergleich mit Experte 4.14, sobald verfügbar; eigene Plugins (99-…) als Addin
   - [ ] Energieverbrauch (1-4) – zurückgestellt (14.11.: lieber später als eigene, neue Lösung statt Nachbau). Im Original ein Kostenrechner (Tarif, Abschlag, Prognose),
         der Einstellungen auf den HS zurückschreibt. Erster Schritt: reine Verbrauchsansicht mit Vorjahresvergleich, ohne Schreiben.
   - [ ] Sprechanlage

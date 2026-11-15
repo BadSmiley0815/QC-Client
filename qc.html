@@ -344,6 +344,8 @@ input[type=range]{flex:1;accent-color:var(--acc);min-width:0}
 .cpl{display:flex;flex-direction:column;gap:4px;margin:10px 0;font-size:13px;color:var(--muted)}
 .cpl input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
 #cpdlg{max-width:460px}
+.addin-ifr{display:block;width:100%;height:100%;border:0;background:transparent}
+#pbody .addin-ifr{height:460px}
 .cpbtn{margin:0 10px 8px;width:calc(100% - 20px);text-align:left;font-size:12px;color:var(--muted)}
 .startsel select{flex:1;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px}
 #frame,#plug{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
@@ -489,7 +491,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.41";
+const VERSION = "0.9.43";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -890,8 +892,8 @@ async function onMsg(ev) {
     }
     case "2": case "1": {
       const ko = p[1], val = p.length > 3 ? p.slice(2, -1).join("|") : p[2];
-      V.set(ko, val);
-      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); HOSTS.forEach(h => { if (h.plug && h.plug.tags.has(ko)) renderHost(h); }); }   // v0.9.38: nur betroffene Anzeigeorte (sonst reisst der Kamera-Strom im anderen Quadranten ab)
+      V.set(ko, val); addinKo(ko);
+      if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); HOSTS.forEach(h => { if (h.plug && h.plug.tags.has(ko)) { const T = PLUGIN_TYPES[h.plug.cls]; if (T && T.ko && h.plug.data) T.ko(h.plug.data, ko, val); renderHost(h); } }); }   // v0.9.38: nur betroffene Anzeigeorte (sonst reisst der Kamera-Strom im anderen Quadranten ab)
       break;
     }
     case "10": TIMERS.set(p[1], { active: p[2] === "1", pts: new Map() }); break;                      // Uhr: aktiv|Anzahl|…
@@ -1464,6 +1466,7 @@ async function loadPlugins() {
         quad: p.getAttribute("quad_3") || "", vis: p.getAttribute("visibleinqc") || "1", group: p.getAttribute("group") || "" });
     PLUGS = m; log("··", "Plugins: " + Object.keys(m).length);
   } catch (e) { PLUGS = {}; log("··", "Plugins nicht geladen: " + e.message); }
+  if (ADDINS_ON) loadAddins(); else ADDINS_P = null;
 }
 const plugSupported = id => !!(PLUGS && PLUGS[id] && PLUGIN_TYPES[PLUGS[id].cls]);
 const decimals = f => { const i = (f || "").indexOf("."); return i < 0 ? 0 : f.length - i - 1; };
@@ -1474,7 +1477,11 @@ async function openPlugin(title, id, host) {
   if (!host) { closeFrame(); $("ptitle").textContent = title || pi.title; $("plug").classList.remove("hidden"); $("plug").scrollIntoView({ behavior: "smooth", block: "start" }); }
   if (h.plug && h.plug.data) clearTimeout(h.plug.data.timer);
   const P0 = h.plug = { id, cls: pi.cls, title: title || pi.title, data: null, tags: new Set() };
-  h.body.innerHTML = '<p class="note">Lade …</p>';
+  h.body.innerHTML = '<p class="note">Lade …</p>'; h.body.classList.remove("cl-raw");
+  if (ADDINS_ON && ADDIN_CLS.has(pi.cls) && !ADDIN_FAIL.has(pi.cls)) {                    // v0.9.42: Gira-Addin statt eigenem Nachbau (Schalter)
+    const A = (await (ADDINS_P || loadAddins()))[pi.cls]; if (h.plug !== P0) return;
+    if (A) try { await addinStart(h, P0, pi, A, host); return; } catch (e) { log("··", "Addin " + A.id + ": " + e.message + " – eigenes Plugin"); if (h.plug !== P0) return; }
+  }
   try {
     const x = new DOMParser().parseFromString(await hsGet("/quad/plugins/project/" + pi.project), "text/xml");
     if (h.plug !== P0) return;
@@ -1495,6 +1502,95 @@ function plugHost(body) {                                        // Anzeigeort a
 }
 plugHost($("pbody"));
 const hsUrl = path => "https://" + cfg.host + path + "?" + sid;
+
+/* ---------------- Gira-Addins (v0.9.42, Versuch hinter Schalter) ----------------
+   Ab Experte 4.13 liegt zu manchen Plugin-Klassen ein „Addin“ auf dem HS: eine Webseite unter /opt/hsfsweb/widgets/<addinId>/,
+   die im iframe läuft und mit dem Gastgeber über postMessage spricht.
+     /quad/client/quad_plugin.json                       Klassen mit addinId und version
+     /quad/plugins/project/<addinId>_<Instanz>.json      Einstellungen der Instanz (config | datapoint | select/option, Wiederholgruppen)
+   Umschlag: { type, data, id, source } – source "hive" = Gastgeber, "drone" = Addin; Antwort auf eine Anfrage: type "response-<id>".
+   Ablauf: handshake (beide Seiten) → get-configuration → value-changed (KO-Wert neu) / set-datapoint (Bedienung).
+   Der Client lädt Addins nur vom eigenen HS und ohne allow-same-origin: das Addin kommt nicht an die Seite und ihren Speicher. */
+let ADDINS_ON = !!store.get("addins", false), ADDINS_P = null;
+const ADDIN_CLS = new Set(["1-3"]);                              // vorerst nur die Wettervorhersage
+const ADDIN_FAIL = new Set();                                    // Klassen, deren Addin nicht antwortete → eigenes Plugin
+const ADDIN_CSS = ":root{--c0:#fff;--c1:#f4f5f4;--c2:#e9ebe9;--c3:#333;--c4:#4a4f4c;--c5:#9aa29d;--c6:#cdd2ce;--c7:#7aa800;--c8:#f29100;--c9:#d43c3c;--c10:#1f7fe0;--c12:#000;" +
+  "--front-color:var(--c4);--text-color:var(--c4);--back-color:var(--c0);--line-color:var(--c6);--icon-color:var(--c4);--highlight-color:var(--c7)}" +
+  "[data-theme=dark]{--c0:#121514;--c1:#1c201e;--c2:#0f1110;--c3:#e9ece9;--c4:#d5d9d6;--c5:#6b726e;--c6:#3a3f3c;--c12:#fff}" +
+  "html{font-size:16px}body{margin:0;font-family:system-ui,sans-serif;color:var(--front-color);background:var(--back-color)}*{box-sizing:border-box}";
+const arr = v => v == null ? [] : Array.isArray(v) ? v : [v];
+const addinDark = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : matchMedia("(prefers-color-scheme:dark)").matches; };
+const addinVal = ko => { const v = V.get(ko); return v === undefined ? "" : v !== "" && !isNaN(v) ? Number(v) : v; };
+function loadAddins() {                                          // Klasse -> { id, ver }
+  return ADDINS_P = (async () => { const m = {};
+    try { const j = JSON.parse((await hsGet("/quad/client/quad_plugin.json")).replace(/^\uFEFF/, ""));
+      arr((j.plugins || {}).classes).forEach(c => { if (c && c.addinId) m[c.id] = { id: String(c.addinId), ver: String(c.version || "-") }; });
+      log("··", "Addins: " + Object.keys(m).length);
+    } catch (e) { log("··", "Addins nicht geladen: " + e.message); }
+    return m; })();
+}
+function addinCfg(es, c, pre, cos) {                             // Einstellungen → flache Liste für das Addin, KO → Namen
+  const co = (ko, key) => { if (!cos.has(ko)) cos.set(ko, []); cos.get(ko).push(key); c[key] = addinVal(ko); };
+  for (const e of es) { const id = e && e["@id"]; if (!id) continue; const k = pre + id, t = e["#text"], n = e["@node"];
+    if (n === "datapoint") { if (t) co(t, k); }
+    else if (n === "config") c[k] = t;
+    else if (n === "select") { const o = arr(e.entry)[0];
+      if (!o) c[k] = t; else { const ok = k + "." + o["@id"]; c[k] = o["@id"];
+        if (o["@node"] === "option") addinCfg(arr(o.entry), c, ok + ".", cos); else if (o["#text"]) co(o["#text"], ok); } } }
+}
+function addinSend(P, type, data) { const w = P.addin && P.addin.f.contentWindow; if (w) w.postMessage({ type, data, id: "qc-" + Date.now() + "-" + (++P.addin.n), source: "hive" }, "*"); }
+async function addinStart(h, P0, pi, A, host) {
+  const j = JSON.parse((await hsGet("/quad/plugins/project/" + A.id + "_" + pi.id + ".json")).replace(/^\uFEFF/, ""));
+  if (h.plug !== P0) return;
+  const dp = (j.project || {}).datapoints || {}, c = {}, cos = new Map();
+  addinCfg(arr(dp.entry), c, "", cos);
+  const rp = arr((dp.repeats || {}).repeat);
+  if (rp.length && rp[0]["@id"]) { c[rp[0]["@id"]] = rp.length; rp.forEach((r, i) => addinCfg(arr(r.entry), c, r["@id"] + "." + i + ".", cos)); }
+  const f = document.createElement("iframe"); f.className = "addin-ifr"; f.title = P0.title; f.setAttribute("sandbox", "allow-scripts");
+  f.src = "https://" + cfg.host + "/opt/hsfsweb/widgets/" + encodeURIComponent(A.id) + "/index.html?cache=" + encodeURIComponent(A.ver) + "&culture=de";
+  const a = P0.addin = { f, c, cos, n: 0, up: false, A, tries: 0 };
+  h.body.classList.toggle("cl-raw", !!h.classic); h.body.innerHTML = ""; h.body.appendChild(f);
+  a.hs = setInterval(() => {                                     // Handshake, bis das Addin antwortet; sonst zurück zum eigenen Plugin
+    if (h.plug !== P0 || a.up) return clearInterval(a.hs);
+    if (++a.tries > 50) { clearInterval(a.hs); log("··", "Addin " + A.id + " antwortet nicht – eigenes Plugin"); ADDIN_FAIL.add(pi.cls); h.plug = null; openPlugin(P0.title, P0.id, host); return; }
+    addinSend(P0, "handshake"); }, 200);
+}
+function addinKo(ko) {                                           // KO-Wert neu → value-changed an alle Addins, die ihn verwenden
+  HOSTS.forEach(h => { const a = h.plug && h.plug.addin; if (!a || !a.cos.has(ko)) return; const nv = addinVal(ko);
+    a.cos.get(ko).forEach(k => { if (a.c[k] === nv) return; const ov = a.c[k]; a.c[k] = nv; if (a.up) addinSend(h.plug, "value-changed", { id: k, newValue: nv, oldValue: ov }); }); });
+}
+async function addinMsg(h, P, m) {                               // Anfrage des Addins → Antwortdaten
+  const a = P.addin, d = m.data || {}, dev = k => "addin." + cfg.host + "." + P.id + "." + k;
+  switch (m.type) {
+    case "get-configuration": return { host: { deviceId: String(projId || ""), userId: "qc" + hash(String(cfg.user || "")) }, view: h.classic ? "hs-c19-quad" : "hs-app", viewMode: "widget", connection: 1,
+      datapoints: a.c, culture: "de", theme: addinDark() ? "dark" : "light", styleSheet: ADDIN_CSS, dateOffset: 0 };
+    case "set-datapoint": a.cos.forEach((keys, ko) => { if (keys.includes(d.id)) send(ko, d.value); }); return undefined;
+    case "storage-get":
+      if (d.scope === "Device") return store.get(dev(d.key), undefined);
+      if (d.scope === "Global") { const r = await fetch(hsUrl("/quad/load/ADDINS/SETTINGS" + P.id + ".JSON")); return r.ok ? JSON.stringify(await r.json()) : undefined; }
+      return undefined;
+    case "storage-set":
+      if (d.scope === "Device") { if (d.value == null) store.del(dev(d.key)); else store.set(dev(d.key), String(d.value)); return true; }
+      log("··", "Addin " + a.A.id + ": Speichern für alle (auf dem HS) macht der Client noch nicht"); return false;
+    case "get-icon": { const n = String(d.name || "").replace(/\.xaml$/, ""); if (!/^[\w.\-]+$/.test(n)) return "";
+      try { const r = await fetch("https://" + cfg.host + "/opt/hsfsweb/icons/" + n + ".svg"); return r.ok ? await r.text() : ""; } catch (e) { return ""; } }
+    case "load-data": log("··", "Addin " + a.A.id + ": Archivdaten (" + d.type + ") liefert der Client noch nicht"); return { type: d.type, payload: { hasError: true } };
+    case "navigation-request": if (d.requestType === "Leave" && h === HOSTS[0]) closePlug(); return undefined;
+    case "custom-message": return false;
+    default: return undefined;                                   // handshake, ping, storage-subscribe-change …
+  }
+}
+addEventListener("message", e => { const m = e.data; if (!m || typeof m.type !== "string" || m.source === "hive") return;
+  const h = HOSTS.find(x => x.plug && x.plug.addin && x.plug.addin.f.contentWindow === e.source); if (!h) return;
+  const P = h.plug, a = P.addin;
+  if (!a.up) { a.up = true; log("··", "Addin " + a.A.id + " verbunden"); addinSend(P, "connection-status-changed", 1); }
+  if (m.type.startsWith("response-")) return;
+  addinMsg(h, P, m).then(r => addinSend(P, "response-" + m.id, r), err => { log("··", "Addin " + a.A.id + " (" + m.type + "): " + err.message); addinSend(P, "response-" + m.id, { code: 5000, message: String(err.message) }); });
+});
+function addinSwitch(on) {                                       // Schalter: offene Plugins der betroffenen Klassen neu öffnen
+  ADDINS_ON = !!on; store.set("addins", ADDINS_ON); ADDIN_FAIL.clear(); ADDINS_P = null;
+  HOSTS.forEach((h, i) => { const p = h.plug; if (!p || !ADDIN_CLS.has(p.cls)) return; if (p.data) clearTimeout(p.data.timer); h.plug = null; openPlugin(p.title, p.id, i ? h : undefined); });
+}
 
 /* 1-2 Wertanzeige („Wetterstation“): Gruppen mit je 1–n Werten aus KOs */
 PLUGIN_TYPES["1-2"] = {
@@ -2124,7 +2220,7 @@ function camProxyDlg() {
     $("cperr").textContent = "prüfe …";
     try { const l = await camProxyList(n); store.set("camproxy", n); dl.close(); buildNav();
       log("··", "Kamera-Proxy: " + l.names.length + " Kamera(s)");
-      HOSTS.forEach(h => { if (h.plug && h.plug.cls === "0-2") openPlugin(h.plug.title, h.plug.id, h === HOSTS[0] ? undefined : h); });
+      HOSTS.forEach(h => { if (h.plug && camCls(h.plug.cls)) openPlugin(h.plug.title, h.plug.id, h === HOSTS[0] ? undefined : h); });
     } catch (err) { $("cperr").textContent = "Proxy nicht erreichbar: " + err.message; }
   };
   dl.showModal();
@@ -2149,15 +2245,21 @@ PLUGIN_TYPES["0-2"] = {
   },
   html: d => {
     const viaHs = " Abhilfe: Kamera-Proxy (Logikbaustein 14783) einrichten und links unter „Kamera-Proxy“ eintragen – dann meldet sich der HS an der Kamera an.";
+    const cpSet = store.get("camproxy", null), via = c => d.proxyErr ? " Der eingetragene Kamera-Proxy ist nicht erreichbar (" + d.proxyErr + ")."
+      : cpSet && cpSet.url ? " Der Kamera-Proxy ist eingetragen, kennt aber keine Kamera „" + camNorm(c.title) + "“ – im Logikbaustein 14783 eine Kamera mit diesem Namen anlegen; dann meldet sich der HS an der Kamera an." : viaHs;
     const hint = c => c.jpg.startsWith("http:") && location.protocol === "https:" ? "Kamera nur per http erreichbar – der Browser blockiert das auf der https-Seite." + viaHs
-      : c.auth !== "None" && !camLocal(c.jpg) ? "Kamera verlangt eine Anmeldung (" + c.auth + ") – die kann der Browser bei Kamerabildern nicht selbst erledigen." + viaHs : "Bild nicht erreichbar.";
+      : c.noimg ? "Für diese Kamera ist nur RTSP eingetragen – das kann kein Browser abspielen. Im Experten eine Standbild- oder MJPEG-Adresse eintragen." + viaHs
+      : c.auth !== "None" && !camLocal(c.jpg) ? "Kamera verlangt eine Anmeldung (" + c.auth + "). Die Zugangsdaten aus dem Experten kann nur der Windows-QuadClient verwenden – ein Browser darf sich bei einem Kamerabild nicht selbst anmelden." + via(c) : "Bild nicht erreichbar.";
     const btns = c => c.cmds.length ? `<div class="btns" style="margin-top:8px">${c.cmds.map((m, j) => `<button data-pa="cmd" data-j="${j}" class="${num(m.tag) ? "act" : ""}">${esc(m.text || "Schalten")}</button>`).join("")}</div>` : "";
     const fast = (c, live) => !live && d.sel !== null && camLocal(c.jpg);
-    const img = (c, i, live) => d.bad[i] ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(hint(c))}</span><button class="chip" data-pa="retry" data-i="${i}">Erneut versuchen</button></div>`
+    const kurz = c => c.noimg ? "Nur RTSP eingetragen – im Browser nicht abspielbar." : c.jpg.startsWith("http:") && location.protocol === "https:" ? "Nur per http erreichbar."
+      : c.auth !== "None" && !camLocal(c.jpg) ? "Anmeldung nötig – Bild nur über den Kamera-Proxy." : "Bild nicht erreichbar.";
+    const img = (c, i, live, tile) => d.bad[i] && tile ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(kurz(c))}</span><span class="chip">Mehr …</span></div>`
+      : d.bad[i] ? `<div class="cerr"><b>${esc(c.title)}</b><span>${esc(hint(c))}</span><button class="chip" data-pa="retry" data-i="${i}">Erneut versuchen</button></div>`
       : live && camLocal(c.mjpg) ? `<img data-cam="${i}" data-live="1" data-mjpg="${esc(c.mjpg)}" alt="${esc(c.title)}"><div class="camfps">… Bilder/s</div>`   // Strom über den HS: Client liest ihn selbst (Bilder/s, Wächter)
       : `<img data-cam="${i}" data-live="${live ? 1 : 0}" data-fast="${fast(c, live) ? 1 : 0}" src="${esc(live ? camSrc(c.mjpg, false) : camSrc(c.jpg, true))}" alt="${esc(c.title)}" referrerpolicy="no-referrer"><div class="camfps">${live ? "Live" : "… Bilder/s"}</div>`;
     const fps = () => "";                                                                // Anzeige hängt jetzt an jedem Bild (camMeter)
-    if (d.sel === null) return `<div class="camgrid">${d.cams.map((c, i) => `<div class="camtile">${d.bad[i] ? `<div class="camimg" style="cursor:default;background:none">${img(c, i, false)}</div>` : `<button data-pa="sel" data-i="${i}" class="camimg">${img(c, i, false)}</button>`}<div class="camcap">${esc(c.title)}</div></div>`).join("")}</div>`;
+    if (d.sel === null) return `<div class="camgrid">${d.cams.map((c, i) => `<div class="camtile"><button data-pa="sel" data-i="${i}" class="camimg"${d.bad[i] ? ' style="background:none"' : ""}>${img(c, i, false, true)}</button><div class="camcap">${esc(c.title)}</div></div>`).join("")}</div>`;
     const c = d.cams[d.sel], live = c.codec === "MJPEG" && !!c.mjpg && c.mjpg.startsWith("https:") && c.jpg.startsWith("https:");
     return `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><button class="chip" data-pa="all">${svg("left")} Alle Kameras</button><b>${esc(c.title)}</b></div>
       <div class="carch">${img(c, d.sel, live)}${fps(c, live)}</div>${btns(c)}`;
@@ -2183,9 +2285,20 @@ PLUGIN_TYPES["0-2"] = {
     }
   }
 };
+/* v0.9.43 – eigenes Plugin „RTSP/ONVIF/MJPG“ (Repo QC-Plugin) – ID vorläufig, nur hier ändern.
+   <project><cam name host port user pass mode rtsp rtsp_full mjpeg jpeg refresh><ko id="show" tag="KO"/></cam>…</project>   ko „show“: Wert ≠ 0 schaltet auf diese Kamera
+   RTSP kann kein Browser abspielen: der Client zeigt das Standbild (jpeg) bzw. den MJPEG-Strom; Anzeige und Kamera-Proxy wie bei 0-2.
+   Benutzer und Passwort werden nicht übernommen. */
+const CAM_PLUG = "99-2", camCls = c => c === "0-2" || c === CAM_PLUG;
+PLUGIN_TYPES[CAM_PLUG] = { ...PLUGIN_TYPES["0-2"], name: "Kamera (RTSP/ONVIF/MJPG)",
+  read: x => ({ cams: [...x.querySelectorAll("cam")].map(c => { const a = k => c.getAttribute(k) || "", rf = Math.max(250, +a("refresh") || 1000);
+      return { title: a("name") || "Kamera", jpg: a("jpeg"), mjpg: a("mjpeg"), codec: a("mjpeg") ? "MJPEG" : "JPEG", auth: a("user") ? "Benutzer/Passwort" : "None",
+        rf, rm: Math.max(rf, 10000), cmds: [], show: (c.querySelector('ko[id="show"]') || c).getAttribute("tag") || "", noimg: !a("jpeg") && !a("mjpeg") }; }), sel: null, bad: {} }),
+  tags: d => d.cams.map(c => c.show),
+  ko: (d, ko, val) => { const i = d.cams.findIndex(c => c.show === ko); if (i >= 0 && +val) { d.sel = i; d.fps = null; } } };
 document.addEventListener("error", e => {                       // Kamerabild nicht ladbar -> Hinweis statt kaputtem Bild
   const im = e.target; if (!(im instanceof HTMLImageElement) || !im.dataset.cam) return;
-  const H = hostOfEl(im); if (!H || !H.plug || H.plug.cls !== "0-2" || !H.plug.data) return;
+  const H = hostOfEl(im); if (!H || !H.plug || !camCls(H.plug.cls) || !H.plug.data) return;
   H.plug.data.bad[+im.dataset.cam] = true; renderHost(H);
 }, true);
 /* Bilder/s für jedes Kamerabild und Wächter.
@@ -2240,7 +2353,7 @@ let camLast = 0, camPrevT = 0;
 })(0);
 document.addEventListener("load", e => {                        // Endpunkt-Kamera: nächstes Bild, sobald das vorige da ist
   const im = e.target; if (!(im instanceof HTMLImageElement) || im.dataset.fast !== "1") return;
-  const H = hostOfEl(im); if (!H || !H.plug || H.plug.cls !== "0-2" || !H.plug.data) return;
+  const H = hostOfEl(im); if (!H || !H.plug || !camCls(H.plug.cls) || !H.plug.data) return;
   const d = H.plug.data, c = d.cams[+im.dataset.cam], now = Date.now(); if (!c) return;
   d.frames = (d.frames || []).filter(t => now - t < 3000); d.frames.push(now);
   if (d.frames.length > 1) { d.fps = ((d.frames.length - 1) / ((now - d.frames[0]) / 1000)).toLocaleString("de-DE", { maximumFractionDigits: 1 });
@@ -2375,6 +2488,7 @@ function buildNav() {
     <option value="fav" ${st === "fav" ? "selected" : ""}>Favoriten</option><option value="last" ${st === "last" ? "selected" : ""}>zuletzt geöffnet</option></select></label>
     <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>
     <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
+  h += `<label class="startsel">Gira-Addins <select id="addinsel"><option value="0">aus</option><option value="1" ${ADDINS_ON ? "selected" : ""}>ein (Versuch: Wetter)</option></select></label>`;
   { const cp = store.get("camproxy", null); h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
   if (P_.menu && P_.menu.length) h += `<button data-v="m:0">Menü<span></span></button>`;
   h += `<button data-v="fav">Favoriten<span>${favs.size}</span></button>`;
@@ -2386,6 +2500,7 @@ function buildNav() {
   $("nav").innerHTML = h;
   $("startsel").onchange = e => store.set("start", e.target.value);
   $("cpbtn").onclick = camProxyDlg;
+  $("addinsel").onchange = e => addinSwitch(e.target.value === "1");
   $("clstylesel").onchange = e => clSetStyle(e.target.value);
   $("uisel").onchange = e => clSetUi(e.target.value);
 }

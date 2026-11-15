@@ -5,6 +5,7 @@ const { chromium } = require("playwright");
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, ".."), T = f => fs.readFileSync(path.join(__dirname, f));
 const UHR = "2000000001";
+let addinMode = "ok", addinGets = [];
 let fails = 0, camPics = 0, proxyPics = [], publicHits = 0, s, picFetch = [], archFetch = [];
 const ok = (name, cond, info = "") => { console.log((cond ? "  ✓ " : "  ✗ ") + name + (cond ? "" : "  → " + info)); if (!cond) fails++; };
 
@@ -25,8 +26,14 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/msg/81/1000?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<msgarch count="3"><msg date="20261107080000" text="Pumpe Störung"/><msg date="20261109120500" text="Fenster Bad offen &amp; Regen"/><msg date="20261108200000" text="Pumpe wieder OK"/></msgarch>' });
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
+    if (u.includes("/opt/hsfsweb/widgets/")) { addinGets.push(u.split("/opt/hsfsweb/widgets/")[1]);
+      return r.fulfill({ status: 200, contentType: "text/html", body: addinMode === "stumm" ? "<body>stumm</body>" : T("demo_addin.html") }); }
+    if (u.includes("/opt/hsfsweb/icons/demo_icon.svg")) return r.fulfill({ status: 200, contentType: "image/svg+xml", body: '<svg viewBox="0 0 4 4"><path d="M0 0h4"/></svg>', headers: { "access-control-allow-origin": "*" } });
+    if (n === "quad_plugin.json") return r.fulfill({ status: 200, contentType: "application/json", body: T("demo_quad_plugin.json") });
+    if (n === "demo.addin.wetter_907.json") return addinMode === "ohne" ? r.fulfill({ status: 404, body: "" }) : r.fulfill({ status: 200, contentType: "application/json", body: Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), T("demo_addin_907.json")]) });
+    if (u.includes("/quad/load/ADDINS/SETTINGS907.JSON?SID")) return r.fulfill({ status: 200, contentType: "application/json", body: '{"ort":"Demostadt"}' });
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
@@ -373,6 +380,67 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await p3.setViewportSize({ width: 1200, height: 900 }); await p3.waitForTimeout(900);
     ok("wieder breit: beide Quadranten laufen in der klassischen Darstellung", await p3.evaluate(() => !!CL.hosts[1].plug && !!CL.hosts[2].plug && CL.hosts[1].classic && CL.hosts[2].classic && document.getElementById("cl-q2b").getClientRects().length > 0));
     await p3.close();
+  }
+  console.log("Eigenes Kamera-Plugin 99-2 (v0.9.43)");
+  {
+    const pk = await start(b, "Demo", []); await pk.route("https://10.9.9.9/**", r => r.abort());
+    const c0 = camPics; await pk.evaluate(() => openPlugin("RTSP/ONVIF/MJPG", "909")); await pk.waitForTimeout(900);
+    const tx = await pk.textContent("#pbody");
+    ok("99-2: Standbild über den HS wird geladen, drei Kameras", camPics > c0 && await pk.locator("#pbody .camtile").count() === 3, tx);
+    ok("99-2: Kacheln mit kurzem Hinweis (Anmeldung, nur RTSP)", tx.includes("Anmeldung nötig") && tx.includes("Nur RTSP"), tx);
+    await pk.click('#pbody [data-pa="sel"][data-i="1"]'); await pk.waitForTimeout(300);
+    const tx1 = await pk.textContent("#pbody");
+    ok("99-2: Kachel antippen → ganzer Hinweis auf den Kamera-Proxy", tx1.includes("verlangt eine Anmeldung") && tx1.includes("14783") && tx1.includes("Windows-QuadClient"), tx1);
+    await pk.click('#pbody [data-pa="all"]'); await pk.waitForTimeout(300);
+    const hk = await pk.content();
+    ok("99-2: Passwort und RTSP-Adresse nirgends auf der Seite", !hk.includes("GeheimesKameraPasswort") && !hk.includes("rtsp://"));
+    await pk.click('#pbody [data-pa="sel"][data-i="0"]'); await pk.waitForTimeout(300);
+    ok("99-2: Einzelansicht", await pk.locator('#pbody .carch img[data-cam="0"]').count() === 1);
+    await pk.evaluate(() => WSI.onmessage({ data: "1|9410|1|0" })); await pk.waitForTimeout(300);
+    ok("99-2: KO „show“ schaltet auf die Kamera um", (await pk.textContent("#pbody")).includes("Garten") && await pk.locator("#pbody .camtile").count() === 0, await pk.textContent("#pbody"));
+    await pk.selectOption("#uisel", "classic"); await pk.waitForTimeout(300);
+    await pk.evaluate(() => { PLUGS["909"].quad = "1"; PLUGS["909"].vis = "1"; const l = clQuadList(1); CL.qsel[1] = l.findIndex(p => p.id === "909"); CL.hosts[1].plug = null; clRender(); }); await pk.waitForTimeout(700);
+    ok("99-2: Klassisch im Quadranten statt „kann der Client noch nicht“", await pk.locator("#cl-q1b img[data-cam]").count() >= 1 && !(await pk.textContent("#cl-q1b")).includes("noch nicht"), await pk.textContent("#cl-q1b"));
+    await pk.close();
+  }
+  console.log("Gira-Addins im iframe (v0.9.42, Mini-Addin der Tests)");
+  {
+    const pa = await start(b, "Demo", ["2|9401|3.4|0", "2|9402|71|0"]);
+    const frame = () => pa.frames().find(f => f.url().includes("/opt/hsfsweb/widgets/"));
+    await pa.evaluate(() => openPlugin("Wetter", "907")); await pa.waitForTimeout(500);
+    ok("Schalter aus (Standard): eigenes Wetter-Plugin, kein Addin geladen", await pa.locator("#pbody iframe").count() === 0 && await pa.isVisible('#pbody input[data-pa="wxq"]') && addinGets.length === 0, String(addinGets));
+    await pa.selectOption("#addinsel", "1"); await pa.waitForTimeout(900);
+    const fr = await pa.evaluate(() => { const f = document.querySelector("#pbody iframe"); return f && { src: f.src, sb: f.getAttribute("sandbox") }; });
+    ok("Schalter ein: Addin der Klasse im iframe, Adresse mit Version und Sprache", !!fr && fr.src === "https://hs.test/opt/hsfsweb/widgets/demo.addin.wetter/index.html?cache=1.2.3&culture=de", JSON.stringify(fr));
+    ok("iframe ohne allow-same-origin (Addin kommt nicht an Seite und Speicher)", !!fr && fr.sb === "allow-scripts", JSON.stringify(fr));
+    const cfg = await frame().evaluate(() => CFG);
+    ok("get-configuration: Einstellungen, KO-Werte, Auswahl mit Unterpunkt, Wiederholgruppe", !!cfg && cfg.datapoints.password === "DEMO" && cfg.datapoints.intervall === "60" && cfg.datapoints.aussen === 3.4
+      && cfg.datapoints.quelle === "station" && cfg.datapoints["quelle.station.feuchte"] === 71 && cfg.datapoints.tag === 2 && cfg.datapoints["tag.0.name"] === "heute" && cfg.datapoints["tag.1.wind"] === "", JSON.stringify(cfg && cfg.datapoints));
+    ok("get-configuration: Ansicht, Benutzerkennung ohne Namen, Darstellung, eigenes Stylesheet", cfg.view === "hs-app" && /^qc.+/.test(cfg.host.userId) && !cfg.host.userId.includes("Demo") && cfg.viewMode === "widget" && cfg.connection === 1 && /^(light|dark)$/.test(cfg.theme) && cfg.styleSheet.includes("--c0") && cfg.culture === "de", JSON.stringify(cfg).slice(0, 200));
+    ok("Addin erfährt, dass die Verbindung steht", await frame().evaluate(() => GOT.some(g => g.type === "connection-status-changed" && g.data === 1)));
+    await pa.evaluate(() => { WSI.onmessage({ data: "1|9401|5.5|0" }); WSI.onmessage({ data: "1|9403|12|0" }); WSI.onmessage({ data: "1|9999|1|0" }); }); await pa.waitForTimeout(200);
+    const vc = await frame().evaluate(() => GOT.filter(g => g.type === "value-changed").map(g => g.data));
+    ok("KO-Telegramm → value-changed mit Namen des Addins, altem und neuem Wert; fremde KOs nicht", vc.length === 2 && vc[0].id === "aussen" && vc[0].newValue === 5.5 && vc[0].oldValue === 3.4 && vc[1].id === "tag.1.wind" && vc[1].newValue === 12, JSON.stringify(vc));
+    await sent(pa); await frame().evaluate(() => setDp("aussen", 7));
+    ok("set-datapoint → Telegramm an das zugehörige KO", (await sent(pa)).includes("1|9401|7"));
+    const sto = await frame().evaluate(async () => { const a = await ask("storage-set", { scope: "Device", key: "ort", value: "Musterdorf" });
+      return [a, await ask("storage-get", { scope: "Device", key: "ort" }), await ask("storage-get", { scope: "Global", key: "x" }), await ask("storage-set", { scope: "Global", key: "x", value: "{}" }), await ask("get-icon", { name: "demo_icon" }), await ask("get-icon", { name: "../../quad/x" }), await ask("ping")]; });
+    ok("Speicher „Device“ je Gerät und Instanz", sto[0] === true && sto[1] === "Musterdorf" && await pa.evaluate(() => store.get("addin.hs.test.907.ort") === "Musterdorf"), JSON.stringify(sto));
+    ok("Speicher „Global“: lesen vom HS, schreiben (noch) abgelehnt", sto[2] === '{"ort":"Demostadt"}' && sto[3] === false, JSON.stringify(sto));
+    ok("get-icon liefert das SVG, fremde Pfade nicht", sto[4].includes("<svg") && sto[5] === "", JSON.stringify(sto.slice(4)));
+    await pa.selectOption("#addinsel", "0"); await pa.waitForTimeout(500);
+    ok("Schalter wieder aus: eigenes Plugin zurück", await pa.locator("#pbody iframe").count() === 0 && await pa.isVisible('#pbody input[data-pa="wxq"]'));
+    addinMode = "ohne"; await pa.selectOption("#addinsel", "1"); await pa.waitForTimeout(600);
+    ok("Instanz ohne Addin-Einstellungen: eigenes Plugin", await pa.locator("#pbody iframe").count() === 0 && await pa.isVisible('#pbody input[data-pa="wxq"]'));
+    addinMode = "stumm"; await pa.selectOption("#addinsel", "0"); await pa.selectOption("#addinsel", "1"); await pa.waitForTimeout(600);
+    const before = await pa.locator("#pbody iframe").count(); await pa.waitForTimeout(11000);
+    ok("Addin antwortet nicht: nach 10 s eigenes Plugin", before === 1 && await pa.locator("#pbody iframe").count() === 0 && await pa.isVisible('#pbody input[data-pa="wxq"]'), String(before));
+    addinMode = "ok"; await pa.selectOption("#addinsel", "0"); await pa.selectOption("#uisel", "classic"); await pa.waitForTimeout(400);
+    await pa.evaluate(() => { PLUGS["907"].quad = "1"; clRender(); }); await pa.selectOption("#addinsel", "1").catch(() => pa.evaluate(() => addinSwitch(true)));
+    await pa.evaluate(() => { const l = clQuadList(1); CL.qsel[1] = l.findIndex(p => p.id === "907"); CL.hosts[1].plug = null; clRender(); }); await pa.waitForTimeout(900);
+    const qf = await pa.$("#cl-q1b iframe"), cv = qf ? await (await qf.contentFrame()).evaluate(() => CFG && CFG.view) : null;
+    ok("Klassisch: Addin im Quadranten mit Ansicht hs-c19-quad", cv === "hs-c19-quad" && await pa.locator("#cl-q1b iframe.addin-ifr").count() === 1, String(cv));
+    await pa.close();
   }
   console.log("Anmeldung gescheitert: Meldung und Diagnose (v0.9.39)");
   for (const [fall, up] of [["abgelehnt", true], ["nicht erreichbar", false]]) {

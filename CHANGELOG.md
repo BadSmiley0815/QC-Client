@@ -3,6 +3,21 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.43 – Eigenes Kamera-Plugin „RTSP/ONVIF/MJPG“ (99-2)
+- **Neu:** Der Client zeigt das eigene Kamera-Plugin 99-2 aus dem Plugin-Projekt an – bisher stand dort „Dieses Plugin kann der Client noch nicht“. Anzeige und Bedienung wie beim Kamera-Plugin 0-2 (alle Kameras, Einzelansicht, klassische Ansicht).
+- RTSP kann kein Browser abspielen: Der Client nimmt die Standbild-Adresse (bzw. den MJPEG-Strom). Verlangt die Kamera eine Anmeldung, läuft das Bild über den Kamera-Proxy (Logikbaustein 14783, Zuordnung über den Kameranamen); Benutzer und Passwort aus dem Plugin übernimmt der Client nicht.
+- Das KO „Anzeigen“ einer Kamera schaltet wie im Windows-Plugin auf diese Kamera um.
+- **Verbessert:** Kamera-Kacheln ohne Bild zeigen einen kurzen Hinweis; Antippen öffnet die Kamera mit der ganzen Erklärung (kein Proxy eingetragen, Proxy nicht erreichbar oder Kamera dort unbekannt). Gilt auch für das Kamera-Plugin 0-2.
+
+![Kamera-Plugin 99-2](docs/img/kamera_99-2.png)
+- Geprüft am nachgebauten HomeServer; an einem echten HomeServer noch nicht.
+
+## 0.9.42 – Versuch: Gira-Addins im Client
+- **Neu (Versuch, standardmäßig aus):** Ab Experte 4.13 liegen zu manchen Plugins „Addins“ auf dem HomeServer – die Webseiten, die Giras neuer HTML5-Client (G1 der 2. Generation) anzeigt. Mit dem Schalter „Gira-Addins“ in der Seitenleiste zeigt der Client für die **Wettervorhersage** (Plugin 1-3) dieses Addin im Plugin-Feld bzw. im Quadranten statt des eigenen Nachbaus. Der Client übergibt die Einstellungen der Instanz, meldet KO-Änderungen und setzt KOs, wenn das Addin bedient wird.
+- Das Addin wird nur vom eigenen HomeServer geladen und läuft abgeschottet (kein Zugriff auf die Seite und ihren Speicher). Der Client bringt keine Gira-Dateien mit.
+- Antwortet das Addin nicht oder fehlen seine Einstellungen, erscheint wieder das eigene Plugin.
+- **Noch offen:** Einstellungen „für alle“ auf dem HomeServer speichern (lesen geht), Archivdaten für Diagramm-, Meldungs- und Kamera-Addin, weitere Addins. Geprüft am nachgebauten HomeServer mit einem eigenen Test-Addin und mit Giras Wetter-Addin im Testbrowser; an einem echten HomeServer mit Anmeldung noch nicht.
+
 ## 0.9.41 – Handy-Plugin-Seite auch auf älteren WebViews
 - **Korrigiert:** Die Plugin-Seite der klassischen Ansicht auf dem Handy nutzt für die normale Schriftgröße jetzt eine Transformation statt CSS-`zoom`. Unter `zoom` rechnen ältere Android-WebViews (vor Chromium 128) Positionen anders, das Fadenkreuz in Diagrammen hätte dort neben dem Finger gesessen. Aussehen unverändert.
 - README: Vorschaubild der neuen Plugin-Seite.

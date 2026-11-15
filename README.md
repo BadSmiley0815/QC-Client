@@ -65,6 +65,10 @@ Aufgenommen mit der erfundenen Demo-Visu aus `test/` – keine echte Anlage
 
 ![Wetter Klassisch](docs/img/klassisch_wetter.png)
 
+**Eigenes Kamera-Plugin „RTSP/ONVIF/MJPG“ (99-2)** – Standbild der Kamera; Kameras mit Anmeldung laufen über den Kamera-Proxy (Logikbaustein 14783)
+
+![Kamera-Plugin 99-2](docs/img/kamera_99-2.png)
+
 Alle Versionen: [`CHANGELOG.md`](CHANGELOG.md) · mit Bildern: [`changelog.html`](changelog.html) · Was noch kommt: [`ROADMAP.md`](ROADMAP.md) · Protokoll-Notizen: [`docs/protokoll.md`](docs/protokoll.md)
 
 ## Wetter (Plugin 1-3)
