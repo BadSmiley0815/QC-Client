@@ -401,6 +401,12 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await pk.selectOption("#uisel", "classic"); await pk.waitForTimeout(300);
     await pk.evaluate(() => { PLUGS["909"].quad = "1"; PLUGS["909"].vis = "1"; const l = clQuadList(1); CL.qsel[1] = l.findIndex(p => p.id === "909"); CL.hosts[1].plug = null; clRender(); }); await pk.waitForTimeout(700);
     ok("99-2: Klassisch im Quadranten statt „kann der Client noch nicht“", await pk.locator("#cl-q1b img[data-cam]").count() >= 1 && !(await pk.textContent("#cl-q1b")).includes("noch nicht"), await pk.textContent("#cl-q1b"));
+    await pk.click('#cl-nav [data-sys]'); await pk.waitForTimeout(150);
+    const st0 = await pk.textContent('#cl-sys [data-sysa="camproxy"]');
+    await pk.click('#cl-sys [data-sysa="camproxy"]'); await pk.waitForTimeout(200);
+    const dlgOpen = await pk.evaluate(() => document.getElementById("cpdlg").open);
+    await pk.fill("#cpurl", "https://hs.test/kamera/"); await pk.fill("#cpkey", "K1"); await pk.click('#cpform button[type="submit"], #cpform button:not([type])'); await pk.waitForTimeout(700);
+    ok("Klassisch: System → Kamera-Proxy öffnet die Einstellung, Zustand steht im Menü (v0.9.44)", st0 === "Kamera-Proxy: aus" && dlgOpen && await pk.textContent('#cl-sys [data-sysa="camproxy"]') === "Kamera-Proxy: eingerichtet", st0 + " " + dlgOpen);
     await pk.close();
   }
   console.log("Gira-Addins im iframe (v0.9.42, Mini-Addin der Tests)");

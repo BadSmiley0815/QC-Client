@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.44 – Kamera-Proxy auch in „Klassisch“ einstellbar
+- **Neu:** Im Menü „System“ der klassischen Ansicht gibt es den Eintrag „Kamera-Proxy“ mit dem Zustand (aus / eingerichtet). Bisher musste man dafür nach „Modern“ wechseln.
+
 ## 0.9.43 – Eigenes Kamera-Plugin „RTSP/ONVIF/MJPG“ (99-2)
 - **Neu:** Der Client zeigt das eigene Kamera-Plugin 99-2 aus dem Plugin-Projekt an – bisher stand dort „Dieses Plugin kann der Client noch nicht“. Anzeige und Bedienung wie beim Kamera-Plugin 0-2 (alle Kameras, Einzelansicht, klassische Ansicht).
 - RTSP kann kein Browser abspielen: Der Client nimmt die Standbild-Adresse (bzw. den MJPEG-Strom). Verlangt die Kamera eine Anmeldung, läuft das Bild über den Kamera-Proxy (Logikbaustein 14783, Zuordnung über den Kameranamen); Benutzer und Passwort aus dem Plugin übernimmt der Client nicht.

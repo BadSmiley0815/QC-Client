@@ -431,7 +431,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div class="cl-quad" style="top:87px"><div id="cl-q1c"></div><div id="cl-q1b" class="cl-qb"></div></div>
   <div class="cl-quad" style="top:408px"><div id="cl-q2c"></div><div id="cl-q2b" class="cl-qb"></div></div>
   <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-pg="1">Plugins</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
-  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
+  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
 <dialog id="clpop" aria-label="Bedienung"></dialog>
@@ -491,7 +491,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.43";
+const VERSION = "0.9.44";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2489,7 +2489,8 @@ function buildNav() {
     <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>
     <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
   h += `<label class="startsel">Gira-Addins <select id="addinsel"><option value="0">aus</option><option value="1" ${ADDINS_ON ? "selected" : ""}>ein (Versuch: Wetter)</option></select></label>`;
-  { const cp = store.get("camproxy", null); h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
+  { const cp = store.get("camproxy", null), sb = document.querySelector('#cl-sys [data-sysa="camproxy"]'); if (sb) sb.textContent = "Kamera-Proxy: " + (cp && cp.url ? "eingerichtet" : "aus");
+    h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
   if (P_.menu && P_.menu.length) h += `<button data-v="m:0">Menü<span></span></button>`;
   h += `<button data-v="fav">Favoriten<span>${favs.size}</span></button>`;
   for (const f of P_.floors) {
@@ -3147,6 +3148,7 @@ $("classic").addEventListener("click", e => {
     if (t.dataset.sysa === "style") { clSetStyle(CLSTYLE === "gira" ? "modern" : "gira"); clRender(); }
     if (t.dataset.sysa === "log") { $("cl-log").querySelector("pre").textContent = $("log").textContent; $("cl-log").classList.remove("hidden"); }
     if (t.dataset.sysa === "logclose") $("cl-log").classList.add("hidden");
+    if (t.dataset.sysa === "camproxy") camProxyDlg();                                    // v0.9.44: auch ohne Wechsel nach „Modern“
     if (t.dataset.sysa === "copy") $("logcopy").click();
     if (t.dataset.sysa === "logout") { clShow(false); $("logout").click(); } }
 });
