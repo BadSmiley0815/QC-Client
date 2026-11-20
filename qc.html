@@ -491,7 +491,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.44";
+const VERSION = "0.9.45";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -718,7 +718,18 @@ function iconFor(el) {
 }
 
 /* ---------------- Projekt einlesen ---------------- */
+/* v0.9.45 – „Sichtbarkeit im Raum (optional)“: Element erscheint nur, solange das KO ungleich 0 ist (ohne Wert: verborgen). */
+const VIS_TAGS = new Set();
+const visItems = items => items.filter(i => !i.vis || clTruthy(V.get(i.vis)));
+let visPending = false;
+function visKo(ko) {
+  if (!VIS_TAGS.has(ko) || visPending || !P_ || !/^[rt]:/.test(cur || "")) return;
+  visPending = true;
+  const go = () => { if ((typeof press !== "undefined" && press) || (typeof CL !== "undefined" && CL.press)) return setTimeout(go, 300); visPending = false; renderView(); };
+  setTimeout(go, 50);
+}
 function parseProject(txt) {
+  VIS_TAGS.clear();
   const x = new DOMParser().parseFromString(txt, "application/xml");
   if (x.querySelector("parsererror")) throw new Error("Visu-Datei nicht lesbar");
   const vis = e => e.getAttribute("visibleinqc") !== "0";
@@ -734,7 +745,8 @@ function parseProject(txt) {
   const groups = {};
   x.querySelectorAll("device_groups > device_group").forEach(g => {
     groups[g.getAttribute("id")] = { title: g.getAttribute("title"),
-      items: [...g.querySelectorAll("device")].filter(vis).map(d => ({ ref: d.getAttribute("id"), label: d.getAttribute("text") || "" })) };
+      items: [...g.querySelectorAll("device")].filter(vis).map(d => { const vs = d.getAttribute("visible_slot") || ""; if (vs && vs !== "0") VIS_TAGS.add(vs);
+        return { ref: d.getAttribute("id"), label: d.getAttribute("text") || "", vis: vs && vs !== "0" ? vs : "" }; }) };
   });
   const floors = [], byUid = {}, roomDg = new Set();
   x.querySelectorAll("rooms > *").forEach(e => {
@@ -892,7 +904,7 @@ async function onMsg(ev) {
     }
     case "2": case "1": {
       const ko = p[1], val = p.length > 3 ? p.slice(2, -1).join("|") : p[2];
-      V.set(ko, val); addinKo(ko);
+      V.set(ko, val); addinKo(ko); visKo(ko);
       if (p[0] === "1") { log("<<", ko + " = " + val); updateKo(ko); if (cur.startsWith("m:") && MENU_TAGS.has(ko)) renderView(); HOSTS.forEach(h => { if (h.plug && h.plug.tags.has(ko)) { const T = PLUGIN_TYPES[h.plug.cls]; if (T && T.ko && h.plug.data) T.ko(h.plug.data, ko, val); renderHost(h); } }); }   // v0.9.38: nur betroffene Anzeigeorte (sonst reisst der Kamera-Strom im anderen Quadranten ab)
       break;
     }
@@ -1593,31 +1605,36 @@ function addinSwitch(on) {                                       // Schalter: of
 }
 
 /* 1-2 Wertanzeige („Wetterstation“): Gruppen mit je 1–n Werten aus KOs */
+/* v0.9.45 – Format BOOLEAN: Einheit „wahr/unwahr“, angezeigt wird nur der passende Text; Format TEXT: Text des KOs, Einheit bleibt weg. -> [Wert, Einheit] */
+const pvVal = v => { const raw = V.get(v.ko), none = raw === undefined || raw === "";
+  if (v.f === "BOOLEAN") { const p = v.u.split("/"); return [none ? "–" : clTruthy(raw) ? p[0].trim() : (p[1] || "").trim(), ""]; }
+  if (v.f === "TEXT") return [none ? "–" : raw, ""];
+  const n = num(v.ko); return [n === undefined ? (raw || "–") : fmt(n, v.d), v.u]; };
 PLUGIN_TYPES["1-2"] = {
   name: "Wertanzeige",
   read: x => [...x.querySelectorAll("station_item")].map(it => ({ cap: it.getAttribute("caption") || "", icon: it.getAttribute("icon") || "",
     vals: [...it.querySelectorAll("value")].map(v => ({ t: v.getAttribute("title") || "", ko: v.getAttribute("dpt"),
-      d: decimals(v.getAttribute("format")), u: v.getAttribute("unit") || "" })) })),
+      d: decimals(v.getAttribute("format")), u: v.getAttribute("unit") || "", f: (v.getAttribute("format") || "").trim().toUpperCase() })) })),
   tags: d => d.flatMap(g => g.vals.map(v => v.ko)),
   icons: d => d.map(g => g.icon),                                                     // Symbole der Kacheln (aus dem Symbolsatz des HS)
   html: d => {
-    const val = v => { const n = num(v.ko); return n === undefined ? (V.get(v.ko) || "–") : fmt(n, v.d); };
+    const vu = v => { const [t, u] = pvVal(v); return `${esc(t)}<u>${esc(u)}</u>`; };
     return '<div class="pgrid">' + d.map(g => g.vals.length === 1 && g.vals[0].t === g.cap
-      ? `<div class="pval"><div class="cap">${esc(g.cap)}</div><div class="big">${esc(val(g.vals[0]))}<u>${esc(g.vals[0].u)}</u></div></div>`
+      ? `<div class="pval"><div class="cap">${esc(g.cap)}</div><div class="big">${vu(g.vals[0])}</div></div>`
       : `<div class="pval"><div class="cap">${esc(g.cap)}</div>${g.vals.map(v =>
-          `<div class="row"><span>${esc(v.t)}</span><b>${esc(val(v))}<u>${esc(v.u)}</u></b></div>`).join("")}</div>`).join("") + "</div>";
+          `<div class="row"><span>${esc(v.t)}</span><b>${vu(v)}</b></div>`).join("")}</div>`).join("") + "</div>";
   },
   /* Original-Stil: Kacheln in zwei Spalten – Titel oben links, Symbol unten links, Wert groß rechts bzw. Werteliste rechts */
   htmlClassic: d => {
-    const val = v => { const n = num(v.ko); return n === undefined ? (V.get(v.ko) || "–") : fmt(n, v.d); };
+    const vu = v => { const [t, u] = pvVal(v); return esc(t) + (u ? ` <u>${esc(u)}</u>` : ""); };
     // alle Kacheln ohne Scrollen: Zeilenhöhe aus der Anzahl (2 Spalten, Fläche 680 × 274), Schrift und Symbol wachsen/schrumpfen mit
     const R = Math.max(1, Math.ceil(d.length / 2)), rh = (274 - 12 - (R - 1) * 6) / R;
     const v = `--rh:${rh.toFixed(1)}px;--fc:${Math.max(10, Math.min(16, rh * 0.19)).toFixed(1)}px;--fb:${Math.max(13, Math.min(30, rh * 0.36)).toFixed(1)}px;--ic:${Math.max(16, Math.min(40, rh * 0.42)).toFixed(1)}px;grid-template-rows:repeat(${R},1fr)`;
     return `<div class="cl-vgrid" style="${v}">` + d.map(g => { const ic = g.icon && qf(g.icon);
       const one = g.vals.length === 1;
       return `<div class="cl-vt${one ? "" : " multi"}"><div class="cap">${esc(g.cap)}</div>${ic ? `<div class="ico">${ic}</div>` : ""}${one
-        ? `<div class="big">${esc(val(g.vals[0]))}${g.vals[0].u ? ` <u>${esc(g.vals[0].u)}</u>` : ""}</div>`
-        : `<div class="list">${g.vals.map(v => `<div class="row"><span>${esc(v.t)}</span><b>${esc(val(v))}${v.u ? ` <u>${esc(v.u)}</u>` : ""}</b></div>`).join("")}</div>`}</div>`; }).join("") + "</div>";
+        ? `<div class="big">${vu(g.vals[0])}</div>`
+        : `<div class="list">${g.vals.map(v => `<div class="row"><span>${esc(v.t)}</span><b>${vu(v)}</b></div>`).join("")}</div>`}</div>`; }).join("") + "</div>";
   }
 };
 
@@ -2507,8 +2524,8 @@ function buildNav() {
 }
 function viewData(v) {
   if (v === "fav") return { title: "Favoriten", crumb: "", items: [...favs].map(ref => ({ ref })) };
-  if (v.startsWith("r:")) for (const f of P_.floors) for (const r of f.rooms) if ("r:" + r.id === v) return { title: r.name, crumb: f.name, items: r.items };
-  if (v.startsWith("t:")) for (const t of P_.trades) if ("t:" + t.id === v) return { title: t.name, crumb: "Gewerk", items: t.items };
+  if (v.startsWith("r:")) for (const f of P_.floors) for (const r of f.rooms) if ("r:" + r.id === v) return { title: r.name, crumb: f.name, items: visItems(r.items) };
+  if (v.startsWith("t:")) for (const t of P_.trades) if ("t:" + t.id === v) return { title: t.name, crumb: "Gewerk", items: visItems(t.items) };
   if (v.startsWith("f:")) for (const f of P_.floors) if ("f:" + f.id === v) return { title: f.name, crumb: "Etage", rooms: f.rooms };
   if (v.startsWith("m:") && P_.menu && P_.menu.length) return menuPage(v.slice(2));
   return null;

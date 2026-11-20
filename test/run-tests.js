@@ -102,6 +102,13 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("Wertanzeige öffnet, Webseite zu", await pg.isVisible("#plug") && !(await pg.isVisible("#frame")));
   await pg.waitForTimeout(400); ok("Kachel-Symbol aus dem Symbolpaket des Plugins (/quad/plugins/design_0/icons/1-2_icons.xaml.zip)", await pg.evaluate(() => QCI.has("1-2_strom")));
   ok("Werte formatiert", (await pg.textContent("#pbody")).includes("8.450kWh") && (await pg.textContent("#pbody")).includes("47.503,78kWh"), await pg.textContent("#pbody"));
+  { const rowB = () => pg.locator('#pbody .row:has-text("Wechselrichter") b').textContent(), rowT = () => pg.locator('#pbody .row:has-text("Meldung") b').textContent();
+    const b0 = await rowB();
+    await pg.evaluate(() => { WSI.onmessage({ data: "1|9421|1|0" }); WSI.onmessage({ data: "1|9422|Alles gut|0" }); }); await pg.waitForTimeout(200);
+    const b1 = await rowB(), t1 = await rowT();
+    await pg.evaluate(() => WSI.onmessage({ data: "1|9421|0.0|0" })); await pg.waitForTimeout(200);
+    ok("Wertanzeige Format BOOLEAN: nur der passende Text aus „wahr/unwahr“, ohne Zahl (v0.9.45)", b0 === "–" && b1 === "ONLINE" && await rowB() === "OFFLINE", [b0, b1, await rowB()].join(" | "));
+    ok("Wertanzeige Format TEXT: Text des KOs, Einheit bleibt weg (v0.9.45)", t1 === "Alles gut", t1); }
   await pg.evaluate(() => WSI.onmessage({ data: "1|9003|6600.0|0" })); await pg.waitForTimeout(50);
   ok("Wert aktualisiert sich live", (await pg.textContent("#pbody")).includes("6.600kWh"));
   await pg.click("#pclose"); ok("Schließen", !(await pg.isVisible("#plug")));
@@ -380,6 +387,24 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await p3.setViewportSize({ width: 1200, height: 900 }); await p3.waitForTimeout(900);
     ok("wieder breit: beide Quadranten laufen in der klassischen Darstellung", await p3.evaluate(() => !!CL.hosts[1].plug && !!CL.hosts[2].plug && CL.hosts[1].classic && CL.hosts[2].classic && document.getElementById("cl-q2b").getClientRects().length > 0));
     await p3.close();
+  }
+  console.log("Sichtbarkeit im Raum (visible_slot, v0.9.45)");
+  {
+    const pv = await start(b, "Demo", []);
+    await pv.click('nav button:has-text("Bad")'); await pv.waitForTimeout(300);
+    const has = async () => await pv.locator('#grid .card:has-text("Nur wenn an")').count();
+    const h0 = await has(), n0 = await pv.locator("#grid .card").count();
+    await pv.evaluate(() => WSI.onmessage({ data: "1|9420|1|0" })); await pv.waitForTimeout(400);
+    const h1 = await has();
+    await pv.evaluate(() => WSI.onmessage({ data: "1|9420|0|0" })); await pv.waitForTimeout(400);
+    ok("Element mit Sichtbarkeits-KO: ohne Wert und bei 0 verborgen, bei 1 sichtbar; übrige Elemente bleiben", h0 === 0 && h1 === 1 && await has() === 0 && n0 === 3 && await pv.locator("#grid .card").count() === 3, [h0, h1, n0].join(" "));
+    await pv.selectOption("#uisel", "classic"); await pv.waitForTimeout(400);
+    const rows = async () => await pv.locator('#cl-left .cl-row[data-ref]').count();
+    const r0 = await rows();
+    await pv.evaluate(() => WSI.onmessage({ data: "2|9420|1|0" })); await pv.waitForTimeout(500);
+    const r1 = await rows(), tx = await pv.textContent("#cl-left");
+    ok("Klassisch: Zeile erscheint mit dem Sichtbarkeits-KO (auch beim Anfangswert)", r1 === r0 + 1 && tx.includes("Nur wenn an"), r0 + " " + r1);
+    await pv.close();
   }
   console.log("Eigenes Kamera-Plugin 99-2 (v0.9.43)");
   {

@@ -3,6 +3,11 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.45 – Sichtbarkeit im Raum, Wertanzeige mit BOOLEAN und TEXT
+- **Behoben:** „Sichtbarkeit im Raum (optional)“ aus dem Experten wird beachtet: Ein Element mit Sichtbarkeits-KO erscheint in Raum und Gewerk nur, solange das KO ungleich 0 ist (z. B. nur Lampen, die an sind) – in beiden Ansichten, sofort beim Wechsel des KOs. Bisher wurden immer alle Elemente gezeigt.
+- **Behoben:** Plugin Wertanzeige: Beim Format BOOLEAN steht nur noch der passende Text aus der Einheit „wahr/unwahr“ (z. B. „ONLINE“ statt „1 ONLINE/OFFLINE“); beim Format TEXT der Text des KOs ohne Einheit.
+- Gemeldet von einem Tester aus dem Forum – danke. Geprüft am nachgebauten HomeServer; an einem echten HomeServer mit solchen Einstellungen noch nicht.
+
 ## 0.9.44 – Kamera-Proxy auch in „Klassisch“ einstellbar
 - **Neu:** Im Menü „System“ der klassischen Ansicht gibt es den Eintrag „Kamera-Proxy“ mit dem Zustand (aus / eingerichtet). Bisher musste man dafür nach „Modern“ wechseln.
 
