@@ -23,7 +23,7 @@ async function start(b, user, extra = []) {
     if (u.includes("/quad/arch/")) { const q = u.split("/quad/arch/")[1].split("?")[0].split("/"); archFetch.push(q);
       const n = +q[3], rows = []; for (let i = 0; i < n; i++) rows.push(i === 5 ? '<row count="0" sum="0" min="0" max="0"/>' : `<row count="2" sum="${40 + i % 10}" min="${i % 7}" max="${50 + i % 20}"/>`);
       return r.fulfill({ status: 200, contentType: "text/xml", body: `<arch>${rows.join("")}</arch>` }); }
-    if (u.includes("/quad/msg/81/1000?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<msgarch count="3"><msg date="20261107080000" text="Pumpe Störung"/><msg date="20261109120500" text="Fenster Bad offen &amp; Regen"/><msg date="20261108200000" text="Pumpe wieder OK"/></msgarch>' });
+    if (u.includes("/quad/msg/81/1000?")) return r.fulfill({ status: 200, contentType: "text/xml", body: Buffer.from('<msgarch count="3"><msg date="20261107080000" text="Pumpe Störung"/><msg date="20261109120500" text="Fenster Bad offen &amp; Regen"/><msg date="20261108200000" text="Pumpe wieder OK"/></msgarch>', "latin1") });
     if (u.includes("/quad/camarch/list/72?")) return r.fulfill({ status: 200, contentType: "text/xml", body: '<camarch count="0"></camarch>' });
     if (u.includes("/quad/camarch/pic/")) { picFetch.push(u.split("/quad/camarch/pic/")[1].split("?")[0]); return r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") }); }
     if (u.includes("/opt/hsfsweb/widgets/")) { addinGets.push(u.split("/opt/hsfsweb/widgets/")[1]);
@@ -202,6 +202,10 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   const rows = await pg.locator("#pbody .mrow span").allTextContents();
   ok("neueste zuerst, Sonderzeichen korrekt", rows[0] === "Fenster Bad offen & Regen" && rows.length === 3, JSON.stringify(rows));
   ok("Datum lesbar", (await pg.textContent("#pbody .mrow time")).includes("09.11.2026, 12:05:00"));
+  ok("Umlaute aus ISO-8859-1 ohne Angabe im Kopf (v0.9.46)", rows[2] === "Pumpe Störung", JSON.stringify(rows));
+  ok("Kodierung: UTF-8 bleibt, Angabe im XML-Kopf gilt", await pg.evaluate(() => {
+    const u = new TextEncoder().encode('<a t="Tür – Größe"/>'), l = Uint8Array.from('<?xml version="1.0" encoding="ISO-8859-1"?><a t="T\u00fcr"/>', c => c.charCodeAt(0));
+    return hsText(u.buffer) === '<a t="Tür – Größe"/>' && hsText(l.buffer).includes('t="Tür"'); }));
   await pg.fill('#pbody input[data-pa="q"]', "pumpe"); await pg.waitForTimeout(100);
   ok("Suche filtert", (await pg.locator("#pbody .mrow").count()) === 2 && (await pg.textContent("#pbody")).includes("2 von 3"));
   ok("Suchfeld behält Fokus", await pg.evaluate(() => document.activeElement.matches('#pbody input[data-pa="q"]')));
@@ -306,6 +310,13 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   const rowTxt = n => pg.locator(`#cl-left .cl-row:has(.cl-name:text-is("${n}"))`);
   ok("Raumzeile aus der Vorlage: Texte, logic, group", (await rowTxt("Deckenlicht").textContent()).replace(/\s+/g, "").includes("EINAUSANeinzeln"), await rowTxt("Deckenlicht").textContent());
   ok("Wertanzeige aus value_slot mit Einheit", (await rowTxt("Leselampe").textContent()).includes("42%"), await rowTxt("Leselampe").textContent());
+  await pg.evaluate(() => go("r:14")); await pg.waitForTimeout(300);
+  ok("Zeitschaltuhr: Uhr-Symbol nur in der Zeile mit Uhr (v0.9.46)", (await rowTxt("Taster Flanke 0").locator(".cl-uhr").count()) === 1 && (await pg.locator("#cl-left .cl-uhr").count()) === 1);
+  await rowTxt("Taster Flanke 0").locator(".cl-uhr").click(); await pg.waitForTimeout(400);
+  ok("Uhr-Symbol öffnet die Zeitschaltuhr", await pg.evaluate(() => tdlg.open && ttitle.textContent.includes("Taster Flanke 0")));
+  await pg.evaluate(u => WSI.onmessage({ data: "12|" + u + "|1" }), UHR); await pg.waitForTimeout(100);
+  ok("Uhr aktiv färbt das Symbol", await rowTxt("Taster Flanke 0").locator(".cl-uhr.on").count() === 1);
+  await pg.evaluate(u => { WSI.onmessage({ data: "12|" + u + "|0" }); tdlg.close(); go("r:12"); }, UHR); await pg.waitForTimeout(300);
   await sent(pg);
   await rowTxt("Deckenlicht").locator('.cl-p[data-pos="1"] .cl-z[data-z="3"]').click(); s = await sent(pg);
   ok("Klick rechts = AUS (action_up click 3)", s[0] === "1|110|0", JSON.stringify(s));

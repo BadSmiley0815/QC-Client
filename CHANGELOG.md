@@ -3,6 +3,11 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.46 – Umlaute im Meldungsarchiv, Zeitschaltuhr in „Klassisch“ direkt erreichbar
+- **Behoben:** Der Client erkennt die Zeichenkodierung der Dateien vom HomeServer (Angabe im XML-Kopf, sonst UTF-8 mit Ausweichen auf ISO-8859-1/Windows-1252). Damit stimmen Umlaute im Meldungsarchiv, wenn der HomeServer sie nicht in UTF-8 liefert.
+- **Neu:** In der klassischen Ansicht steht bei Elementen mit Zeitschaltuhr ein Uhr-Symbol neben dem Namen (grün = Uhr aktiv). Antippen öffnet die Zeitschaltuhr; bisher ging das nur über den Namen und die Karte mit allen Einstellungen.
+- Gemeldet von einem Tester aus dem Forum – danke. Geprüft am nachgebauten HomeServer; an einem echten HomeServer noch nicht – bei den Umlauten ist die Ursache (ISO-8859-1) eine Vermutung.
+
 ## 0.9.45 – Sichtbarkeit im Raum, Wertanzeige mit BOOLEAN und TEXT
 - **Behoben:** „Sichtbarkeit im Raum (optional)“ aus dem Experten wird beachtet: Ein Element mit Sichtbarkeits-KO erscheint in Raum und Gewerk nur, solange das KO ungleich 0 ist (z. B. nur Lampen, die an sind) – in beiden Ansichten, sofort beim Wechsel des KOs. Bisher wurden immer alle Elemente gezeigt.
 - **Behoben:** Plugin Wertanzeige: Beim Format BOOLEAN steht nur noch der passende Text aus der Einheit „wahr/unwahr“ (z. B. „ONLINE“ statt „1 ONLINE/OFFLINE“); beim Format TEXT der Text des KOs ohne Einheit.
