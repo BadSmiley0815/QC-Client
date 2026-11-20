@@ -3,6 +3,9 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.48 – Tasten mit Schloss aufgeräumt
+- **Verbessert:** In der klassischen Ansicht (Stil „Modern“) sitzt das Schloss-Abzeichen weiter in der oberen rechten Ecke der Taste, die Beschriftung rückt ein Stück nach links – beides überlappt nicht mehr.
+
 ## 0.9.47 – Raum- und Plugin-Sprung aus importierten Vorlagen
 - **Behoben:** Importierte Navigations-Vorlagen (z. B. „Navigation mit Status“) springen jetzt in den Raum bzw. öffnen das Plugin, das in der Funktion eingestellt ist. Bisher erschien beim Antippen nur das Fenster mit allen Einstellungen.
 - In „Modern“ zeigt die Kachel je Sprungziel einen Knopf mit dem Namen des Raums oder Plugins; in „Klassisch“ wirken die Tasten der Zeile wie im QuadClient.
