@@ -32,6 +32,8 @@
       <device id="1001" text="Taster Flanke 0" visibleinqc="1" />
       <device id="1011" text="Gartentor" visibleinqc="1" />
       <device id="1016" text="Hinweis" visibleinqc="1" />
+      <device id="1020" text="Zum Wohnen" visibleinqc="1" />
+      <device id="1021" text="Zu den Meldungen" visibleinqc="1" />
       <device id="1100" text="Taster Flanke 1" visibleinqc="1" />
       <device id="1101" text="Taster Impuls 1" visibleinqc="1" />
       <device id="1102" text="Taster Impuls 0" visibleinqc="1" />
@@ -108,6 +110,15 @@
     </mnu_item>
   </menu>
   <devices>
+    <device id="1020" txt="Zum Wohnen" symbol="" template="90-1">
+      <connect slot="slot_room" id="12" />
+      <connect slot="switch_rm" tag="9430" />
+      <set parameter="par_type" value="1" />
+    </device>
+    <device id="1021" txt="Zu den Meldungen" symbol="" template="90-1">
+      <connect slot="slot_plugin" id="904" />
+      <set parameter="par_type" value="2" />
+    </device>
     <device id="1001" txt="Taster Flanke 0" symbol="tpl_ico_craft_light.xaml" template="1-118_2" uhr="2000000001">
       <connect slot="slot_switch" tag="101" />
       <connect slot="slot_feedback" tag="102" />

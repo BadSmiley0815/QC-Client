@@ -72,4 +72,17 @@
       <text cell="txt1" value="Abend" /><text cell="txt2" value="Kino" />
     </panel>
   </template>
+  <!-- Navigation: erfundene Vorlage mit Raumsprung (Variante 1) und Plugin-Sprung (Variante 2) samt Statussymbol -->
+  <template id="90-1">
+    <panel pos="1" click="1" layout="pan_singlebtn" used_param="$par_type" used_on="1">
+      <action_up click="1" type="navigation" slot="slot_room" />
+    </panel>
+    <panel pos="2" click="1" layout="pan_singlebtn" used_param="$par_type" used_on="1">
+      <action_up click="1" type="navigation" slot="slot_room" />
+    </panel>
+    <panel pos="1" click="1" layout="pan_singlebtn" used_param="$par_type" used_on="2">
+      <action_up click="1" type="plugin" prio="1" slot="slot_plugin" />
+      <action_up click="1" type="plugin" prio="0" slot="slot_plugin2" />
+    </panel>
+  </template>
 </templates>

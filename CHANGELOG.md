@@ -3,6 +3,14 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.47 – Raum- und Plugin-Sprung aus importierten Vorlagen
+- **Behoben:** Importierte Navigations-Vorlagen (z. B. „Navigation mit Status“) springen jetzt in den Raum bzw. öffnen das Plugin, das in der Funktion eingestellt ist. Bisher erschien beim Antippen nur das Fenster mit allen Einstellungen.
+- In „Modern“ zeigt die Kachel je Sprungziel einen Knopf mit dem Namen des Raums oder Plugins; in „Klassisch“ wirken die Tasten der Zeile wie im QuadClient.
+- **Behoben:** Nach einem Update arbeitete der Client mit dem im Browser aufgehobenen Projektstand der alten Version weiter, bis das Projekt neu übertragen wurde. Dadurch wirkten der Raum- und Plugin-Sprung und die „Sichtbarkeit im Raum“ aus v0.9.45 zunächst nicht. Der aufgehobene Stand wird jetzt mit der neuen Version neu aufgebaut.
+- **Verbessert:** Das Uhr-Symbol der Zeitschaltuhr steht in „Klassisch“ jetzt wie im QuadClient in der dritten Spalte der Zeile (rot = Uhr aus, grün = aktiv) statt neben dem Namen. Nur wenn die Vorlage die dritte Spalte selbst belegt, bleibt es neben dem Namen.
+- **Neu:** Im Menü „System“ der klassischen Ansicht steht unten die Versionsnummer des Clients.
+- Geprüft am nachgebauten HomeServer mit einer eigenen Test-Vorlage; die Vorlage „Navigation mit Status“ selbst (Statussymbol, PIN-Variante) an einem echten HomeServer noch nicht.
+
 ## 0.9.46 – Umlaute im Meldungsarchiv, Zeitschaltuhr in „Klassisch“ direkt erreichbar
 - **Behoben:** Der Client erkennt die Zeichenkodierung der Dateien vom HomeServer (Angabe im XML-Kopf, sonst UTF-8 mit Ausweichen auf ISO-8859-1/Windows-1252). Damit stimmen Umlaute im Meldungsarchiv, wenn der HomeServer sie nicht in UTF-8 liefert.
 - **Neu:** In der klassischen Ansicht steht bei Elementen mit Zeitschaltuhr ein Uhr-Symbol neben dem Namen (grün = Uhr aktiv). Antippen öffnet die Zeitschaltuhr; bisher ging das nur über den Namen und die Karte mit allen Einstellungen.

@@ -55,6 +55,7 @@ button{font:inherit;color:inherit}
 .cl-name{position:absolute!important;left:44px;top:0;width:292px;height:39px;text-align:left;font-size:21px!important;color:#C8C8C8!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cl-name.noico{left:11px}.cl-name.uhr{width:262px}.cl-name.noico.uhr{width:295px}
 .cl-uhr{position:absolute!important;left:306px;top:5px;width:30px;height:30px;padding:6px!important;color:#7d7d7d!important}.cl-uhr svg{width:18px;height:18px;display:block}.cl-uhr.on{color:#8fb000!important}
+.cl-uhr.p3{left:567px;top:0;width:110px;height:39px;padding:0!important;color:#d64545!important}.cl-uhr.p3 svg{width:26px;height:26px;margin:auto}
 .cl-vl{position:absolute;top:0;width:2px;height:600px;background:#0a0a0a;z-index:1;pointer-events:none}
 .cl-p{position:absolute;top:1px;width:110px;height:39px;overflow:hidden;color:#e6e6e6}
 .cl-p.cl-open{cursor:pointer}
@@ -107,6 +108,7 @@ html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) 
 #cl-nav button{flex:1;font-size:17px;color:#fff;border-left:1px solid #222}#cl-nav button.act{background:#1e1e1e}#cl-nav button:disabled{color:#555}
 #cl-sys{position:absolute;right:0;bottom:44px;width:228px;background:#1e1e1e;border:1px solid #333;display:flex;flex-direction:column}
 #cl-sys button{padding:12px 14px;text-align:left;font-size:16px;border-bottom:1px solid #333}
+#cl-ver{padding:8px 14px;font-size:13px;color:#8a8a8a}
 #cl-log{position:absolute;left:686px;top:87px;width:680px;height:637px;background:#111;border:1px solid #333;display:flex;flex-direction:column}
 /* v0.9.36 – Klassisch auf dem Handy (schmales Fenster): eine Spalte, 680 breit. Menü/Liste und die beiden Plugin-Quadranten
    sind zwei Seiten (Leiste unten: „Plugins“); die Liste nutzt die ganze Höhe (--lh = Listenhöhe, Zeilenzahl in CL.rows). */
@@ -432,7 +434,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div class="cl-quad" style="top:87px"><div id="cl-q1c"></div><div id="cl-q1b" class="cl-qb"></div></div>
   <div class="cl-quad" style="top:408px"><div id="cl-q2c"></div><div id="cl-q2b" class="cl-qb"></div></div>
   <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-pg="1">Plugins</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
-  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button></div>
+  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button><div id="cl-ver"></div></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
 <dialog id="clpop" aria-label="Bedienung"></dialog>
@@ -492,7 +494,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.46";
+const VERSION = "0.9.47";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -729,6 +731,9 @@ function visKo(ko) {
   const go = () => { if ((typeof press !== "undefined" && press) || (typeof CL !== "undefined" && CL.press)) return setTimeout(go, 300); visPending = false; renderView(); };
   setTimeout(go, 50);
 }
+/* Das eingelesene Projekt wird je HomeServer aufgehoben. Die Nummer im Schlüssel erhöhen, sobald parseProject mehr oder anderes liefert –
+   sonst arbeitet der Client bis zur nächsten Projektübertragung mit dem alten Stand (v0.9.47: Sprungziele fehlten, v0.9.45: Sichtbarkeit). */
+const PROJ_KEY = () => { store.del("proj4." + cfg.host); return "proj5." + cfg.host; };
 function parseProject(txt) {
   VIS_TAGS.clear();
   const x = new DOMParser().parseFromString(txt, "application/xml");
@@ -737,11 +742,11 @@ function parseProject(txt) {
   const els = {};
   x.querySelectorAll("devices > device").forEach(d => {
     const tpl = d.getAttribute("template") || "", base = tpl.split("_")[0], variant = tpl.split("_")[1] || "";
-    const kos = {}, par = {};
-    d.querySelectorAll("connect").forEach(c => kos[c.getAttribute("slot")] = c.getAttribute("tag"));
+    const kos = {}, par = {}, ids = {};                                   // ids: Sprungziele (Raum, Plugin) – <connect slot id> statt tag
+    d.querySelectorAll("connect").forEach(c => { kos[c.getAttribute("slot")] = c.getAttribute("tag"); if (c.getAttribute("id")) ids[c.getAttribute("slot")] = c.getAttribute("id"); });
     d.querySelectorAll("set").forEach(s => par[s.getAttribute("parameter")] = s.getAttribute("value"));
     els[d.getAttribute("id")] = { id: d.getAttribute("id"), name: d.getAttribute("txt") || "", kind: KIND[base] || "unknown",
-      tpl: base, variant, symbol: (d.getAttribute("symbol") || "").replace(".xaml", ""), kos, par, timer: d.getAttribute("uhr") || null };
+      tpl: base, variant, symbol: (d.getAttribute("symbol") || "").replace(".xaml", ""), kos, par, ids, timer: d.getAttribute("uhr") || null };
   });
   const groups = {};
   x.querySelectorAll("device_groups > device_group").forEach(g => {
@@ -896,7 +901,7 @@ async function onMsg(ev) {
       if (!P_ || projId !== newProj || !KOIX) {
         try { await loadProject(newProj); }
         catch (e) { setState("err", "Visu konnte nicht geladen werden: " + e.message); return; }
-      } else refreshProject(projId, (store.get("proj4." + cfg.host, {}) || {}).h);
+      } else refreshProject(projId, (store.get(PROJ_KEY(), {}) || {}).h);
       showApp();
       setState("on");
       if (!PLUGS) loadPlugins().then(() => { if (cur.startsWith("m:")) renderView(); });
@@ -926,12 +931,12 @@ async function fetchProject() {
   return r.text();
 }
 async function loadProject(id) {
-  const cached = store.get("proj4." + cfg.host, null);
+  const cached = store.get(PROJ_KEY(), null);
   if (cached && cached.id === id) { P_ = cached.p; projId = id; log("··", "Visu aus Zwischenspeicher"); refreshProject(id, cached.h); return; }
   setState("off", "Lade Visu vom HomeServer …");
   const txt = await fetchProject();
   P_ = parseProject(txt); projId = id; KOIX = null; TMETA = null; PLUGS = null;
-  store.set("proj4." + cfg.host, { id, h: hash(txt), p: P_ });
+  store.set(PROJ_KEY(), { id, h: hash(txt), p: P_ });
   log("··", "Visu geladen: " + Object.keys(P_.els).length + " Elemente");
 }
 /* Zwischenspeicher im Hintergrund prüfen: hat sich die Visu geändert (z. B. nach Übertragen), neu einlesen */
@@ -939,7 +944,7 @@ async function refreshProject(id, h) {
   try {
     const txt = await fetchProject(); if (hash(txt) === h) return;
     P_ = parseProject(txt); KOIX = null; TMETA = null; PLUGS = null; loadPlugins(); store.del("tmeta." + cfg.host + "." + id);
-    store.set("proj4." + cfg.host, { id, h: hash(txt), p: P_ });
+    store.set(PROJ_KEY(), { id, h: hash(txt), p: P_ });
     log("··", "Visu hat sich geändert – neu eingelesen"); prepare(); buildNav(); renderView();
   } catch (e) { log("··", "Visu-Prüfung fehlgeschlagen: " + e.message); }
 }
@@ -1081,7 +1086,9 @@ function tile(ref, el, label) {
       if (el.kind === "unknown") {                                          // importierte Vorlage: Anzeige und Popups aus der Vorlagenbeschreibung
         const T = clTpl(el); if (!CL.tpl) clEnsure();
         if (T) { sub = clSummary(el, T, clCtx(el, T)) || "Vorlage " + el.tpl;
-          if ([...T.children].some(n => n.localName === "popup")) body = `<div class="ctl btns"><button data-act="clpop">Bedienen</button></div>`; }
+          const js = clJumps(el);
+          if (js.length) body = `<div class="ctl btns">${js.map((j, i) => `<button data-act="cljump" data-i="${i}">${esc(j.name)}</button>`).join("")}</div>`;
+          else if ([...T.children].some(n => n.localName === "popup")) body = `<div class="ctl btns"><button data-act="clpop">Bedienen</button></div>`; }
         else sub = CL.tpl || CL.err ? "Vorlage " + el.tpl + " nicht geladen" : "Lade Vorlage …";
       } else sub = el.kind;
   }
@@ -1214,6 +1221,7 @@ function act(ref, a, target) {
       send(k.slot_4byte, ((pc(0) << 24) >>> 0) + (pc(1) << 16) + (pc(2) << 8) + w); return;
     }
     case "clpop": if ($("clcard").open) $("clcard").close(); clPopFirst(ref); return;
+    case "cljump": { const j = clJumps(el)[+target.dataset.i]; if (j) clExec(ref, { el, X: j.X }, j.n); return; }
     case "open": if (p.par_url) window.open(p.par_url, "_blank", "noopener"); return;
   }
 }
@@ -2515,6 +2523,7 @@ function buildNav() {
     <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>
     <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
   h += `<label class="startsel">Gira-Addins <select id="addinsel"><option value="0">aus</option><option value="1" ${ADDINS_ON ? "selected" : ""}>ein (Versuch: Wetter)</option></select></label>`;
+  $("cl-ver").textContent = "QC-Client v" + VERSION;                                   // v0.9.47: Version auch im System-Menü der klassischen Ansicht
   { const cp = store.get("camproxy", null), sb = document.querySelector('#cl-sys [data-sysa="camproxy"]'); if (sb) sb.textContent = "Kamera-Proxy: " + (cp && cp.url ? "eingerichtet" : "aus");
     h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
   if (P_.menu && P_.menu.length) h += `<button data-v="m:0">Menü<span></span></button>`;
@@ -2734,16 +2743,17 @@ function clPanel(el, P, X) {
 function clRow(ref, el, label, i) {
   const T = clTpl(el), X = T && clCtx(el, T), name = (label && label !== el.name ? label : el.name || "").split("\\").pop();
   const ico = el.symbol ? qf(el.symbol) : "";
-  let panels = "";
+  let panels = "", p3 = false;
   const sc = T && CLSTYLE !== "gira" && /^1-109$/.test(el.tpl) ? clScenes(ref, el, T, X) : "";
   if (sc) panels = sc;
   else if (T) { const done = new Set();
     for (const P of T.children) { if (P.localName !== "panel") continue; const pos = +P.getAttribute("pos"); if (!(pos >= 1 && pos <= 3) || done.has(pos) || !X.cond(P)) continue; done.add(pos);
+      if (pos === 3) p3 = true;
       panels += `<div class="cl-p" data-ref="${esc(ref)}" data-pos="${pos}" style="left:${[343, 455, 567][pos - 1]}px">${clPanel(el, P, X)}</div>`; } }
   else panels = `<div class="cl-p cl-open" data-ref="${esc(ref)}" style="left:343px;width:335px"><div class="cl-a cl-t" style="left:0;top:11px;width:330px;text-align:center;font-size:13px;color:#8a8a8a">${CL.err ? "Vorlage nicht geladen" : CL.tpl ? "Vorlage " + esc(el.tpl) + " fehlt" : "…"}</div></div>`;
-  const uhr = el.timer && TIMERS.has(el.timer);                                    // v0.9.46: Zeitschaltuhr direkt in der Zeile (bisher nur über den Namen)
+  const uhr = el.timer && TIMERS.has(el.timer), u3 = uhr && T && !sc && !p3;        // Zeitschaltuhr in der Zeile: wie im Original in der dritten Spalte (v0.9.47), sonst neben dem Namen
   return `<div class="cl-row" style="top:${i * 40}px" data-ref="${esc(ref)}"><div class="cl-ico">${ico}</div>
-    <button class="cl-name${ico ? "" : " noico"}${uhr ? " uhr" : ""}" data-open="${esc(ref)}" title="Alle Einstellungen">${esc(name)}</button>${uhr ? `<button class="cl-uhr${TIMERS.get(el.timer).active ? " on" : ""}" data-uhr="${esc(ref)}" title="Zeitschaltuhr">${svg("clock")}</button>` : ""}${panels}</div>`;
+    <button class="cl-name${ico ? "" : " noico"}${uhr && !u3 ? " uhr" : ""}" data-open="${esc(ref)}" title="Alle Einstellungen">${esc(name)}</button>${uhr ? `<button class="cl-uhr${u3 ? " p3" : ""}${TIMERS.get(el.timer).active ? " on" : ""}" data-uhr="${esc(ref)}" title="Zeitschaltuhr">${svg("clock")}</button>` : ""}${panels}</div>`;
 }
 /* Szenen/Auslöser 1–4-fach (1-109) im Stil „Modern“: Tasten gleichmäßig über die Felder 1 und 2 verteilt
    (Original: 1-fach nur Feld 1, 3-fach eineinhalb Felder). Jede Taste behält Feld (pos) und Klickzone der Vorlage. */
@@ -2925,10 +2935,36 @@ function clExec(ref, A, n, pinOk) {
     if (bs !== "" && isFinite(bv)) nv = type === "step_up" ? Math.min(bv, nv) : Math.max(bv, nv);
     send(ko, +nv.toFixed(4)); }
   else if (type === "close") { if (CLP) clPopClose(); }
+  else if (type === "navigation" || type === "plugin") { if (clJump(el, n) && type === "navigation") return "stop"; }   // ohne Ziel: nichts (wie im Original)
   else if (type === "popup" && (clOwn(el) || clPopOk(el, n.getAttribute("id"))) && clPop(ref, n.getAttribute("id"))) return "stop";
   else if (type === "popup") { clPopOk.why = clPopNode(el, n.getAttribute("id")) ? clPopOk.why : "Popup fehlt in der Vorlage";
     log("··", `Popup ${el.tpl}${el.variant ? "_" + el.variant : ""} #${n.getAttribute("id")} noch nicht im Original-Stil: ${clPopOk.why || "?"}`); clCard(ref); return "stop"; }
   else { clCard(ref); return "stop"; }                                                   // Popup, Szene lernen … -> moderne Kachel
+}
+/* v0.9.47: Aktionen „navigation“ (Sprung in einen Raum) und „plugin“ (Plugin öffnen) aus der Vorlage, z. B. Navigations-Vorlagen.
+   Das Ziel steht im Projekt als <connect slot="…" id="Raum- bzw. Plugin-Nummer">. */
+function clJump(el, n) {
+  const type = n.getAttribute("type"), id = (el.ids || {})[n.getAttribute("slot")]; if (!id) return false;
+  if (type === "navigation") {
+    if (!viewData("r:" + id)) { log("··", `Sprungziel Raum ${id} von „${el.name}“ fehlt im Projekt`); return false; }
+    if (CLP) clPopClose(); if ($("clcard").open) $("clcard").close();
+    if (CLASSIC) CL.page = "left"; go("r:" + id); return true; }
+  if (!PLUGS || !PLUGS[id]) { log("··", `Sprungziel Plugin ${id} von „${el.name}“ fehlt im Projekt`); return false; }
+  if ($("clcard").open) $("clcard").close();
+  if (CLASSIC) { if (n.getAttribute("prio") === "0" && ![1, 2].some(q => clQuadList(q).some(p => p.id === id))) return false;   // zweites Ziel nur, wenn es einen eigenen Platz im Quadranten hat
+    setTimeout(() => clPlugin(id), 0); }                                             // nach dem Neuzeichnen der Ansicht (clUp)
+  else if (n.getAttribute("prio") !== "0") openPlugin(PLUGS[id].title, id);   // Modern hat ein Plugin-Feld: nur das erste Ziel
+  return true;
+}
+/* Sprungziele einer Funktion für die moderne Kachel: je Ziel ein Knopf mit dem Namen von Raum oder Plugin */
+function clJumps(el) {
+  const T = clTpl(el); if (!T || !el.ids) return []; const X = clCtx(el, T), seen = new Set(), out = [];
+  for (const P of T.children) { if (P.localName !== "panel" || !X.cond(P)) continue;
+    for (const n of clActs(P, X)) { const type = n.getAttribute("type"), id = el.ids[n.getAttribute("slot")];
+      if (!/^(navigation|plugin)$/.test(type || "") || !id || seen.has(type + id)) continue; seen.add(type + id);
+      const name = type === "navigation" ? (viewData("r:" + id) || {}).title : ((PLUGS || {})[id] || {}).title;
+      if (name !== undefined && !(type === "plugin" && n.getAttribute("prio") === "0" && out.length)) out.push({ n, X, name: name || "Öffnen" }); } }
+  return out;
 }
 async function clPinAsk(el, ko) {
   const soll = String(V.get(ko) ?? "").trim();
@@ -3242,7 +3278,7 @@ $("lform").onsubmit = e => {
   cfg = { host: $("lhost").value.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, ""), user: $("luser").value.trim(), pass: $("lpass").value };
   store.set("login", $("lremember").checked ? cfg : { host: cfg.host, user: cfg.user });
   $("lmsg").className = "msg"; $("lmsg").textContent = "Verbinde …"; $("ldiagbox").classList.add("hidden");
-  const cached = store.get("proj4." + cfg.host, null);
+  const cached = store.get(PROJ_KEY(), null);
   if (cached) { P_ = cached.p; projId = cached.id; KOIX = null; }
   connect();
 };
