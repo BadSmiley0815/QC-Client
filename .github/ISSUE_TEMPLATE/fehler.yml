@@ -1,0 +1,63 @@
+name: Fehler melden
+description: Etwas funktioniert nicht oder sieht anders aus als im Gira QuadClient
+labels: ["Fehler"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fürs Melden! Bitte **keine Zugangsdaten, keine Projektdateien und keine Gira- oder gekauften Vorlagen-Dateien** anhängen.
+        Bildschirmfotos zeigen Namen aus deiner Anlage – schwärze, was nicht öffentlich sein soll.
+  - type: input
+    id: version
+    attributes:
+      label: Version des Clients
+      description: Steht in der Seitenleiste oben, in „Klassisch“ unten im System-Menü.
+      placeholder: z. B. 0.9.48
+    validations:
+      required: true
+  - type: dropdown
+    id: ansicht
+    attributes:
+      label: Ansicht
+      options:
+        - Modern
+        - Klassisch (Stil Modern)
+        - Klassisch (Stil Gira)
+        - beide / weiß nicht
+    validations:
+      required: true
+  - type: input
+    id: geraet
+    attributes:
+      label: Gerät und Browser
+      placeholder: z. B. Android-App, iPhone Safari, Windows Chrome
+  - type: textarea
+    id: was
+    attributes:
+      label: Was hast du getan, was ist passiert?
+      description: Und was hättest du erwartet – z. B. wie es der Windows-QuadClient macht.
+    validations:
+      required: true
+  - type: input
+    id: vorlage
+    attributes:
+      label: Funktionsvorlage oder Plugin
+      description: Falls es um ein bestimmtes Element geht – Name und Nummer, z. B. „Dimmer 1-102“ oder „Plugin Diagramm“.
+  - type: textarea
+    id: log
+    attributes:
+      label: Log-Text
+      description: Direkt nach dem Fehler „Log kopieren“ und hier einfügen. Die erste Zeile enthält die Adresse deines HomeServers – bitte löschen.
+      render: text
+  - type: textarea
+    id: bilder
+    attributes:
+      label: Bildschirmfotos
+      description: Hier hineinziehen. Gern auch eines vom Windows-QuadClient zum Vergleich.
+  - type: checkboxes
+    id: pruefung
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Keine Zugangsdaten, HS-Adresse, Projektdateien oder Hersteller-Dateien enthalten.
+          required: true

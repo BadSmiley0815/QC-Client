@@ -1,0 +1,24 @@
+name: Wunsch oder Idee
+description: Eine Funktion fehlt oder etwas ließe sich besser machen
+labels: ["Wunsch"]
+body:
+  - type: textarea
+    id: was
+    attributes:
+      label: Was soll der Client können?
+      description: Am besten mit einem Beispiel aus deinem Alltag. Gibt es das im Windows-QuadClient schon, hilft ein Bildschirmfoto davon.
+    validations:
+      required: true
+  - type: input
+    id: vorlage
+    attributes:
+      label: Funktionsvorlage oder Plugin
+      description: Falls es um ein bestimmtes Element geht – Name und Nummer. Bitte keine Hersteller-Dateien anhängen.
+  - type: dropdown
+    id: mitmachen
+    attributes:
+      label: Möchtest du es selbst umsetzen?
+      options:
+        - Nein, nur der Wunsch
+        - Ja, ich schicke einen Pull Request
+        - Vielleicht, mit etwas Hilfe

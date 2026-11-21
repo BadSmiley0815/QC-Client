@@ -135,6 +135,11 @@ node test/run-tests.js
 - `hsm-build.py` – baut aus eigenen SVG-Symbolen ein Symbolpaket (`.hsm`) für Funktionsvorlagen
   und packt es in die `.hst` (Aufbau wie bei Giras eigenen Vorlagen; braucht `rsvg-convert`)
 
+## Mitmachen
+
+Fehler und Wünsche bitte als [Issue](https://github.com/BadSmiley0815/QC-Client/issues/new/choose) melden. Wer selbst ändern möchte – auch mit einer KI –, arbeitet in einem Fork und schickt einen Pull Request; die Tests laufen dabei automatisch.
+Wie das geht und was nie ins Repo gehört (Hersteller-Dateien, Projektdateien, Zugangsdaten): [`CONTRIBUTING.md`](CONTRIBUTING.md), für KI-Assistenten [`AGENTS.md`](AGENTS.md).
+
 ## Lizenz
 
 GNU General Public License v3.0 – siehe [`LICENSE`](LICENSE). Jeder darf den Client nutzen,

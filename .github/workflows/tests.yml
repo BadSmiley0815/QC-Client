@@ -1,0 +1,31 @@
+# Laesst die Browser-Tests (test/run-tests.js) bei jedem Pull Request und bei jedem Stand von main laufen.
+# Die Tests brauchen keinen HomeServer: Sie laufen gegen einen nachgebauten HS mit der erfundenen Demo-Visu aus test/.
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Playwright einrichten
+        run: |
+          npm i --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+
+      - name: Tests
+        run: node test/run-tests.js

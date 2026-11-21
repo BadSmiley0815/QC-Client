@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Anleitung zum Mitmachen
+    url: https://github.com/BadSmiley0815/QC-Client/blob/main/CONTRIBUTING.md
+    about: Fehler melden, selbst ändern, mit einer KI mitarbeiten – und was nie ins Repo gehört.
