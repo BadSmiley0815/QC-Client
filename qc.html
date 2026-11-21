@@ -98,6 +98,18 @@ button{font:inherit;color:inherit}
 .cl-vt .list{position:absolute;left:47%;right:14px;top:8px;bottom:6px;display:flex;flex-direction:column;justify-content:space-evenly}
 .cl-vt .row{display:flex;justify-content:space-between;gap:8px;font-size:min(12px,calc(var(--rh) * .17));border-bottom:1px solid #444;padding-bottom:1px}.cl-vt .row:last-child{border-bottom:0}
 .cl-vt .row span{color:#9a9a9a}.cl-vt .row b{font-weight:400;white-space:nowrap}.cl-vt .row u{text-decoration:none}
+/* 50-1 Ressourcen */
+.cl-vt.cl-open{cursor:pointer}.cl-vt .gauge{position:absolute;right:8px;top:4px;bottom:4px;aspect-ratio:1}.cl-vt .gauge svg{width:100%;height:100%;display:block}
+.rgauge{width:150px;height:150px;display:block}.rgauge .gv{font-size:20px;fill:currentColor;font-variant-numeric:tabular-nums;font-weight:600}.rgauge .gu{font-size:12px;fill:#b2bab5}.rgauge .gu.gpct{font-size:16px;fill:#d0d6d2;font-weight:700}.rgauge .gm{font-size:14px;fill:#d0d6d2;font-weight:700}
+.cl-vt .gauge .rgauge{width:100%;height:100%}
+.cl-pgb{position:absolute;left:0;right:0;bottom:0;height:30px;display:flex;background:#111}.cl-pgb button{flex:1;display:grid;place-items:center;color:#e6e6e6!important;border-left:1px solid #000!important}
+.cl-pgb button:disabled{color:#444!important}.cl-pgb svg{width:18px;height:18px}
+.rbal{display:flex;flex-direction:column;gap:10px}.rbr{display:flex;align-items:center;gap:12px}.rbr .ri{width:60px;height:60px;flex:none;color:var(--ink)}.rbr .ri svg{width:100%;height:100%;display:block}
+.rbt{flex:1;min-width:0}.rbt .rl{font-size:13px;color:var(--muted);margin-bottom:4px}.rbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.rbar i{display:block;height:100%;border-radius:5px}
+.rv{min-width:9em;text-align:right;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}.rv .ra{font-size:12px;margin-right:6px}
+/* 50-1: Ressourcen-Symbole im klassischen Quadranten bewusst größer als Standard-Pluginicons. */
+.cl-vt.res-tile .ico{left:6px;bottom:3px;width:62px;height:62px}.cl-vt.res-tile .ico svg{width:100%;height:100%}
+.cl-vt.res-tile .cap{right:42%;font-size:calc(var(--fc) * .84)}
 html:not(.cl-gira) .cl-vgrid{gap:6px;padding:6px;background:#141615}
 html:not(.cl-gira) .cl-vt{background:linear-gradient(180deg,#2a2d2b,#1f2120);border-radius:10px;box-shadow:inset 0 1px 0 #ffffff12,0 2px 6px #0007}
 html:not(.cl-gira) .cl-vt .cap{color:#b9c0bb}
@@ -495,7 +507,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.48";
+const VERSION = "0.9.49";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2205,13 +2217,168 @@ PLUGIN_TYPES["1-16"] = {
   }
 };
 function barHover(e) {
-  const H = hostOfEl(e.target); if (!H || !H.plug || H.plug.cls !== "1-16" || !H.plug.data || !H.plug.data.vals || H.plug.data.open === null) return; PLUG = H.plug;
+  const H = hostOfEl(e.target); if (!H || !H.plug || !/^(1-16|50-1)$/.test(H.plug.cls) || !H.plug.data || !H.plug.data.vals || H.plug.data.open === null) return; PLUG = H.plug;
   const sv = e.target.closest && e.target.closest("svg[data-bars]"), d = PLUG.data; let h = null;
   if (sv && e.type !== "mouseleave") { const bx = sv.getBoundingClientRect(), L = 52, pw = bx.width - L - 8, n = Math.max(...d.vals.map(v => v.length));
     const px = (e.touches ? e.touches[0].clientX : e.clientX) - bx.left - L; h = px < 0 || px > pw ? null : Math.min(n - 1, Math.floor(px / pw * n)); }
   if (h !== d.hover) { d.hover = h; renderHost(H); }
 }
 hoverHooks($("pbody"));
+
+/* 50-1 Ressourcen (Gira-Plugin „Ressourcen“, Klasse hs_client_resources.QuadResources, Einstellungen: /quad/plugins/project/<Instanz>)
+   Aus der Client-DLL des Plugins (50-1_client.dll / 50-1_config.dll) abgelesen:
+     <project><items><item type="BalanceItem|GaugeItem|ValuesItem|ChartItem1|ChartItem2" name="…" co1="KO" co2 … /></items></project>
+   Bilanz (genau bekannt): category, co1 Erzeugung, co2 Netz, co3 Speicher, co4 Ladezustand (%), unit, scale (Nachkommastellen), hasBattery,
+     generationLabel, demandLabel1/2 (Bezug/Einspeisung), batteryLabel1/2. Wert ≥ 0 → Beschriftung 1, sonst 2, angezeigt wird der Betrag.
+   Instrumente, Wertanzeigen und Balkendiagramme stammen aus dem Gira-Framework (nicht in der Plugin-Datei): Attribute werden
+   tolerant gelesen (co1…co3, unit/unitN, scale/format, label…, min/max, Grenzwerte, icon) und im Protokoll ausgegeben – so lässt sich nachbessern.
+   Balkendiagramme: Archivabruf und Detailansicht kommen von „1-16“. Symbole: /quad/plugins/design_0/icons/50-1_icons.xaml.zip */
+const RES_SETS = {                                    // design_1/50-1_design.xml <icons prefix="50-1_balance_">
+  Default: {}, SolarEnergy: { ico: "Default", ico_balance: "Default" },
+  BlockHeatPowerPlant: { ico: "Default", ico_balance: "Default", ico_demand: "SolarEnergy", ico_battery: "SolarEnergy" },
+  HeatPump: { ico: "Default", ico_balance: "Default", ico_demand: "SolarEnergy", ico_battery: "SolarEnergy" },
+  SolarThermalEnergy: { ico: "Default", ico_balance: "Default", ico_demand: "ThermalEnergy", ico_battery: "ThermalEnergy" },
+  GeoThermalEnergy: { ico: "Default", ico_balance: "Default", ico_demand: "ThermalEnergy", ico_battery: "ThermalEnergy" },
+  DistrictHeating: { ico: "Default", ico_generation: "Default", ico_balance: "Default", ico_battery: "ThermalEnergy" },
+  ThermalEnergy: { ico: "Default", ico_balance: "Default" }, Water: { ico: "Default", ico_balance: "Default" }, Gas: { ico: "Default", ico_balance: "Default" },
+  Biogas: { ico: "Default", ico_balance: "Default", ico_demand: "Gas", ico_battery: "Gas" } };
+const RES_LBL = { g: "Erzeugung", d1: "Netz-Bezug", d2: "Netz-Einspeisung", b1: "Speicher-Bezug", b2: "Speicher-Ladung" };
+const RES_PERPAGE = 6;
+const resIco = (cat, slot) => { const k = RES_SETS[cat] ? cat : "Default", s = RES_SETS[k];
+  return "50-1_balance_" + (s[slot] || k) + (slot === "ico" ? "" : "_" + slot.slice(4).replace(/^./, c => c.toUpperCase())); };
+const resKo = v => v && v !== "0" ? v : "";
+const resDec = v => { if (v === undefined || v === null || v === "") return 0; const m = /^F(\d+)$/i.exec(String(v).trim()); return m ? +m[1] : pint(v, 0); };
+const resPick = (a, ...res) => { for (const re of res) { const k = Object.keys(a).find(k => re.test(k) && a[k] !== ""); if (k) return a[k]; } return ""; };
+const resNum = (n, d) => Number(n).toLocaleString("de-DE", { useGrouping: false, minimumFractionDigits: d, maximumFractionDigits: d });   // wie das Original: ohne Tausenderpunkt
+const resVal = (n, t) => (n === undefined ? "---" : resNum(n, t.dec)) + (t.unit ? " " + t.unit : "");
+const resSign = (n, l1, l2) => n === undefined ? l1 : n >= 0 ? l1 : l2;
+function resRead(a, i) {
+  const name = a.name || "", icon = (resPick(a, /^icon$/i, /^ico$/i) || Object.values(a).find(v => /(^|_)frame_ico_|\.xaml$/i.test(v)) || "").replace(/\.xaml$/i, "");
+  if (a.type === "BalanceItem") {
+    const bat = /^true$/i.test(a.hasBattery || ""), cat = a.category || "Default";
+    return { kind: "bal", name, cat, bat, icon: resIco(cat, "ico"), kos: [resKo(a.co1), resKo(a.co2), bat ? resKo(a.co3) : "", bat ? resKo(a.co4) : ""],
+      unit: a.unit === undefined ? "W" : a.unit, dec: resDec(a.scale),
+      l: { g: a.generationLabel || RES_LBL.g, d1: a.demandLabel1 || RES_LBL.d1, d2: a.demandLabel2 || RES_LBL.d2, b1: a.batteryLabel1 || RES_LBL.b1, b2: a.batteryLabel2 || RES_LBL.b2 } };
+  }
+  if (a.type === "ValuesItem") {
+    const one = resKo(a.co1) && !resKo(a.co2) && !resKo(a.co3);
+    const vals = [1, 2, 3].map(n => ({ ko: resKo(a["co" + n]), label: a["label" + n] || a["caption" + n] || a["title" + n] || a["text" + n] || (one ? "" : ""),
+      unit: a["unit" + n] ?? a.unit ?? "", dec: resDec(a["format" + n] ?? a["scale" + n] ?? a.format ?? a.scale) })).filter(v => v.ko);
+    return { kind: "vals", name, icon, vals, kos: vals.map(v => v.ko) };
+  }
+  if (a.type === "GaugeItem") {
+    const lim = Object.entries(a).filter(([k, v]) => /limit|grenz|stage|stufe|threshold/i.test(k) && !isNaN(parseFloat(v))).map(([, v]) => parseFloat(v)).sort((x, y) => x - y);
+    const mn = pfl(resPick(a, /^(min|lower|low|start)/i, /untergrenze/i), 0); let mx = pfl(resPick(a, /^(max|upper|high|end)/i, /obergrenze/i), 100); if (!(mx > mn)) mx = mn + 100;
+    const mode = Object.values(a).some(v => /inverse/i.test(v)) ? "inv" : lim.length >= 2 && Object.values(a).some(v => /signal|stage|stufe/i.test(v)) ? "sig" : "grad";
+    return { kind: "gauge", name, icon, ko: resKo(a.co1), kos: [resKo(a.co1)], unit: a.unit ?? a.unit1 ?? "", dec: resDec(a.scale ?? a.format ?? a.format1), min: mn, max: mx, lim, mode };
+  }
+  if (a.type === "ChartItem1" || a.type === "ChartItem2") {
+    const ser = [1, 2].filter(n => a["archive" + n] && a["archive" + n] !== "0" && (n === 1 || a.type === "ChartItem2"))
+      .map(n => ({ arch: a["archive" + n], ko: a["co" + n] || "", unit: a["unit" + n] || "", d: fdec(a["format" + n]), label: a["label" + n] || "",
+        agg: (a["aggregation_series" + n] || "").toUpperCase(), max: parseFloat(a["maxval" + n]) || 0 }));
+    return { kind: "chart", name, icon, ser, kos: ser.map(s => s.ko),
+      bar: { name, color: (a.colorScheme || "").toLowerCase(), stats: a.useStatistics !== "False", ser, ranges: BAR_RANGES.filter(rg => a[rg.use] !== "False") } };
+  }
+  return null;
+}
+function resGaugeColor(t, v) {
+  if (v === undefined || t.mode === "grad") return "#00BE00";
+  const c = t.mode === "inv" ? ["#00BE00", "#E6C502", "#E10000"] : ["#E10000", "#E6C502", "#00BE00"];
+  return v < t.lim[0] ? c[0] : v < t.lim[1] ? c[1] : c[2];
+}
+function resGauge(t) {                                      // Zeigerinstrument als Bogen (240°), Wert in der Mitte
+  const n = t.ko ? num(t.ko) : undefined, R = 40, c = 50, a0 = 150, sw = 240;
+  const P = a => { const r = a * Math.PI / 180; return (c + R * Math.cos(r)).toFixed(2) + " " + (c + R * Math.sin(r)).toFixed(2); };
+  const arc = (a1, a2) => `M${P(a1)}A${R} ${R} 0 ${a2 - a1 > 180 ? 1 : 0} 1 ${P(a2)}`;
+  const f = n === undefined ? 0 : Math.max(0, Math.min(1, (n - t.min) / (t.max - t.min)));
+  return `<svg class="rgauge" viewBox="0 0 100 100" aria-hidden="true"><path d="${arc(a0, a0 + sw)}" fill="none" stroke="#ffffff22" stroke-width="9" stroke-linecap="round"/>`
+    + (f > 0.004 ? `<path d="${arc(a0, a0 + sw * f)}" fill="none" stroke="${resGaugeColor(t, n)}" stroke-width="9" stroke-linecap="round"/>` : "")
+    + `<text x="50" y="52" text-anchor="middle" class="gv">${esc(n === undefined ? "---" : resNum(n, t.dec))}</text><text x="50" y="66" text-anchor="middle" class="gu${t.unit === "%" ? " gpct" : ""}">${esc(t.unit)}</text>`
+    + `<text x="19" y="96" text-anchor="middle" class="gm">${esc(resNum(t.min, 0))}</text><text x="81" y="96" text-anchor="middle" class="gm">${esc(resNum(t.max, 0))}</text></svg>`;
+}
+function resBalRows(t) {                                    // Zeilen der Kachel: Erzeugung, Netz, Speicher
+  const g = num(t.kos[0]), dm = num(t.kos[1]), bt = t.kos[2] ? num(t.kos[2]) : undefined;
+  const ab = n => n === undefined ? undefined : Math.abs(n);
+  const r = [{ l: t.l.g, v: resVal(g, t) }, { l: resSign(dm, t.l.d1, t.l.d2), v: resVal(ab(dm), t) }];
+  if (t.bat) r.push({ l: resSign(bt, t.l.b1, t.l.b2), v: resVal(ab(bt), t) });
+  return r;
+}
+function resBalDetail(t) {                                  // Detailansicht der Bilanz: Balken je Quelle, Pfeil zeigt zum Haus (Wert ≥ 0) oder weg
+  const g = num(t.kos[0]), dm = num(t.kos[1]), bt = t.bat ? num(t.kos[2]) : undefined, ch = t.bat && t.kos[3] ? num(t.kos[3]) : undefined;
+  const mx = Math.max(Math.abs(g || 0), Math.abs(dm || 0), Math.abs(bt || 0), 1), ic = k => { const s = qf(resIco(t.cat, k)); return s ? `<span class="ri">${s}</span>` : '<span class="ri"></span>'; };
+  const row = (slot, label, n, col, arrow) => `<div class="rbr">${ic(slot)}<div class="rbt"><div class="rl">${esc(label)}</div><div class="rbar"><i style="width:${n === undefined ? 0 : Math.min(100, Math.abs(n) / mx * 100).toFixed(1)}%;background:${col}"></i></div></div>`
+    + `<div class="rv">${arrow ? `<span class="ra" style="color:${col}">${n === undefined ? "" : n >= 0 ? "▶" : "◀"}</span>` : ""}${esc(resVal(n === undefined ? undefined : Math.abs(n), t))}</div></div>`;
+  const sum = g === undefined && dm === undefined ? undefined : (g || 0) + (dm || 0) + (bt || 0);
+  return `<div class="rbal">`
+    + row("ico_generation", t.l.g, g, "var(--ok)", false)
+    + row("ico_demand", resSign(dm, t.l.d1, t.l.d2), dm, dm !== undefined && dm < 0 ? "var(--ok)" : "var(--acc)", true)
+    + (t.bat ? row("ico_battery", resSign(bt, t.l.b1, t.l.b2), bt, bt !== undefined && bt < 0 ? "var(--ok)" : "var(--cool)", true) : "")
+    + row("ico_balance", "Bilanz", sum, "var(--muted)", false)
+    + (ch !== undefined ? `<div class="rbr"><span class="ri"></span><div class="rbt"><div class="rl">Ladezustand</div><div class="rbar"><i style="width:${Math.max(0, Math.min(100, ch))}%;background:var(--cool)"></i></div></div><div class="rv">${esc(resNum(ch, 0))} %</div></div>` : "") + `</div>`;
+}
+const resChartCur = s => { const n = s.ko ? num(s.ko) : undefined; return n === undefined ? "–" : fmt(n, s.d) + (s.unit ? " " + s.unit : ""); };
+PLUGIN_TYPES["50-1"] = {
+  name: "Ressourcen",
+  read: x => {
+    const tiles = [], items = [];
+    [...x.querySelectorAll("items > item")].map(attrs).forEach((a, i) => {
+      const t = resRead(a, i);
+      if (!t) { log("··", "Ressourcen: unbekannte Art „" + a.type + "“ übersprungen"); return; }
+      if (t.kind !== "bal") log("··", "Ressourcen " + a.type + " (Rohdaten): " + JSON.stringify(a));
+      if (t.kind === "chart" && t.bar.ser.length) { t.ci = items.length; items.push(t.bar); }
+      tiles.push(t);
+    });
+    return { tiles, items, page: 0, bal: null, open: null, cur: null, vals: null, plan: null, err: "", hover: null };
+  },
+  tags: d => d.tiles.flatMap(t => t.kos),
+  icons: d => d.tiles.flatMap(t => t.kind === "bal" ? ["ico", "ico_generation", "ico_balance", "ico_demand", "ico_battery"].map(k => resIco(t.cat, k)) : [t.icon]).filter(Boolean),
+  html: d => {
+    const T16 = PLUGIN_TYPES["1-16"];
+    if (d.open !== null) return T16.html(d);
+    const back = '<div style="margin-bottom:10px"><button class="chip" data-pa="back">' + svg("left") + ' Übersicht</button></div>';
+    if (d.bal !== null) { const t = d.tiles[d.bal]; return t ? back + `<div class="cap" style="margin-bottom:8px;font-weight:600">${esc(t.name)}</div>` + resBalDetail(t) : ""; }
+    const pages = Math.max(1, Math.ceil(d.tiles.length / RES_PERPAGE)), pg = Math.min(d.page, pages - 1), list = d.tiles.slice(pg * RES_PERPAGE, pg * RES_PERPAGE + RES_PERPAGE);
+    const nav = pages > 1 ? `<div style="display:flex;gap:6px;justify-content:center;margin-top:10px"><button class="chip" data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><span class="note" style="align-self:center">${pg + 1} / ${pages}</span><button class="chip" data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>` : "";
+    return '<div class="pgrid">' + list.map((t, k) => {
+      const i = pg * RES_PERPAGE + k, ic = t.icon && qf(t.icon), open = t.kind === "bal" || t.ci !== undefined;
+      const tag = open ? "button" : "div", at = open ? ` data-pa="open" data-i="${i}" style="text-align:left;cursor:pointer;font:inherit;color:inherit"` : "";
+      let body = "";
+      if (t.kind === "bal") body = resBalRows(t).map(r => `<div class="row"><span>${esc(r.l)}</span><b>${esc(r.v)}</b></div>`).join("");
+      else if (t.kind === "vals") body = t.vals.map(v => { const n = num(v.ko); return `<div class="row"><span>${esc(v.label)}</span><b>${esc(resVal(n, v))}</b></div>`; }).join("");
+      else if (t.kind === "gauge") body = `<div style="display:flex;justify-content:center">${resGauge(t)}</div>`;
+      else body = t.ser.map(s => `<div class="row"><span>${esc(s.label)}</span><b>${esc(resChartCur(s))}</b></div>`).join("");
+      return `<${tag} class="pval"${at}><div class="cap">${esc(t.name)}</div>${body}</${tag}>`;
+    }).join("") + "</div>" + nav;
+  },
+  /* Original-Stil (Klassisch): 2 Spalten × 3 Zeilen je Seite, unten Blätterleiste (ab mehr als 6 Elementen aktiv) */
+  htmlClassic: d => {
+    const T = PLUGIN_TYPES["50-1"];
+    if (d.open !== null || d.bal !== null) return `<div style="height:274px;overflow:auto;padding:8px;background:#1c1c1c">${T.html(d)}</div>`;
+    const pages = Math.max(1, Math.ceil(d.tiles.length / RES_PERPAGE)), pg = Math.min(d.page, pages - 1), list = d.tiles.slice(pg * RES_PERPAGE, pg * RES_PERPAGE + RES_PERPAGE);
+    const R = Math.max(1, Math.ceil(list.length / 2)), gh = 274 - 30, rh = (gh - 12 - (R - 1) * 6) / R;
+    const v = `--rh:${rh.toFixed(1)}px;--fc:${Math.max(10, Math.min(16, rh * 0.19)).toFixed(1)}px;--fb:${Math.max(13, Math.min(30, rh * 0.36)).toFixed(1)}px;--ic:${Math.max(16, Math.min(40, rh * 0.42)).toFixed(1)}px;grid-template-rows:repeat(${R},1fr);height:${gh}px`;
+    const tiles = list.map((t, k) => {
+      const i = pg * RES_PERPAGE + k, ic = t.icon && qf(t.icon), open = t.kind === "bal" || t.ci !== undefined;
+      let inner = "";
+      if (t.kind === "bal") inner = `<div class="list">${resBalRows(t).map(r => `<div class="row"><span>${esc(r.l)}</span><b>${esc(r.v)}</b></div>`).join("")}</div>`;
+      else if (t.kind === "vals") inner = t.vals.length === 1 ? `<div class="big">${esc(resVal(num(t.vals[0].ko), t.vals[0]))}</div>`
+        : `<div class="list">${t.vals.map(x => `<div class="row"><span>${esc(x.label)}</span><b>${esc(resVal(num(x.ko), x))}</b></div>`).join("")}</div>`;
+      else if (t.kind === "gauge") inner = `<div class="gauge">${resGauge(t)}</div>`;
+      else inner = t.ser.length === 1 ? `<div class="big">${esc(resChartCur(t.ser[0]))}</div>` : `<div class="list">${t.ser.map(s => `<div class="row"><span>${esc(s.label)}</span><b>${esc(resChartCur(s))}</b></div>`).join("")}</div>`;
+      return `<div class="cl-vt res-tile${open ? " cl-open" : ""}"${open ? ` data-pa="open" data-i="${i}"` : ""}><div class="cap">${esc(t.name)}</div>${ic ? `<div class="ico">${ic}</div>` : ""}${inner}</div>`;
+    }).join("");
+    return `<div class="cl-vgrid" style="${v}">${tiles}</div><div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>`;
+  },
+  act: async (d, b) => {
+    const T16 = PLUGIN_TYPES["1-16"], pa = b.dataset.pa;
+    if (pa === "pg") { d.page = Math.max(0, Math.min(Math.ceil(d.tiles.length / RES_PERPAGE) - 1, d.page + (+b.dataset.d || 0))); return; }
+    if (pa === "open") { const i = +b.dataset.i, t = d.tiles[i]; if (!t) return;
+      if (t.kind === "bal") { d.bal = i; return; }
+      if (t.ci !== undefined) return T16.act(d, { dataset: { pa: "open", i: String(t.ci) } }); return; }
+    if (pa === "back") { d.bal = null; if (d.open !== null) return T16.act(d, b); return; }
+    return T16.act(d, b);                                   // Zeitraum wechseln (rg) usw.
+  }
+};
 
 /* 0-2 Kamera (Original: hs_client_camera.QuadCamera). Das Original holt die Bilder direkt von der Kamera (Digest-Anmeldung).
    Im Browser klappt das nur, wenn die Kamera ohne Anmeldung per https erreichbar ist oder das Bild über den HS kommt
