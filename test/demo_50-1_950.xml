@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><project><items>
+<item type="BalanceItem" name="Strom" category="SolarEnergy" co1="9501" co2="9502" co3="9503" co4="9504" unit="W" scale="0" hasBattery="True" />
+<item type="GaugeItem" name="Speicher" co1="9504" unit="%" scale="0" min="0" max="100" />
+<item type="ValuesItem" name="Werte" co1="9501" unit1="W" label1="PV" co2="9502" unit2="W" label2="Netz" />
+<item type="ChartItem1" name="Verbrauch" archive1="502" co1="9501" unit1="kWh" format1="0.0" />
+<item type="Unbekannt" name="x" />
+</items></project>

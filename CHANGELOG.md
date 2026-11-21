@@ -3,6 +3,11 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.49 – Plugin „Ressourcen“
+- **Neu:** Plugin **Ressourcen** (50-1): Bilanz mit Erzeugung, Netz (Bezug/Einspeisung) und Speicher, Zeigerinstrumente, Wertanzeigen und Balkendiagramme – in „Modern“ und im Quadranten der klassischen Ansicht. Beitrag von MarkX81 – danke!
+- Bei der Bilanz ist der Aufbau der Einstellungen bekannt; Instrumente, Wertanzeigen und Diagramme liest der Client tolerant und schreibt die Rohdaten ins Protokoll, damit sich nachbessern lässt. Die Symbole kommen vom eigenen HomeServer.
+- Die Tests prüfen das Plugin am nachgebauten HomeServer mit erfundenen Einstellungen; an einem echten HomeServer haben wir es selbst noch nicht geprüft.
+
 ## 0.9.48 – Tasten mit Schloss aufgeräumt
 - **Verbessert:** In der klassischen Ansicht (Stil „Modern“) sitzt das Schloss-Abzeichen weiter in der oberen rechten Ecke der Taste, die Beschriftung rückt ein Stück nach links – beides überlappt nicht mehr.
 

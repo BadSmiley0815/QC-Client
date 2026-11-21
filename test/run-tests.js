@@ -33,7 +33,7 @@ async function start(b, user, extra = []) {
     if (n === "demo.addin.wetter_907.json") return addinMode === "ohne" ? r.fulfill({ status: 404, body: "" }) : r.fulfill({ status: 200, contentType: "application/json", body: Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), T("demo_addin_907.json")]) });
     if (u.includes("/quad/load/ADDINS/SETTINGS907.JSON?SID")) return r.fulfill({ status: 200, contentType: "application/json", body: '{"ort":"Demostadt"}' });
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
@@ -517,6 +517,19 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await p2.close();
   }
   console.log("Rechte");
+  console.log("Plugin Ressourcen 50-1 (v0.9.49, erfundene Einstellungen)");
+  { const pr = await start(b, "Demo", ["2|9501|1500.0|0", "2|9502|-300.0|0", "2|9503|200.0|0", "2|9504|64.0|0"]); const errs = []; pr.on("pageerror", e => errs.push(e.message));
+    await pr.evaluate(() => openPlugin("Ressourcen", "950")); await pr.waitForTimeout(900);
+    const tx = (await pr.textContent("#pbody")).replace(/\s+/g, " ");
+    ok("Bilanz: Erzeugung, Einspeisung bei negativem Netzwert (Betrag), Speicher", tx.includes("Erzeugung1500 W") && tx.includes("Netz-Einspeisung300 W") && tx.includes("Speicher-Bezug200 W"), tx.slice(0, 300));
+    ok("Instrument mit Wert und Grenzen, Wertanzeige mit Beschriftung", (await pr.locator("#pbody svg.rgauge").count()) === 1 && tx.includes("64%0100") && tx.includes("PV1500 W"), tx.slice(0, 300));
+    ok("unbekannte Art wird übersprungen und im Protokoll genannt", await pr.evaluate(() => document.getElementById("log").textContent.includes("unbekannte Art „Unbekannt“")));
+    await pr.evaluate(() => WSI.onmessage({ data: "1|9502|450.0|0" })); await pr.waitForTimeout(300);
+    ok("KO-Telegramm: Netz wechselt auf Bezug", (await pr.textContent("#pbody")).replace(/\s+/g, " ").includes("Netz-Bezug450 W"));
+    await pr.evaluate(() => { PLUGS["950"].quad = "1"; PLUGS["950"].vis = "1"; }); await pr.selectOption("#uisel", "classic"); await pr.waitForTimeout(600);
+    await pr.evaluate(() => clPlugin("950")); await pr.waitForTimeout(900);
+    ok("Klassisch: Kacheln im Quadranten", (await pr.textContent("#cl-q1b")).includes("Netz-Bezug") && (await pr.locator("#cl-q1b svg.rgauge").count()) === 1, await pr.textContent("#cl-q1b"));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pr.close(); }
   pg = await start(b, "Gast");
   ok("Gast sieht Gruppe-1-Einträge nicht", await pg.locator("#grid .mcard", { hasText: "Garten" }).count() === 0);
   ok("Unterseite Extras sichtbar", await pg.locator("#grid .mcard", { hasText: "Extras" }).count() === 1);
