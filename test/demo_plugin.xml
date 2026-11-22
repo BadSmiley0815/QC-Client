@@ -14,5 +14,7 @@
     <plugin_instance id="908" class="1-2" master_id="" title="Wetterstation" group="3" project="1-2_908.xml" userdef="userdef908.dat" visibleinqc="0" />
     <plugin_instance id="909" class="99-2" master_id="" title="RTSP/ONVIF/MJPG" group="3" project="99-2_909.xml" userdef="userdef909.dat" visibleinqc="0" />
     <plugin_instance id="950" class="50-1" master_id="" title="Ressourcen" group="3" project="50-1_950.xml" userdef="userdef950.dat" visibleinqc="0" />
+    <plugin_instance id="951" class="1-15" master_id="" title="Meldeanlage" group="3" project="1-15_951.xml" userdef="userdef951.dat" visibleinqc="0" />
+    <plugin_instance id="952" class="1-21" master_id="" title="Alarmzentrale" group="3" project="1-21_952.xml" userdef="userdef952.dat" visibleinqc="0" />
   </instances>
 </plugins>

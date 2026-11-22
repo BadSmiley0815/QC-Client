@@ -33,7 +33,7 @@ async function start(b, user, extra = []) {
     if (n === "demo.addin.wetter_907.json") return addinMode === "ohne" ? r.fulfill({ status: 404, body: "" }) : r.fulfill({ status: 200, contentType: "application/json", body: Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), T("demo_addin_907.json")]) });
     if (u.includes("/quad/load/ADDINS/SETTINGS907.JSON?SID")) return r.fulfill({ status: 200, contentType: "application/json", body: '{"ort":"Demostadt"}' });
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml", "1-15_951.xml": "demo_1-15_951.xml", "1-21_952.xml": "demo_1-21_952.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
@@ -529,7 +529,99 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await pr.evaluate(() => { PLUGS["950"].quad = "1"; PLUGS["950"].vis = "1"; }); await pr.selectOption("#uisel", "classic"); await pr.waitForTimeout(600);
     await pr.evaluate(() => clPlugin("950")); await pr.waitForTimeout(900);
     ok("Klassisch: Kacheln im Quadranten", (await pr.textContent("#cl-q1b")).includes("Netz-Bezug") && (await pr.locator("#cl-q1b svg.rgauge").count()) === 1, await pr.textContent("#cl-q1b"));
+    ok("Klassisch (v0.9.52): Werteliste der Bilanz beginnt unter dem Titel", await pr.evaluate(() => { const t = document.querySelector("#cl-q1b .res-tile:has(.list)"); return t.querySelector(".list .row").getBoundingClientRect().top >= t.querySelector(".cap").getBoundingClientRect().bottom - 1; }));
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pr.close(); }
+
+  console.log("Plugin Meldeanlage 1-15, nur Anzeige (v0.9.51, erfundene Einstellungen)");
+  { const pm = await start(b, "Demo", ["2|9601|1.0|0", "2|9603|0.0|0", "2|9604|0.0|0", "2|9611|1.0|0", "2|9613|1.0|0", "2|9614|0.0|0",
+      "2|9621|Anlage bereit|0", "2|9622|Zeile zwei|0", "2|9631|Fenster Bad|0", "2|9632|Tuer Keller|0", "2|9640|2.0|0", "2|9650|0.0|0"]);
+    const errs = []; pm.on("pageerror", e => errs.push(e.message));
+    await pm.evaluate(() => openPlugin("Meldeanlage", "951")); await pm.waitForTimeout(900); await sent(pm);
+    const tx = async () => (await pm.textContent("#pbody")).replace(/\s+/g, " ");
+    let x = await tx();
+    ok("Bereiche: Extern scharfschaltbereit, Intern scharf", x.includes("ExternScharfschaltbereit") && x.includes("InternScharf"), x.slice(0, 300));
+    ok("Statusanzeige zeigt die belegten Textzeilen", x.includes("Anlage bereit") && x.includes("Zeile zwei"), x.slice(0, 300));
+    ok("Melderliste: Anzahl und Einträge", x.includes("fehlend oder offen2") && x.includes("Fenster Bad") && x.includes("Tuer Keller"), x.slice(0, 400));
+    ok("Ereignisspeicher aus dem Meldungsarchiv, neueste zuerst, Umlaute richtig", x.includes("Pumpe Störung") && x.indexOf("Fenster Bad offen") < x.indexOf("Pumpe wieder OK"), x.slice(0, 600));
+    ok("Feuer-Alarm nur bei aktivem Alarm", await pm.locator("#pbody .ma-fire").count() === 0);
+    await pm.evaluate(() => { WSI.onmessage({ data: "1|9650|1.0|0" }); WSI.onmessage({ data: "1|9604|1.0|0" }); WSI.onmessage({ data: "1|9613|0.0|0" }); WSI.onmessage({ data: "1|9611|0.0|0" }); }); await pm.waitForTimeout(300);
+    x = await tx();
+    ok("KO-Telegramme: Feuer-Alarm erscheint, Extern meldet Alarm, Intern nicht bereit", await pm.locator("#pbody .ma-fire").count() === 1 && x.includes("ExternAlarm") && x.includes("InternNicht bereit zum Scharfschalten"), x.slice(0, 300));
+    ok("kein Bedienknopf für Scharfschalten oder Quittung, Hinweis steht da", await pm.locator("#pbody .ma-area button, #pbody .ma-fire button").count() === 0 && await pm.locator("#pbody [data-pa]").count() === 0 && x.includes("gedrückt halten"), x.slice(-200));
+    await pm.evaluate(() => document.querySelectorAll("#pbody .pval").forEach(e => e.click())); const s1 = await sent(pm);
+    ok("Antippen der Kacheln sendet nichts an den HomeServer", s1.length === 0, JSON.stringify(s1));
+    ok("unbekannte Art wird übersprungen und im Protokoll genannt", await pm.evaluate(() => document.getElementById("log").textContent.includes("Meldeanlage: unbekannte Art „Unbekannt“")));
+    await pm.evaluate(() => { PLUGS["951"].quad = "1"; PLUGS["951"].vis = "1"; }); await pm.selectOption("#uisel", "classic"); await pm.waitForTimeout(600);
+    await pm.evaluate(() => clPlugin("951")); await pm.waitForTimeout(900);
+    const mq = pm.locator("#cl-q1b"), mt = async () => (await mq.textContent()).replace(/\s+/g, " ");
+    ok("Klassisch (v0.9.52): Kacheln in zwei Spalten ohne Rollen, Quittung fehlt, Feuer bei Alarm da", await mq.locator(".cl-vgrid .cl-vt").count() === 6 && await mq.locator(".ma-ack").count() === 0 && await mq.locator(".ma-fire").count() === 1
+      && await mq.locator(".cl-vgrid").evaluate(e => e.scrollHeight <= e.clientHeight + 1 && getComputedStyle(e).gridTemplateColumns.trim().split(/\s+/).length === 2), await mt());
+    ok("Klassisch: Zustand der Bereiche und Statuszeilen in der Kachel", (await mt()).includes("ExternAlarm") && (await mt()).includes("InternNicht bereit") && (await mt()).includes("Anlage bereit"), await mt());
+    ok("Klassisch: Melderliste zeigt die Anzahl groß", (await mq.locator(".ma-det .big").textContent()).trim() === "2");
+    await mq.locator('[data-pa="pg"][data-d="1"]').click(); await pm.waitForTimeout(200);
+    ok("Klassisch: zweite Seite mit dem Überfall-Alarm und Halteknopf", (await mt()).includes("Überfall") && await mq.locator(".ma-raid .ma-hold").count() === 1, await mt());
+    await mq.locator('[data-pa="pg"][data-d="-1"]').click(); await pm.waitForTimeout(200);
+    await mq.locator(".ma-det").click(); await pm.waitForTimeout(200);
+    ok("Klassisch: Melderliste öffnet die Unteransicht mit den Einträgen", (await mt()).includes("Fenster Bad") && (await mt()).includes("Tuer Keller") && await mq.locator('[data-pa="back"]').count() === 1, await mt());
+    await mq.locator('[data-pa="back"]').click(); await pm.waitForTimeout(200); await mq.locator(".ma-msg").click(); await pm.waitForTimeout(200);
+    ok("Klassisch: Ereignisspeicher öffnet die Meldungen", (await mt()).includes("Pumpe Störung"), await mt());
+    await mq.locator('[data-pa="back"]').click(); await pm.waitForTimeout(200); const s2 = await sent(pm);
+    ok("Klassisch: auch hier wird nichts an den HomeServer gesendet", s2.length === 0, JSON.stringify(s2));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pm.close(); }
+  console.log("Plugin KNX-Alarmzentrale 1-21, nur Anzeige (v0.9.52, erfundene Einstellungen)");
+  { const pz = await start(b, "Demo", ["2|9701|1.0|0", "2|9703|0.0|0", "2|9704|0.0|0", "2|9706|0.0|0", "2|9711|0.0|0", "2|9713|0.0|0", "2|9714|0.0|0", "2|9716|1.0|0", "2|9721|Zentrale ok|0", "2|9750|0.0|0", "2|9761|0.0|0"]);
+    const errs = []; pz.on("pageerror", e => errs.push(e.message));
+    await pz.evaluate(() => openPlugin("Alarmzentrale", "952")); await pz.waitForTimeout(700); await sent(pz);
+    let x = (await pz.textContent("#pbody")).replace(/\s+/g, " ");
+    ok("Bereiche: scharfschaltbereit und „Unscharf nach Alarm“, Statuszeile", x.includes("SB ExternScharfschaltbereit") && x.includes("SB InternUnscharf nach Alarm") && x.includes("Zentrale ok"), x.slice(0, 300));
+    ok("Feuer-Kachel steht bei der Alarmzentrale immer da (v0.9.53), ohne Alarm „Kein Alarm“", x.includes("FeuerKein Alarm") && !(await pz.textContent("#pbody .ma-raid")).includes("Überfall-Alarm"), x.slice(0, 300));
+    await pz.evaluate(() => { WSI.onmessage({ data: "1|9761|1.0|0" }); WSI.onmessage({ data: "1|9750|1.0|0" }); }); await pz.waitForTimeout(300);
+    ok("Überfall-Alarm empfangen und Feuer-Alarm erscheinen bei Alarm", (await pz.textContent("#pbody .ma-raid")).includes("Überfall-Alarm") && (await pz.textContent("#pbody .ma-fire")).includes("Feuer-Alarm"));
+    { const hb = pz.locator("#pbody .ma-hold"); await hb.dispatchEvent("pointerdown"); await pz.waitForTimeout(600); await hb.dispatchEvent("pointerup"); await pz.waitForTimeout(1800);
+      const k = await sent(pz); ok("Überfall-Alarm (v0.9.53): kurzes Drücken sendet nichts", k.length === 0, JSON.stringify(k));
+      await pz.locator("#pbody .ma-hold").dispatchEvent("pointerdown"); await pz.waitForTimeout(2300); const g = await sent(pz);
+      ok("Überfall-Alarm: nach 2 s Halten wird einmal 1 auf „senden“ geschickt", g.length === 1 && /^1\|9760\|1(\.0)?$/.test(g[0]), JSON.stringify(g));
+      await pz.locator("#pbody .ma-hold").dispatchEvent("pointerup"); }
+    await pz.evaluate(() => { PLUGS["952"].quad = "1"; PLUGS["952"].vis = "1"; }); await pz.selectOption("#uisel", "classic"); await pz.waitForTimeout(600);
+    await pz.evaluate(() => clPlugin("952")); await pz.waitForTimeout(700);
+    ok("Klassisch: fünf Kacheln in zwei Spalten", await pz.locator("#cl-q1b .cl-vgrid .cl-vt").count() === 5, await pz.textContent("#cl-q1b"));
+    await pz.evaluate(() => document.querySelectorAll("#cl-q1b .cl-vt").forEach(e => e.click())); const s3 = await sent(pz);
+    ok("nur Anzeige: nichts wird gesendet", s3.length === 0, JSON.stringify(s3));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pz.close(); }
+
+  console.log("Balkendiagramme klassisch wie im QuadClient (v0.9.52)");
+  { const pb = await start(b, "Demo", ["2|9301|123.44|0", "2|9302|7.0|0", "2|9303|68.0|0"]); const errs = []; pb.on("pageerror", e => errs.push(e.message));
+    await pb.evaluate(() => { PLUGS["906"].quad = "1"; PLUGS["906"].vis = "1"; }); await pb.selectOption("#uisel", "classic"); await pb.waitForTimeout(600);
+    await pb.evaluate(() => clPlugin("906")); await pb.waitForTimeout(900);
+    const q = pb.locator("#cl-q1b");
+    ok("Raster aus den Einstellungen: Grid_1x3 = eine Spalte, drei Zeilen", await q.locator(".cl-vgrid").evaluate(e => getComputedStyle(e).gridTemplateColumns.trim().split(/\s+/).length === 1 && getComputedStyle(e).gridTemplateRows.trim().split(/\s+/).length === 3));
+    ok("eine Reihe: Wert groß; zwei Reihen: Liste mit Beschriftung", (await q.locator(".cl-vt").count()) === 2 && (await q.locator(".cl-vt").nth(0).locator(".big").textContent()).replace(/\s+/g, " ").includes("123,4 l")
+      && (await q.locator(".cl-vt.multi .row").count()) === 2 && (await q.locator(".cl-vt.multi").textContent()).replace(/\s+/g, " ").includes("Bezug68 kWh"), await q.textContent());
+    ok("Blätterleiste vorhanden, bei einer Seite gesperrt", await q.locator(".cl-pgb button:disabled").count() === 2);
+    await q.locator(".cl-vt").nth(0).click(); await pb.waitForTimeout(700);
+    ok("Antippen öffnet das Diagramm, „Übersicht“ führt zurück", await q.locator("svg[data-bars]").count() === 1 && await q.locator('[data-pa="back"]').count() === 1);
+    await q.locator('[data-pa="back"]').click(); await pb.waitForTimeout(300);
+    ok("zurück in der Kachelübersicht", await q.locator(".cl-vt").count() === 2);
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pb.close(); }
+
+  console.log("Menü: Gebäudestruktur anzeigen; Wertanzeige klassisch mit Blättern (v0.9.50)");
+  { const pm = await start(b, "Demo");
+    const r = await pm.evaluate(() => { const out = {};
+      P_.menu.push({ id: "t1", page: "0", t1: "Räume", t2: "", ico: "", group: "0", cmds: [{ type: "1", hierarchic: "False" }] }, { id: "t2", page: "0", t1: "Haus", t2: "", ico: "", group: "0", cmds: [{ type: "1", hierarchic: "True" }] },
+        { id: "t3", page: "0", t1: "Neu", t2: "", ico: "", group: "0", cmds: [{ type: "42", foo: "1" }] }, { id: "t4", page: "0", t1: "Leer", t2: "", ico: "", group: "0", cmds: [] });
+      menuAct("t1"); out.flat = cur + ":" + viewData(cur).rooms.length + ":" + P_.floors.reduce((n, f) => n + f.rooms.length, 0);
+      menuAct("t2"); out.hier = cur + ":" + viewData(cur).rooms.map(x => x.mv).join(",");
+      menuAct("t3"); menuAct("t4"); out.log = document.getElementById("log").textContent; return out; });
+    const [fc, fn, fa] = r.flat.split(":").slice(1);
+    ok("Gebäudestruktur anzeigen: alle Räume in einer Liste", r.flat.startsWith("g:0:") && +fn > 3 && fn === fa, r.flat);
+    ok("Strukturierte Liste: erst die Gebäudeteile", r.hier.startsWith("g:1:f:") && r.hier.split(",").length >= 2, r.hier);
+    await pm.waitForTimeout(300); await pm.locator('#grid .mcard[data-mv^="f:"]').first().click(); await pm.waitForTimeout(300);
+    ok("Gebäudeteil antippen öffnet dessen Räume", await pm.evaluate(() => cur.startsWith("f:") && document.querySelectorAll('#grid .mcard[data-mv^="r:"]').length > 0));
+    ok("unbekannter Befehl und Menüpunkt ohne Befehl stehen im Protokoll", r.log.includes("Befehl Art 42 kann der Client noch nicht (foo)") && r.log.includes("„Leer“ hat im Projekt keinen Befehl"));
+    const w = await pm.evaluate(() => { const T = PLUGIN_TYPES["1-2"], d = Array.from({ length: 8 }, (_, i) => ({ cap: "Kachel " + i, icon: "", vals: [{ t: "A", ko: "1", d: 0, u: "W", f: "" }, { t: "B", ko: "2", d: 0, u: "W", f: "" }] }));
+      const n = h => (h.match(/class="cl-vt/g) || []).length, h0 = T.htmlClassic(d); T.act(d, { dataset: { pa: "pg", d: "1" } }); const h1 = T.htmlClassic(d); T.act(d, { dataset: { pa: "pg", d: "1" } }); T.htmlClassic(d);
+      return [n(h0), n(h1), d.page, h0.includes("cl-pgb"), /repeat\(3,1fr\)/.test(h0), h1.includes("Kachel 6") && !h1.includes("Kachel 5")].join(","); });
+    ok("Wertanzeige klassisch: 6 Kacheln je Seite in 3 festen Zeilen, Blättern bleibt in den Grenzen", w === "6,2,1,true,true,true", w); await pm.close(); }
   pg = await start(b, "Gast");
   ok("Gast sieht Gruppe-1-Einträge nicht", await pg.locator("#grid .mcard", { hasText: "Garten" }).count() === 0);
   ok("Unterseite Extras sichtbar", await pg.locator("#grid .mcard", { hasText: "Extras" }).count() === 1);

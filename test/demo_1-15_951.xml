@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><project><items>
+<item type="CExternalAreaItem" name="Extern" co1="9601" co2="9602" co3="9603" co4="9604" co5="9605" />
+<item type="CInternalAreaItem" name="Intern" co1="9611" co2="9612" co3="9613" co4="9614" co5="9615" />
+<item type="CInfoItem" name="Status" co1="0" co2="9621" co3="9622" co4="9623" />
+<item type="CConfirmationItem" name="Quittung" co1="9625" co2="9626" />
+<item type="CDetectorsItem" name="Melder" co1="9630" co2="9631" co3="9632" co4="9633" co5="9634" co6="9635" co7="9636" co8="9637" co9="9638" co10="9640" />
+<item type="CMessagesItem" name="Ereignisse" co1="81" interval="0" />
+<item type="CFireItem" name="Feuer" co1="9650" />
+<item type="CRaidItem" name="Überfall" co1="9660" />
+<item type="Unbekannt" name="x" />
+</items></project>

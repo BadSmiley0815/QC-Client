@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><project><items>
+<item type="CExternalAreaItem" name="SB Extern" id="0" co1="9701" co2="9702" co3="9703" co4="9704" co5="9705" co6="9706" />
+<item type="CInternalAreaItem" name="SB Intern" id="0" co1="9711" co2="9712" co3="9713" co4="9714" co5="9715" co6="9716" />
+<item type="CInfoItem" name="Status" twotier="False" co1="9720" co2="9721" co3="9722" co4="9723" />
+<item type="CFireItem" name="Feuer" co1="9750" />
+<item type="CRaidItem" name="Überfall" co1="9760" co2="9761" />
+</items></project>

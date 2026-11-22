@@ -3,6 +3,29 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.53 – Überfall-Alarm als Halteknopf, Feuer-Kachel der Alarmzentrale
+- **Neu:** Überfall-Alarm in Meldeanlage und Alarmzentrale: Der Knopf muss wie im QuadClient gedrückt gehalten werden, ein Balken läuft mit; erst danach wird gesendet, Loslassen bricht ab. Haltedauer (2 Sekunden) und gesendeter Wert (1) sind Vermutungen – bitte an der eigenen Anlage prüfen, bevor man sich darauf verlässt. Scharf-/Unscharfschalten und Quittieren gehen weiterhin nicht.
+- **Verbessert:** Plugin KNX-Alarmzentrale: Die Kachel „Feuer-Alarm“ steht wie im QuadClient immer da (ohne Alarm: „Kein Alarm“); bei der Meldeanlage erscheint sie weiterhin nur bei Alarm.
+- v0.9.52 und v0.9.53 am echten HomeServer angesehen: Balkendiagramme, Ressourcen, Meldeanlage und Alarmzentrale werden mit den Werten der Test-KOs angezeigt, beim Durchklicken wird nichts gesendet. Eine echte Meldeanlage oder Alarmzentrale war nicht angeschlossen.
+
+## 0.9.52 – Alarmzentrale (Anzeige), Balkendiagramme und Meldeanlage in „Klassisch“ wie im QuadClient
+- **Neu:** Plugin „KNX-Alarmzentrale“ (1-21) als Anzeige: Zustand der Sicherungsbereiche (auch „Unscharf nach Alarm“), Statusanzeige, Feuer-Alarm und empfangener Überfall-Alarm. Bedienen geht noch nicht; der Client sendet aus diesem Plugin nichts.
+- **Verbessert:** Plugin Balkendiagramme in „Klassisch“: Kacheln im Raster aus den Einstellungen (z. B. eine Spalte × drei Zeilen je Seite), Titel oben links, Symbol unten links, Wert groß rechts bzw. bei zwei Reihen die Werteliste, unten die Blätterleiste. Bisher standen die Werte in drei schmalen Spalten ohne Symbol. Antippen öffnet wie bisher das Diagramm.
+- **Verbessert:** Plugin Meldeanlage in „Klassisch“ im Aufbau des QuadClients: Kacheln in zwei Spalten, Zustand rechts, Melderliste und Ereignisspeicher als Unteransicht; nichts muss mehr gerollt werden. Die Symbole des Originals fehlen noch, der Zustand steht als Text. Weiterhin nur Anzeige.
+- **Behoben:** Plugin Ressourcen in „Klassisch“: Ein langer Titel der Bilanz überdeckte die erste Zeile der Werteliste; die Liste beginnt jetzt unter dem Titel (am echten HomeServer aufgefallen).
+- Vorlage waren Bildschirmfotos des QuadClients. Geprüft am nachgebauten HomeServer; an einem echten HomeServer noch nicht.
+
+## 0.9.51 – Plugin „Meldeanlage“ (Anzeige)
+- **Neu:** Plugin „Meldeanlage“ (1-15) als Anzeige: Zustand der Sicherungsbereiche (Scharfschaltbereit, Scharf, Alarm, Nicht bereit), Statusanzeige, Melderliste mit Anzahl fehlender oder offener Melder, Ereignisspeicher aus dem Meldungsarchiv; der Feuer-Alarm erscheint nur, solange er ansteht.
+- **Bewusst noch nicht:** Scharf- und Unscharfschalten (mit PIN), Quittieren, Überfall-Alarm und Blättern in der Melderliste. Der Client sendet aus diesem Plugin nichts an den HomeServer.
+- Die Felder sind aus den Einstellungen in QuadConfig und der Plugin-Beschreibung abgeleitet; die Rangfolge der Zustände (Alarm vor Scharf vor Scharfschaltbereit) ist eine Vermutung. Geprüft am nachgebauten HomeServer und mit einer Test-Einrichtung ohne echte Meldeanlage; an einer echten Anlage noch nicht.
+
+## 0.9.50 – Gebäudestruktur im Menü, Wertanzeige wie im Original
+- **Neu:** Menübefehl „Gebäudestruktur anzeigen“: zeigt alle Räume, mit „Strukturierte Liste“ erst die Gebäudeteile. An welcher Nummer der HomeServer diesen Befehl erkennt, ist nicht belegt – der Client erkennt ihn an seinen Angaben; ob das bei echten Projekten trifft, muss ein Test zeigen.
+- **Verbessert:** Plugin Wertanzeige in „Klassisch“ wie im QuadClient: feste Kachelgröße, 2 Spalten × 3 Zeilen je Seite, darunter die Blätterleiste. Bisher wurden alle Kacheln auf eine Seite gestaucht, die Schrift wurde winzig. Lange Titel brechen neben der Werteliste um, statt sie zu überdecken; das Symbol ist größer.
+- **Verbessert:** Tippt man einen ausgegrauten Menüpunkt an, steht der Grund im Protokoll (Plugin-Art, die der Client noch nicht kann; fehlendes Plugin; unbekannter Befehl) – damit lässt sich gezielt nachbessern.
+- Gemeldet von einem Tester aus dem Forum – danke. Geprüft am nachgebauten HomeServer; an einem echten HomeServer noch nicht.
+
 ## 0.9.49 – Plugin „Ressourcen“
 - **Neu:** Plugin **Ressourcen** (50-1): Bilanz mit Erzeugung, Netz (Bezug/Einspeisung) und Speicher, Zeigerinstrumente, Wertanzeigen und Balkendiagramme – in „Modern“ und im Quadranten der klassischen Ansicht. Beitrag von MarkX81 – danke!
 - Bei der Bilanz ist der Aufbau der Einstellungen bekannt; Instrumente, Wertanzeigen und Diagramme liest der Client tolerant und schreibt die Rohdaten ins Protokoll, damit sich nachbessern lässt. Die Symbole kommen vom eigenen HomeServer.

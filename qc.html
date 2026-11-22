@@ -97,7 +97,8 @@ button{font:inherit;color:inherit}
 .cl-vt .big{position:absolute;right:16px;bottom:calc(var(--rh) * .08);font-size:var(--fb);white-space:nowrap;font-variant-numeric:tabular-nums}.cl-vt .big u{text-decoration:none}
 .cl-vt .list{position:absolute;left:47%;right:14px;top:8px;bottom:6px;display:flex;flex-direction:column;justify-content:space-evenly}
 .cl-vt .row{display:flex;justify-content:space-between;gap:8px;font-size:min(12px,calc(var(--rh) * .17));border-bottom:1px solid #444;padding-bottom:1px}.cl-vt .row:last-child{border-bottom:0}
-.cl-vt .row span{color:#9a9a9a}.cl-vt .row b{font-weight:400;white-space:nowrap}.cl-vt .row u{text-decoration:none}
+.cl-vt.multi .cap{right:55%;white-space:normal;line-height:1.15;max-height:2.3em}                   /* Titel neben der Werteliste: umbrechen statt überdecken */
+.cl-vt .row span{color:#9a9a9a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cl-vt .row b{font-weight:400;white-space:nowrap}.cl-vt .row u{text-decoration:none}
 /* 50-1 Ressourcen */
 .cl-vt.cl-open{cursor:pointer}.cl-vt .gauge{position:absolute;right:8px;top:4px;bottom:4px;aspect-ratio:1}.cl-vt .gauge svg{width:100%;height:100%;display:block}
 .rgauge{width:150px;height:150px;display:block}.rgauge .gv{font-size:20px;fill:currentColor;font-variant-numeric:tabular-nums;font-weight:600}.rgauge .gu{font-size:12px;fill:currentColor;opacity:.7}.rgauge .gu.gpct{font-size:16px;opacity:.82;font-weight:700}.rgauge .gm{font-size:14px;fill:currentColor;opacity:.82;font-weight:700}
@@ -110,6 +111,7 @@ button{font:inherit;color:inherit}
 /* 50-1: Ressourcen-Symbole im klassischen Quadranten bewusst größer als Standard-Pluginicons. */
 .cl-vt.res-tile .ico{left:6px;bottom:3px;width:62px;height:62px}.cl-vt.res-tile .ico svg{width:100%;height:100%}
 .cl-vt.res-tile .cap{right:42%;font-size:calc(var(--fc) * .84)}
+.cl-vt.res-tile .list{top:calc(var(--rh) * .09 + var(--fc) * 1.2)}.cl-vt.res-tile:has(.list) .cap{right:12px}   /* v0.9.52: Werteliste unter dem Titel statt daneben – lange Titel überdeckten die erste Zeile */
 html:not(.cl-gira) .cl-vgrid{gap:6px;padding:6px;background:#141615}
 html:not(.cl-gira) .cl-vt{background:linear-gradient(180deg,#2a2d2b,#1f2120);border-radius:10px;box-shadow:inset 0 1px 0 #ffffff12,0 2px 6px #0007}
 html:not(.cl-gira) .cl-vt .cap{color:#b9c0bb}
@@ -228,6 +230,9 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 .mlist{border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:65vh}
 .mrow{display:flex;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}
 .mrow:last-child{border-bottom:0}
+.ma-hold{position:relative;overflow:hidden;border:1px solid var(--err);border-radius:8px;padding:6px 12px;background:transparent;color:var(--err);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;font-size:13px}
+.ma-hold i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--err);opacity:.35;pointer-events:none}.ma-hold.holding i{width:100%;transition:width 2s linear}
+.ma-hold.sent{background:var(--err);color:#fff}
 .mrow time{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px;min-width:12.5em}
 .mrow span{min-width:0;overflow-wrap:anywhere}
 @media (max-width:560px){.mrow{flex-direction:column;gap:2px}.mrow time{min-width:0}}
@@ -507,7 +512,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.49";
+const VERSION = "0.9.53";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -1423,11 +1428,17 @@ function menuTile(m) {
 function menuAct(id) {
   const m = P_.menu.find(x => x.id === id); if (!m) return;
   if (m.isPage) { go("m:" + m.page); return; }
-  const c = m.cmds[0]; if (!c) return;
+  const c = m.cmds[0]; if (!c) { log("··", `Menüpunkt „${m.t1}“ hat im Projekt keinen Befehl`); return; }
+  if (c.type === "2" && !plugSupported(c.plugin_id)) { const pi = PLUGS && PLUGS[c.plugin_id];        // v0.9.50: Grund ins Protokoll
+    log("··", `Menüpunkt „${m.t1}“: ` + (pi ? `Plugin-Art ${pi.cls} („${pi.title}“) kann der Client noch nicht` : `Plugin ${c.plugin_id} steht nicht in der Plugin-Liste des HS`)); return; }
   switch (c.type) {
     case "3": go("r:" + c.room); break;
     case "4": go("t:" + c.device_group); break;
-    case "7": go("f:" + c.floor); break;
+    case "7": go(viewData("f:" + c.floor) ? "f:" + c.floor : "g:" + (/^true$/i.test(c.hierarchic || "") ? 1 : 0)); break;
+    /* v0.9.50 „Gebäudestruktur anzeigen“ (QuadConfig: type_roomlist): Befehl ohne Gebäudeteil. Die Nummer der Art ist nicht belegt –
+       erkannt wird er am Attribut hierarchic ohne floor; „Strukturierte Liste“ = erst die Gebäudeteile, sonst alle Räume. */
+    default: if (c.hierarchic !== undefined || c.type === "1") { go("g:" + (/^true$/i.test(c.hierarchic || "") ? 1 : 0)); break; }
+      log("··", `Menüpunkt „${m.t1}“: Befehl Art ${c.type} kann der Client noch nicht (${Object.keys(c).filter(k => k !== "type").join(", ")})`);
     case "6": if (c.url0) { if (clOn()) { clFrame(m.t1, c.url0); break; } openFrame(m.t1, c.url0); } break;
     case "2": if (clOn()) { clPlugin(c.plugin_id); break; } openPlugin(m.t1, c.plugin_id); break;
     case "5": if (c.tag) send(c.tag, c.op === "toggle" ? (bool(c.tag) ? 0 : 1) : +c.value); break;      // Umschalten – noch gegen QC prüfen
@@ -1657,15 +1668,17 @@ PLUGIN_TYPES["1-2"] = {
   /* Original-Stil: Kacheln in zwei Spalten – Titel oben links, Symbol unten links, Wert groß rechts bzw. Werteliste rechts */
   htmlClassic: d => {
     const vu = v => { const [t, u] = pvVal(v); return esc(t) + (u ? ` <u>${esc(u)}</u>` : ""); };
-    // alle Kacheln ohne Scrollen: Zeilenhöhe aus der Anzahl (2 Spalten, Fläche 680 × 274), Schrift und Symbol wachsen/schrumpfen mit
-    const R = Math.max(1, Math.ceil(d.length / 2)), rh = (274 - 12 - (R - 1) * 6) / R;
-    const v = `--rh:${rh.toFixed(1)}px;--fc:${Math.max(10, Math.min(16, rh * 0.19)).toFixed(1)}px;--fb:${Math.max(13, Math.min(30, rh * 0.36)).toFixed(1)}px;--ic:${Math.max(16, Math.min(40, rh * 0.42)).toFixed(1)}px;grid-template-rows:repeat(${R},1fr)`;
-    return `<div class="cl-vgrid" style="${v}">` + d.map(g => { const ic = g.icon && qf(g.icon);
+    // v0.9.50 wie das Original: feste Kachelgröße, 2 Spalten × 3 Zeilen je Seite, darunter die Blätterleiste (bisher: alle Kacheln zusammengestaucht)
+    const per = 6, pages = Math.max(1, Math.ceil(d.length / per)), pg = d.page = Math.max(0, Math.min(d.page || 0, pages - 1)), R = 3, gh = 274 - 30, rh = (gh - 12 - (R - 1) * 6) / R;
+    const v = `--rh:${rh.toFixed(1)}px;--fc:${(rh * 0.19).toFixed(1)}px;--fb:${(rh * 0.36).toFixed(1)}px;--ic:${(rh * 0.5).toFixed(1)}px;grid-template-rows:repeat(${R},1fr);height:${gh}px`;
+    const bar = `<div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>`;
+    return `<div class="cl-vgrid" style="${v}">` + d.slice(pg * per, pg * per + per).map(g => { const ic = g.icon && qf(g.icon);
       const one = g.vals.length === 1;
       return `<div class="cl-vt${one ? "" : " multi"}"><div class="cap">${esc(g.cap)}</div>${ic ? `<div class="ico">${ic}</div>` : ""}${one
         ? `<div class="big">${vu(g.vals[0])}</div>`
-        : `<div class="list">${g.vals.map(v => `<div class="row"><span>${esc(v.t)}</span><b>${vu(v)}</b></div>`).join("")}</div>`}</div>`; }).join("") + "</div>";
-  }
+        : `<div class="list">${g.vals.map(v => `<div class="row"><span>${esc(v.t)}</span><b>${vu(v)}</b></div>`).join("")}</div>`}</div>`; }).join("") + "</div>" + bar;
+  },
+  act: async (d, b) => { if (b.dataset.pa === "pg") d.page = (d.page || 0) + (+b.dataset.d || 0); }
 };
 
 /* 1-3 Wetter – eigene Lösung statt des Gira-Wetterdiensts (der braucht die Geräteportal-Kennung und läuft über http).
@@ -2156,10 +2169,27 @@ PLUGIN_TYPES["1-16"] = {
       const ser = [1, 2].filter(n => a["archive" + n] && a["archive" + n] !== "0" && (n === 1 || a.type === "ChartItem2" || a.type === "CBarChartItemDouble"))
         .map(n => ({ arch: a["archive" + n], ko: a["co" + n] || "", unit: a["unit" + n] || "", d: fdec(a["format" + n]), label: a["label" + n] || "",
           agg: (a["aggregation_series" + n] || "").toUpperCase(), max: parseFloat(a["maxval" + n]) || 0 }));
-      return { name: a.name || "", color: (a.colorScheme || "").toLowerCase(), stats: a.useStatistics !== "False", ser,
+      return { name: a.name || "", icon: a.icon || "", color: (a.colorScheme || "").toLowerCase(), stats: a.useStatistics !== "False", ser,
         ranges: BAR_RANGES.filter(rg => a[rg.use] !== "False") };
-    }).filter(i => i.ser.length), open: null, cur: null, vals: null, plan: null, err: "", hover: null }),
+    }).filter(i => i.ser.length), open: null, cur: null, vals: null, plan: null, err: "", hover: null, page: 0,
+    grid: (m => m ? [Math.max(1, +m[1]), Math.max(1, +m[2])] : [2, 3])(/^Grid_(\d)x(\d)$/.exec((x.documentElement && x.documentElement.getAttribute("displayType")) || "")) }),
   tags: d => d.items.flatMap(i => i.ser.map(s => s.ko)),
+  icons: d => d.items.map(i => i.icon).filter(Boolean),
+  /* v0.9.52 Original-Stil (Klassisch), nach Bildschirmfoto des QuadClients: Kacheln im Raster aus displayType („Grid_1x3“ = 1 Spalte × 3 Zeilen je Seite),
+     Titel oben links, Symbol unten links, Wert groß rechts bzw. bei zwei Reihen die Werteliste; unten die Blätterleiste. Antippen öffnet das Diagramm. */
+  htmlClassic: d => {
+    const T = PLUGIN_TYPES["1-16"];
+    if (d.open !== null) return `<div style="height:274px;overflow:auto;padding:8px;background:#1c1c1c">${T.html(d)}</div>`;
+    const [C, R] = d.grid || [2, 3], per = C * R, pages = Math.max(1, Math.ceil(d.items.length / per)), pg = d.page = Math.max(0, Math.min(d.page || 0, pages - 1));
+    const gh = 274 - 30, rh = (gh - 12 - (R - 1) * 6) / R;
+    const v = `--rh:${rh.toFixed(1)}px;--fc:${Math.min(16, rh * 0.19).toFixed(1)}px;--fb:${Math.min(30, rh * 0.36).toFixed(1)}px;--ic:${Math.min(40, rh * 0.5).toFixed(1)}px;grid-template-columns:repeat(${C},1fr);grid-template-rows:repeat(${R},1fr);height:${gh}px`;
+    const cur = s => { const n = num(s.ko); return s.ko && n !== undefined ? `${esc(fmt(n, s.d))} <u>${esc(s.unit)}</u>` : "–"; };
+    const tiles = d.items.slice(pg * per, pg * per + per).map((it, k) => { const ic = it.icon && qf(it.icon), one = it.ser.length === 1;
+      return `<div class="cl-vt cl-open${one ? "" : " multi"}" data-pa="open" data-i="${pg * per + k}"><div class="cap">${esc(it.name)}</div>${ic ? `<div class="ico">${ic}</div>` : ""}${one
+        ? `<div class="big">${cur(it.ser[0])}</div>`
+        : `<div class="list">${it.ser.map((s, j) => `<div class="row"><span>${esc(s.label || "Reihe " + (j + 1))}</span><b>${cur(s)}</b></div>`).join("")}</div>`}</div>`; }).join("");
+    return `<div class="cl-vgrid" style="${v}">${tiles}</div><div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>`;
+  },
   load: async d => {
     const it = d.items[d.open]; if (!it) return;
     const rg = BAR_RANGES.find(r => r.k === d.cur), plan = barPlan(rg), key = d.open + rg.k;
@@ -2213,6 +2243,7 @@ PLUGIN_TYPES["1-16"] = {
     const T = PLUGIN_TYPES["1-16"];
     if (b.dataset.pa === "open") { const it = d.items[+b.dataset.i]; d.open = +b.dataset.i; d.cur = (it.ranges.find(r => r.k === "7d") || it.ranges[0] || {}).k; d.vals = null; d.hover = null; renderHost(hostOfData(d)); await T.load(d); }
     else if (b.dataset.pa === "back") { d.open = null; d.vals = null; }
+    else if (b.dataset.pa === "pg") d.page = (d.page || 0) + (+b.dataset.d || 0);
     else if (b.dataset.pa === "rg" && b.dataset.k !== d.cur) { d.cur = b.dataset.k; d.vals = null; d.hover = null; renderHost(hostOfData(d)); await T.load(d); }
   }
 };
@@ -2613,6 +2644,120 @@ document.addEventListener("input", e => {                       // Suche ohne Ne
   const g = H.body.querySelector('input[data-pa="q"]'); g.focus(); try { g.setSelectionRange(pos, pos); } catch (err) {}
 });
 
+/* 1-15 Meldeanlage (v0.9.51, nur Anzeige). Einstellungen: /quad/plugins/project/<Instanz>, <items><item type name co1…/>.
+   Bedeutung der KO-Felder aus QuadConfig (Reihenfolge der Eigenschaften) und der Plugin-Beschreibung:
+     CExternalAreaItem / CInternalAreaItem  co1 Scharfschaltbereit · co2 Scharfschalt-Eingang (schreibt) · co3 Scharf-Signal · co4 Alarm · co5 Stiller Alarm (schreibt)
+     CInfoItem          co2–co4 Statusanzeige Zeile 1–3 (Text); co1 ist in QuadConfig nicht belegbar
+     CDetectorsItem     co1 Startpunkt (schreibt) · co2–co9 Listeneintrag 1–8 (Text) · co10 Anzahl fehlender oder offener Melder
+     CMessagesItem      co1 Meldungsarchiv, interval Abfrage-Intervall · CFireItem co1 Feuer-Alarm (1 = Feuer)
+     CConfirmationItem  co1 Quittung (schreibt) · CRaidItem co1 Überfall-Alarm senden (schreibt)
+   Der Client zeigt an; Scharf-/Unscharfschalten (mit PIN), Quittieren und Blättern in der Melderliste senden nichts. Überfall-Alarm ab v0.9.53 als Halteknopf.
+   Belegt durch Bildschirmfotos des QuadClients: Kacheln in zwei Spalten; Melderliste und Ereignisspeicher öffnen eine Unteransicht;
+   Feuer-Alarm und Quittung erscheinen nur bei Bedarf; den Knopf „Überfall-Alarm“ muss man gedrückt halten (Fortschrittsbalken), erst dann löst er aus.
+   Vermutung: Rangfolge der Zustände Alarm > Scharf > Scharfschaltbereit > Nicht bereit; Abfrage-Intervall in Sekunden. */
+const maBit = ko => { const n = num(ko); return n === undefined ? null : n !== 0; };
+const maTxt = ko => { const v = V.get(ko); return v === undefined ? "" : String(v).trim(); };
+const maArea = t => { const rd = maBit(t.co[0]), sc = maBit(t.co[2]), al = maBit(t.co[3]);
+  if (al) return ["Alarm", "var(--err)"]; if (sc) return ["Scharf", "var(--on)"]; if (maBit(t.co[5])) return ["Unscharf nach Alarm", "var(--err)"]; if (rd) return ["Scharfschaltbereit", "var(--ok)"];
+  return rd === null && sc === null && al === null ? ["–", "var(--muted)"] : ["Nicht bereit zum Scharfschalten", "var(--muted)"]; };
+/* v0.9.53 Überfall-Alarm: wie im QuadClient muss der Knopf gedrückt gehalten werden (Fortschrittsbalken), erst dann wird gesendet.
+   Vermutung: Haltedauer 2 Sekunden, gesendet wird der Wert 1 auf „Überfall-Alarm senden“ (co1). Loslassen vorher bricht ab. */
+const MA_HOLD_MS = 2000; let maHold = null;
+const maHoldBtn = (t, i) => t.co[0] ? `<button type="button" class="ma-hold" data-hold="${i}" title="Zum Auslösen gedrückt halten"><i></i>auslösen (halten)</button>` : "";
+const maHoldEnd = () => { if (!maHold) return; clearTimeout(maHold.timer); const b = document.querySelector(".ma-hold.holding"); if (b) b.classList.remove("holding"); maHold = null; };
+document.addEventListener("pointerdown", e => {
+  const b = e.target.closest && e.target.closest(".ma-hold"), H = b && hostOfEl(b), t = H && H.plug && H.plug.data && H.plug.data.tiles && H.plug.data.tiles[+b.dataset.hold];
+  if (!t || t.kind !== "raid" || !t.co[0]) return; e.preventDefault(); maHoldEnd(); b.classList.add("holding");
+  maHold = { timer: setTimeout(() => { maHold = null; send(t.co[0], 1); log("··", "Überfall-Alarm ausgelöst (" + (H.plug.title || "") + ")");
+    const n = H.body.querySelector('.ma-hold[data-hold="' + b.dataset.hold + '"]'); if (n) { n.classList.remove("holding"); n.classList.add("sent"); n.lastChild.textContent = "gesendet"; } }, MA_HOLD_MS) };
+});
+["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, maHoldEnd));
+document.addEventListener("pointerout", e => { if (maHold && e.target.closest && e.target.closest(".ma-hold") && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".ma-hold"))) maHoldEnd(); });
+const MA_KINDS = { CExternalAreaItem: "area", CInternalAreaItem: "area", CInfoItem: "info", CDetectorsItem: "det", CMessagesItem: "msg", CFireItem: "fire", CConfirmationItem: "ack", CRaidItem: "raid" };
+PLUGIN_TYPES["1-15"] = {
+  name: "Meldeanlage",
+  read: x => {
+    const tiles = [];
+    [...x.querySelectorAll("items > item")].map(attrs).forEach(a => {
+      const kind = MA_KINDS[a.type];
+      if (!kind) { log("··", "Meldeanlage: unbekannte Art „" + a.type + "“ übersprungen"); return; }
+      const co = []; for (let i = 1; i <= 10; i++) co.push(a["co" + i] && a["co" + i] !== "0" ? a["co" + i] : "");
+      tiles.push({ kind, name: a.name || "", co, interval: parseInt(a.interval, 10) || 0 });
+    });
+    return { tiles, msgs: null, err: "", at: null, all: false, sub: null, page: 0 };
+  },
+  tags: d => d.tiles.flatMap(t => t.kind === "area" ? [t.co[0], t.co[2], t.co[3], t.co[5]] : t.kind === "raid" ? [t.co[1]] : t.kind === "info" ? t.co.slice(1, 4) : t.kind === "det" ? t.co.slice(1, 10) : t.kind === "fire" ? [t.co[0]] : []),
+  load: async d => {
+    const m = d.tiles.find(t => t.kind === "msg" && t.co[0]); d.err = ""; if (!m) return;
+    try {
+      const x = new DOMParser().parseFromString(await hsGet("/quad/msg/" + m.co[0] + "/1000"), "text/xml");
+      d.msgs = [...x.querySelectorAll("msg")].map(e => ({ date: e.getAttribute("date") || "", text: e.getAttribute("text") || "" })).sort((a, b) => b.date.localeCompare(a.date));
+      d.at = new Date();
+    } catch (e) { d.err = e.message; d.msgs = d.msgs || []; }
+    if (m.interval > 0 && !d.timer) {
+      const loop = () => { d.timer = setTimeout(async () => { if (!plugAlive(d)) return; await PLUGIN_TYPES["1-15"].load(d); renderHost(hostOfData(d)); loop(); }, Math.max(5, m.interval) * 1000); };
+      loop();
+    }
+  },
+  html: d => {
+    const wide = ' style="grid-column:1/-1"';
+    const out = d.tiles.map(t => {
+      if (t.kind === "area") { const [s, c] = maArea(t); return `<div class="pval ma-area"><div class="cap">${esc(t.name)}</div><div class="big" style="color:${c};font-size:18px">${esc(s)}</div></div>`; }
+      if (t.kind === "fire") return maBit(t.co[0]) ? `<div class="pval ma-fire" style="border-color:var(--err)"><div class="cap">${esc(t.name)}</div><div class="big" style="color:var(--err);font-size:18px">Feuer-Alarm</div></div>`
+        : d.az ? `<div class="pval ma-fire"><div class="cap">${esc(t.name)}</div><div class="big" style="color:var(--muted);font-size:18px">Kein Alarm</div></div>` : "";
+      if (t.kind === "info") { const l = t.co.slice(1, 4).map(maTxt).filter(Boolean);
+        return `<div class="pval ma-info"><div class="cap">${esc(t.name)}</div>${l.length ? l.map(s => `<div>${esc(s)}</div>`).join("") : '<div class="note">–</div>'}</div>`; }
+      if (t.kind === "det") { const n = num(t.co[9]), l = t.co.slice(1, 9).map(maTxt).filter(Boolean);
+        return `<div class="pval ma-det"><div class="cap">${esc(t.name)}</div><div class="row"><span>fehlend oder offen</span><b>${n === undefined ? "–" : n}</b></div>${l.map(s => `<div>${esc(s)}</div>`).join("")}</div>`; }
+      if (t.kind === "msg") { const all = d.msgs || [], list = d.all ? all.slice(0, 300) : all.slice(0, 5);
+        return `<div class="pval ma-msg"${wide}><div class="cap">${esc(t.name)}</div>${!t.co[0] ? '<div class="note">Kein Archiv eingerichtet.</div>' : !d.msgs ? '<div class="note">Lade Meldungen …</div>' :
+          (d.err ? `<div class="note">Meldungen konnten nicht geladen werden: ${esc(d.err)}</div>` : "") +
+          (list.length ? `<div class="mlist">${list.map(m => `<div class="mrow"><time>${esc(camTxt(m.date))}</time><span>${esc(m.text)}</span></div>`).join("")}</div>` : '<div class="note">Keine Meldungen.</div>') +
+          (all.length > 5 ? `<div style="margin-top:8px"><button class="chip" data-pa="all">${d.all ? "Nur die neuesten" : "Alle " + all.length + " Meldungen"}</button></div>` : "")}</div>`; }
+      if (t.kind === "raid") { const al = maBit(t.co[1]); return `<div class="pval ma-raid"${al ? ' style="border-color:var(--err)"' : ""}><div class="cap">${esc(t.name)}</div>${al ? '<div class="big" style="color:var(--err);font-size:18px">Überfall-Alarm</div>' : ""}${maHoldBtn(t, d.tiles.indexOf(t))}</div>`; }
+      return "";
+    }).join("");
+    const ops = d.tiles.some(t => t.kind === "area" || t.kind === "ack" || t.kind === "raid");
+    return `<div class="pgrid">${out}</div>` + (ops ? '<p class="note" style="margin:10px 0 0">Scharf- und Unscharfschalten und Quittieren gehen im Client noch nicht. Überfall-Alarm: Knopf gedrückt halten.</p>' : "");
+  },
+  /* v0.9.52 Original-Stil (Klassisch), nach Bildschirmfotos des QuadClients: Kacheln in zwei Spalten × drei Zeilen, Titel oben links, Zustand rechts;
+     Melderliste und Ereignisspeicher öffnen eine Unteransicht. Feuer-Alarm nur bei Alarm, Quittung gar nicht (nur Bedienung).
+     Die Symbole des Originals fehlen noch; der Zustand steht als Text statt als Symbolknopf. Weiterhin nur Anzeige. */
+  htmlClassic: d => {
+    const sub = d.sub !== null && d.tiles[d.sub];
+    if (sub) { const back = `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><button class="chip" data-pa="back">${svg("left")} Übersicht</button><b>${esc(sub.name)}</b></div>`;
+      let body = "";
+      if (sub.kind === "det") { const l = sub.co.slice(1, 9).map(maTxt).filter(Boolean); body = l.length ? `<div class="mlist">${l.map(s => `<div class="mrow"><span>${esc(s)}</span></div>`).join("")}</div>` : '<p class="note">Keine Einträge.</p>'; }
+      else { const all = d.msgs || []; body = !sub.co[0] ? '<p class="note">Kein Archiv eingerichtet.</p>' : !d.msgs ? '<p class="note">Lade Meldungen …</p>' :
+        (d.err ? `<p class="note">Meldungen konnten nicht geladen werden: ${esc(d.err)}</p>` : "") +
+        (all.length ? `<div class="mlist" style="max-height:none">${all.slice(0, 300).map(m => `<div class="mrow"><time>${esc(camTxt(m.date))}</time><span>${esc(m.text)}</span></div>`).join("")}</div>` : '<p class="note">Keine Meldungen.</p>'); }
+      return `<div class="ma-sub" style="height:274px;overflow:auto;padding:8px;background:#1c1c1c;color:#e6e6e6">${back}${body}</div>`; }
+    const vis = d.tiles.map((t, i) => [t, i]).filter(([t]) => t.kind !== "ack" && (t.kind !== "fire" || d.az || maBit(t.co[0])));
+    const per = 6, R = 3, pages = Math.max(1, Math.ceil(vis.length / per)), pg = d.page = Math.max(0, Math.min(d.page || 0, pages - 1)), gh = 274 - 30, rh = (gh - 12 - (R - 1) * 6) / R;
+    const v = `--rh:${rh.toFixed(1)}px;--fc:${(rh * 0.19).toFixed(1)}px;--fb:${(rh * 0.36).toFixed(1)}px;--ic:${(rh * 0.5).toFixed(1)}px;grid-template-rows:repeat(${R},1fr);height:${gh}px`;
+    const st = (s, c) => `<div class="big" style="font-size:calc(var(--fb) * .58);color:${c};max-width:52%;white-space:normal;text-align:right;line-height:1.1">${esc(s)}</div>`;
+    const tiles = vis.slice(pg * per, pg * per + per).map(([t, i]) => {
+      const open = t.kind === "det" || t.kind === "msg"; let inner = "";
+      if (t.kind === "area") { const [s, c] = maArea(t); inner = st(s === "Nicht bereit zum Scharfschalten" ? "Nicht bereit" : s, c === "var(--muted)" ? "#9a9a9a" : c); }
+      else if (t.kind === "fire") inner = maBit(t.co[0]) ? st("Feuer-Alarm", "var(--err)") : st("Kein Alarm", "#9a9a9a");
+      else if (t.kind === "raid") inner = `<div class="big" style="font-size:13px">${maBit(t.co[1]) ? '<span style="color:var(--err);margin-right:8px">Überfall-Alarm</span>' : ""}${maHoldBtn(t, i)}</div>`;
+      else if (t.kind === "info") inner = `<div class="list">${t.co.slice(1, 4).map(maTxt).map(s => `<div class="row"><span></span><b>${esc(s) || "&nbsp;"}</b></div>`).join("")}</div>`;
+      else if (t.kind === "det") { const n = num(t.co[9]); inner = `<div class="big">${n === undefined ? "–" : n}</div>`; }
+      else if (t.kind === "msg") inner = `<div class="big" style="font-size:calc(var(--fb) * .58);color:#9a9a9a">${d.msgs ? d.msgs.length + " Meldungen" : ""}</div>`;
+      return `<div class="cl-vt ma-${t.kind}${open ? " cl-open" : ""}${t.kind === "info" ? " multi" : ""}"${open ? ` data-pa="sub" data-i="${i}"` : ""}><div class="cap">${esc(t.name)}${open ? " ▸" : ""}</div>${inner}</div>`;
+    }).join("");
+    return `<div class="cl-vgrid" style="${v}">${tiles}</div><div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>`;
+  },
+  act: (d, b) => { const pa = b.dataset.pa;
+    if (pa === "all") d.all = !d.all; else if (pa === "sub") d.sub = +b.dataset.i; else if (pa === "back") d.sub = null; else if (pa === "pg") d.page = (d.page || 0) + (+b.dataset.d || 0); }
+};
+
+/* 1-21 KNX-Alarmzentrale (v0.9.52, nur Anzeige): gleiche Einstellungsdatei wie die Meldeanlage, mit diesen Unterschieden (aus QuadConfig):
+   Sicherungsbereiche haben zusätzlich co6 „Alarmzustand ‚Unscharf nach Alarm‘“; CRaidItem co2 „Überfall-Alarm empfangen“; CInfoItem co1 „Auswahl“ (schreibt).
+   Melderliste, Ereignisspeicher und Quittung gibt es hier nicht. Der Client sendet auch aus diesem Plugin nichts. */
+/* v0.9.53: Laut Bildschirmfoto des QuadClients steht die Kachel „Feuer-Alarm“ bei der Alarmzentrale immer da (bei der Meldeanlage nur bei Alarm). */
+PLUGIN_TYPES["1-21"] = { ...PLUGIN_TYPES["1-15"], name: "KNX-Alarmzentrale", read: x => ({ ...PLUGIN_TYPES["1-15"].read(x), az: true }) };
+
 /* 0-7 Kamera-Archiv. Abruf wie das Original (CDownloadCamArchiv / buildCamArchPicUrl):
    /quad/camarch/list/<archid>?<sid> -> <camarch><pic date="yyyyMMddHHmmss" id="…"/>…   Bild: /quad/camarch/pic/<archid>/<id>?<sid> */
 const camDate = d => /^\d{14}$/.test(d || "") ? new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8), +d.slice(8, 10), +d.slice(10, 12), +d.slice(12, 14)) : null;
@@ -2713,6 +2858,8 @@ function viewData(v) {
   if (v.startsWith("r:")) for (const f of P_.floors) for (const r of f.rooms) if ("r:" + r.id === v) return { title: r.name, crumb: f.name, items: visItems(r.items) };
   if (v.startsWith("t:")) for (const t of P_.trades) if ("t:" + t.id === v) return { title: t.name, crumb: "Gewerk", items: visItems(t.items) };
   if (v.startsWith("f:")) for (const f of P_.floors) if ("f:" + f.id === v) return { title: f.name, crumb: "Etage", rooms: f.rooms };
+  if (v.startsWith("g:")) { const fl = P_.floors.filter(f => f.rooms.length);                       // ganze Gebäudestruktur: g:1 = erst die Gebäudeteile, g:0 = alle Räume
+    return { title: "Gebäude", crumb: "", rooms: v === "g:1" && fl.length > 1 ? fl.map(f => ({ id: f.id, name: f.name, mv: "f:" + f.id, n: f.rooms.length })) : fl.flatMap(f => f.rooms) }; }
   if (v.startsWith("m:") && P_.menu && P_.menu.length) return menuPage(v.slice(2));
   return null;
 }
@@ -2732,8 +2879,8 @@ function renderView() {
     return;
   }
   if (v.rooms) {
-    $("grid").innerHTML = v.rooms.map(r => `<button class="card mcard" data-mv="r:${esc(r.id)}"><div class="head"><div class="ic">${qi(navIco("3", "room", r.id), "home")}</div>
-      <div style="min-width:0"><div class="name">${esc(r.name)}</div><div class="t2">${count(r.items)} Elemente</div></div></div></button>`).join("");
+    $("grid").innerHTML = v.rooms.map(r => `<button class="card mcard" data-mv="${esc(r.mv || "r:" + r.id)}"><div class="head"><div class="ic">${qi(navIco("3", "room", r.id), "home")}</div>
+      <div style="min-width:0"><div class="name">${esc(r.name)}</div><div class="t2">${r.items ? count(r.items) + " Elemente" : r.n + " Räume"}</div></div></div></button>`).join("");
     return;
   }
   const html = v.items.map(i => { const el = P_.els[i.ref]; return !el || el.kind === "spacer" ? "" : tile(i.ref, el, i.label); }).join("");
@@ -2968,7 +3115,7 @@ function clLeft() {
   const R = CL.rows;
   if (v.rooms) {
     const sh = v.rooms.slice(top, top + R);
-    const rows = sh.map((r, i) => `<button class="cl-lrow" data-mv="r:${esc(r.id)}" style="top:${i * 40}px">${esc(r.name)}</button>`).join("") + Array.from({ length: R - sh.length }, (_, k) => `<div class="cl-row" style="top:${(sh.length + k) * 40}px"></div>`).join("");
+    const rows = sh.map((r, i) => `<button class="cl-lrow" data-mv="${esc(r.mv || "r:" + r.id)}" style="top:${i * 40}px">${esc(r.name)}</button>`).join("") + Array.from({ length: R - sh.length }, (_, k) => `<div class="cl-row" style="top:${(sh.length + k) * 40}px"></div>`).join("");
     return { title: v.title, html: rows + clBar(true, top > 0, top + R < v.rooms.length, R) };
   }
   const list = v.items.filter(i => P_.els[i.ref] && P_.els[i.ref].kind !== "spacer");
