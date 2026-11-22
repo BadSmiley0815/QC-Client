@@ -33,7 +33,7 @@ async function start(b, user, extra = []) {
     if (n === "demo.addin.wetter_907.json") return addinMode === "ohne" ? r.fulfill({ status: 404, body: "" }) : r.fulfill({ status: 200, contentType: "application/json", body: Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), T("demo_addin_907.json")]) });
     if (u.includes("/quad/load/ADDINS/SETTINGS907.JSON?SID")) return r.fulfill({ status: 200, contentType: "application/json", body: '{"ort":"Demostadt"}' });
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml", "1-15_951.xml": "demo_1-15_951.xml", "1-21_952.xml": "demo_1-21_952.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml", "1-15_951.xml": "demo_1-15_951.xml", "1-21_952.xml": "demo_1-21_952.xml", "180-1_953.xml": "demo_180-1_953.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
@@ -548,6 +548,30 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     ok("v0.9.57: nach dem Ausschalten hängen die Zeilen wieder an ihren KOs", await pr.evaluate(() => window.__k1 === "9501,9501,9501," && HOSTS.every(h => !h.plug || !h.plug.data || !h.plug.data.tiles || h.plug.data.tiles.every(t => !t.zk))));
     ok("Klassisch: nach dem Ausschalten wieder echte Werte", (await pr.textContent("#cl-q1b")).replace(/\s+/g, " ").includes("Netz-Bezug450 W") && (await pr.locator("#cl-q1b .res-demo").count()) === 0);
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pr.close(); }
+
+  console.log("Plugin Energiefluss 180-1 (v0.9.58, erfundene Einstellungen)");
+  { const pe = await start(b, "Demo", ["2|9801|4200.0|0", "2|9802|800.0|0", "2|9803|1900.0|0", "2|9804|1500.0|0", "2|9805|71.0|0", "2|9806|12.3|0", "2|9807|68.0|0", "2|9808|81.0|0", "2|9809|16.2|0", "2|9810|3.1|0", "2|9811|17.5|0", "2|9812|1.0|0"]);
+    const errs = []; pe.on("pageerror", e => errs.push(e.message));
+    await pe.evaluate(() => openPlugin("Energiefluss", "953")); await pe.waitForTimeout(900);
+    const nt = async k => (await pe.textContent(`#pbody [data-ef="${k}"]`)).replace(/\s+/g, " "), on = async k => pe.locator(`#pbody .ef-l.on[data-ef="${k}"]`).count();
+    ok("vier Kreise: Titel, Wert, Einheit, Zusatzzeile (v0.9.59 wie im QuadClient)", (await nt("pv")).includes("PV-ANLAGE4200W17.5 kWh") && (await nt("haus")).includes("HAUS1900W12.3 kWh") && (await nt("bat")).includes("SPEICHER800W lädt71 %") && (await nt("netz")).includes("NETZ1500WEinspeisung"), [await nt("pv"), await nt("haus"), await nt("bat"), await nt("netz")].join(" | "));
+    ok("Fußzeile: Eigenver., Autarkie, Einspeisung, Netzbezug, Live", (await nt("evpct")).includes("EIGENVER.68%") && (await nt("autpct")).includes("81%") && (await nt("einsp")).includes("16.2kWh") && (await nt("bezug")).includes("3.1kWh") && (await pe.textContent("#pbody svg.ef")).includes("Live"), await nt("einsp"));
+    ok("Einspeisung und Laden: Linien PV–Haus, PV–Netz, Speicher–Haus (rückwärts); Netz–Haus fehlt", await on("pvHaus") === 1 && await on("pvNetz") === 1 && await pe.locator('#pbody .ef-l.rev[data-ef="batHaus"]').count() === 1 && await on("netzHaus") === 0 && await pe.locator("#pbody .ef-l").count() === 3);
+    await pe.evaluate(() => { WSI.onmessage({ data: "1|9804|-650.0|0" }); WSI.onmessage({ data: "1|9812|2.0|0" }); }); await pe.waitForTimeout(300);
+    ok("Netz negativ = Bezug (Betrag), Speicher entlädt: Linien Netz→Haus und Speicher→Haus", (await nt("netz")).includes("650WBezug") && (await nt("bat")).includes("W entlädt") && await on("netzHaus") === 1 && await on("batHaus") === 1 && await pe.locator("#pbody .ef-l.rev").count() === 0 && await on("pvNetz") === 0, await nt("netz"));
+    await pe.evaluate(() => WSI.onmessage({ data: "1|9812|3.0|0" })); await pe.waitForTimeout(300);
+    ok("Speicher-Status 3 = Ruhe: nur „W“, keine Speicher-Linie", (await nt("bat")).includes("800W71 %") && await on("batHaus") === 0 && await pe.locator("#pbody .ef-l").count() === 2, await nt("bat"));
+    await pe.evaluate(() => { WSI.onmessage({ data: "1|9812|1.0|0" }); }); await pe.emulateMedia({ reducedMotion: "reduce" }); await pe.waitForTimeout(300);
+    ok("v0.9.60: Linien laufen auch bei „Animationen reduzieren“, beim Laden rückwärts", await pe.evaluate(() => { const a = getComputedStyle(document.querySelector('#pbody .ef-l[data-ef="pvHaus"]')), r = getComputedStyle(document.querySelector('#pbody .ef-l[data-ef="batHaus"]'));
+      return a.animationName === "efrun" && a.animationDirection === "normal" && r.animationName === "efrun" && r.animationDirection === "reverse"; }));
+    await pe.emulateMedia({ reducedMotion: null }); await pe.evaluate(() => { WSI.onmessage({ data: "1|9812|3.0|0" }); }); await pe.waitForTimeout(200);
+    ok("Einstellungen auch als Unterelemente lesbar, ohne KO „Warte auf Daten“", await pe.evaluate(() => { const T = PLUGIN_TYPES["180-1"], P = s => new DOMParser().parseFromString(s, "text/xml");
+      const a = T.read(P('<project><settings><pv>77</pv><netz ko="78"/></settings></project>')), e = T.read(P("<project/>"));
+      return a.ko.pv === "77" && a.ko.netz === "78" && a.ko.haus === "" && T.html(e).includes("Warte auf Daten") && T.tags(e).filter(Boolean).length === 0; }));
+    await pe.evaluate(() => { PLUGS["953"].quad = "1"; PLUGS["953"].vis = "1"; }); await pe.selectOption("#uisel", "classic"); await pe.waitForTimeout(600);
+    await pe.evaluate(() => clPlugin("953")); await pe.waitForTimeout(900);
+    ok("Klassisch: Zeichnung füllt den Quadranten, ohne überzustehen", await pe.evaluate(() => { const q = document.querySelector("#cl-q1b"), s = q.querySelector("svg.ef"); if (!s) return false; const a = q.getBoundingClientRect(), r = s.getBoundingClientRect(); return r.height > 200 && r.bottom <= a.bottom + 1 && r.right <= a.right + 1 && r.left >= a.left - 1; }));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pe.close(); }
 
   console.log("Plugin Meldeanlage 1-15, nur Anzeige (v0.9.51, erfundene Einstellungen)");
   { const pm = await start(b, "Demo", ["2|9601|1.0|0", "2|9603|0.0|0", "2|9604|0.0|0", "2|9611|1.0|0", "2|9613|1.0|0", "2|9614|0.0|0",

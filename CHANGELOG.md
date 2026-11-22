@@ -3,6 +3,18 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.60 – Energiefluss: Linien fließen wieder
+- **Behoben:** Die Linien im Energiefluss standen still, wenn im Betriebssystem „Animationen reduzieren“ eingeschaltet ist (so auf dem Rechner, an dem es auffiel). Sie laufen jetzt immer in Flussrichtung – zum Haus hin, beim Laden des Speichers vom Haus weg –, weil die Richtung hier die Aussage ist.
+
+## 0.9.59 – Energiefluss wie im QuadClient
+- **Verbessert:** Der Energiefluss (180-1) sieht jetzt aus wie im QuadClient, belegt durch einen Mitschnitt: gefüllte Kreise mit farbigem Symbol, Titel, Wert, darunter „W“ (beim Speicher „W lädt“ / „W entlädt“) und eine Zusatzzeile; Linien nur noch zum Haus und nur, wenn etwas fließt; Fußzeile als eigener Balken mit „Eigenver.“, „Autarkie“, „Einspeisung“, „Netzbezug“ in Farbe und „Live“; kWh mit Punkt und einer Nachkommastelle.
+- Vermutung: bei Einspeisung die Linie PV–Netz (so zeigt es das Vorschaubild des Plugins; im Mitschnitt kam keine Einspeisung vor). Symbole weiterhin eigene Zeichnungen.
+
+## 0.9.58 – Plugin „Energiefluss“ (180-1)
+- **Neu:** Das Zusatz-Plugin „Energiefluss“ (180-1, Smarthome Hammelrath) wird angezeigt: vier Kreise für PV-Anlage, Speicher, Netz und Haus mit Leistung in Watt, dazu PV-Energie und Verbrauch heute, Ladestand und Zustand des Speichers, in der Fußzeile Eigennutzung, Autarkie, Einspeisung und Netzbezug. Gestrichelte Linien laufen in Richtung des Energieflusses. In „Modern“ und „Klassisch“.
+- Belegt aus der Beschreibung des Plugins: die zwölf KOs, Netz positiv = Einspeisung und negativ = Bezug, Speicher-Status 1 = laden, 2 = entladen, sonst Ruhe, die Anordnung der Kreise. Zeichnung und Symbole sind eigene.
+- Belegt an einer echten Instanz: Die Einstellungen stehen als Attribute an `<settings>` (ein KO je Name, 0 = nicht belegt). Vermutung: wann welche Linie läuft. Die Anzeige selbst ist bisher nur am nachgebauten HomeServer mit erfundenen Werten geprüft.
+
 ## 0.9.57 – Zufallswerte: jede Zeile mit eigenem Wert
 - **Behoben:** Hängen mehrere Zeilen oder Kacheln des Ressourcen-Plugins am selben KO, zeigten sie mit Zufallswerten alle dieselbe Zahl. Jetzt bekommt jede Zeile ihren eigenen Wert (am echten HomeServer aufgefallen, dort hängen die Test-Kacheln an einem gemeinsamen Test-KO).
 

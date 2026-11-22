@@ -204,6 +204,13 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 #clcard::backdrop{background:#0008}#clcard .grid{grid-template-columns:1fr}.cl-cardh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 #pbody{padding:12px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.ef-box{--ef-bg:var(--panel);--ef-rim:var(--line);--ef-ft:var(--bg);--ef-nz:var(--ink);color:var(--ink);max-width:640px;margin:0 auto}
+.ef-cl{--ef-bg:#2b2e30;--ef-rim:#3a3e41;--ef-ft:#191b1c;--ef-nz:#c8ccd0;color:#e6e6e6;max-width:none;height:274px;background:#1e2021;display:grid;place-items:center}.ef-cl svg{height:100%}
+svg.ef{display:block;width:100%;font-variant-numeric:tabular-nums}.ef text:not([fill]){fill:currentColor}.ef .ef-c{font-size:8.5px;font-weight:700;letter-spacing:.7px;opacity:.62}.ef .ef-v{font-size:17px;font-weight:500}
+.ef .ef-s{font-size:8.5px;opacity:.72}.ef .ef-fc{font-size:6.5px;letter-spacing:.5px;opacity:.6;fill:currentColor}.ef .ef-fv{font-size:9.5px;font-weight:600}.ef .ef-fu{font-size:6.5px;opacity:.6;fill:currentColor}.ef .ef-fl{font-size:7px;font-weight:700}
+.ef .ef-l{fill:none;stroke-width:1.7;stroke-dasharray:5 4;animation:efrun 1s linear infinite}.ef .ef-l.rev{animation-direction:reverse}@keyframes efrun{to{stroke-dashoffset:-9}}
+.ef .ef-live{animation:eflive 2s ease-in-out infinite}@keyframes eflive{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.ef .ef-live{animation:none}}   /* v0.9.60: die Linien laufen immer – die Richtung ist die Aussage */
 .pval{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
 .pval .cap{font-size:13px;color:var(--muted);margin-bottom:4px}
 .pval .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -527,7 +534,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.57";
+const VERSION = "0.9.60";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2456,6 +2463,65 @@ PLUGIN_TYPES["50-1"] = {
     if (pa === "back") { d.bal = null; if (d.open !== null) return T16.act(d, b); return; }
     return T16.act(d, b);                                   // Zeitraum wechseln (rg) usw.
   }
+};
+
+/* 180-1 Energiefluss (Zusatz-Plugin eines Drittanbieters, v0.9.58; Darstellung v0.9.59 nach einem Mitschnitt des QuadClients).
+   Belegt aus der Beschreibung des Plugins und einer echten Instanz: zwölf KOs als Attribute an <settings> (0 = nicht belegt) –
+   pv, bat, haus, netz (W; Netz positiv = Einspeisung, negativ = Bezug), soc (%), evkwh (Verbrauch heute, im Haus-Kreis), pvkwh (PV heute,
+   im PV-Kreis), evpct/autpct/einsp/bezug (Fußzeile), batstate (1 = laden, 2 = entladen, sonst Ruhe). Ohne KO: „Warte auf Daten“.
+   Belegt aus dem Mitschnitt: PV oben, Haus unten, Speicher links, Netz rechts; Linien nur zum Haus und nur, wenn etwas fließt
+   (PV–Haus, Speicher–Haus bei laden/entladen, Netz–Haus bei Bezug); in jedem Kreis Titel, Wert, „W“ (beim Speicher „W lädt“/„W entlädt“)
+   und eine Zusatzzeile; kWh mit Punkt und einer Nachkommastelle; Fußzeile „Eigenver.“, „Autarkie“, „Einspeisung“, „Netzbezug“, „Live“.
+   Vermutung: bei Einspeisung die Linie PV–Netz (so zeigt es das Vorschaubild des Plugins; im Mitschnitt kam keine Einspeisung vor).
+   Zeichnung und Symbole sind eigene. */
+const EF_KEYS = ["pv", "bat", "haus", "netz", "soc", "evkwh", "evpct", "autpct", "einsp", "bezug", "pvkwh", "batstate"];
+const EF_ICO = { pv: '<circle cx="12" cy="12" r="5.2" fill="#f5a623"/><path d="M12 1.8v3M12 19.2v3M1.8 12h3M19.2 12h3M4.8 4.8l2.1 2.1M17.1 17.1l2.1 2.1M4.8 19.2l2.1-2.1M17.1 6.9l2.1-2.1" stroke="#f5a623" stroke-width="2.2" stroke-linecap="round"/>',
+  bat: '<rect x="9.5" y="1.8" width="5" height="2.6" rx=".8" fill="#9aa0a6"/><rect x="6.5" y="4" width="11" height="18" rx="2" fill="#57c26a"/><path d="M9 9.5h6M9 13h6M9 16.5h6" stroke="#1e3a24" stroke-width="1.3"/>',
+  haus: '<path d="M5 11.5h14V21H5z" fill="#e9e3d2"/><path d="M2.5 12.2L12 3.5l9.5 8.7z" fill="#e0563b"/><path d="M10.2 21v-5.5h3.6V21z" fill="#4a9af5"/>',
+  netz: '<path d="M13.5 1.5L5 13.3h5.6L9.4 22.5 19 10.4h-5.8z" fill="#f0803c"/>' };
+const efNum = (n, d) => n === undefined ? "---" : Number(n).toFixed(d);
+function efFlows(d) {                                        // welche Linie gezeichnet wird; rev = Punkte laufen vom Haus weg
+  const v = k => d.ko[k] ? num(d.ko[k]) : undefined, pv = v("pv") || 0, netz = v("netz") || 0, bs = v("batstate");
+  return { bs: bs === 1 ? 1 : bs === 2 ? 2 : 0, pvHaus: pv > 0, netzHaus: netz < 0, pvNetz: netz > 0, batHaus: bs === 1 || bs === 2, batRev: bs === 1 };
+}
+function efSvg(d) {
+  const v = k => d.ko[k] ? num(d.ko[k]) : undefined, f = efFlows(d), netz = v("netz"), abs = n => n === undefined ? undefined : Math.abs(n);
+  const N = { pv: [253, 44, "#f5a623", "PV-Anlage"], bat: [95, 120, "#3fbf8f", "Speicher"], netz: [412, 120, "var(--ef-nz)", "Netz"], haus: [253, 197, "#4a9af5", "Haus"] };
+  const line = (id, x1, y1, x2, y2, col, rev) => f[id] ? `<path class="ef-l on${rev ? " rev" : ""}" data-ef="${id}" d="M${x1} ${y1}L${x2} ${y2}" stroke="${col}"/>` : "";
+  const node = (k, val, unit, sub) => { const [x, y, col, name] = N[k];
+    return `<g class="ef-n" data-ef="${k}"><circle cx="${x}" cy="${y}" r="39" fill="var(--ef-bg)" stroke="var(--ef-rim)"/>`
+      + `<g transform="translate(${x - 7.5} ${y - 35}) scale(.625)">${EF_ICO[k]}</g>`
+      + `<text x="${x}" y="${y - 10}" text-anchor="middle" class="ef-c">${esc(name.toUpperCase())}</text>`
+      + `<text x="${x}" y="${y + 8}" text-anchor="middle" class="ef-v" fill="${col}">${esc(efNum(val, 0))}</text>`
+      + `<text x="${x}" y="${y + 19}" text-anchor="middle" class="ef-s">${esc(unit)}</text>`
+      + (sub ? `<text x="${x}" y="${y + 30}" text-anchor="middle" class="ef-s">${esc(sub)}</text>` : "") + `</g>`; };
+  const foot = [["evpct", "Eigenver.", 0, "%", "#f5a623", 26], ["autpct", "Autarkie", 0, "%", "#3fbf8f", 130], ["einsp", "Einspeisung", 1, "kWh", "#4a9af5", 230], ["bezug", "Netzbezug", 1, "kWh", "var(--ef-nz)", 357]].filter(q => d.ko[q[0]]);
+  return `<svg class="ef" viewBox="0 0 507 273" role="img" aria-label="Energiefluss">`
+    + line("pvHaus", 253, 84, 253, 157, "#f5a623") + line("batHaus", 132, 132, 216, 184, "#3fbf8f", f.batRev) + line("netzHaus", 375, 132, 290, 184, "var(--ef-nz)")
+    + line("pvNetz", 288, 62, 377, 103, "#f5a623")
+    + node("pv", v("pv"), "W", d.ko.pvkwh ? efNum(v("pvkwh"), 1) + " kWh" : "")
+    + node("bat", abs(v("bat")), f.bs === 1 ? "W lädt" : f.bs === 2 ? "W entlädt" : "W", d.ko.soc ? efNum(v("soc"), 0) + " %" : "")
+    + node("netz", abs(netz), "W", netz === undefined || netz === 0 ? "" : netz > 0 ? "Einspeisung" : "Bezug")
+    + node("haus", v("haus"), "W", d.ko.evkwh ? efNum(v("evkwh"), 1) + " kWh" : "")
+    + `<path d="M0 244.5H507V273H0z" fill="var(--ef-ft)"/><path d="M0 244.5H507" stroke="var(--ef-rim)"/>`
+    + foot.map((q, i) => `${i ? `<path d="M${q[5] - 9} 253v12" stroke="var(--ef-rim)"/>` : ""}<text x="${q[5]}" y="262" class="ef-f" data-ef="${q[0]}"><tspan class="ef-fc">${esc(q[1].toUpperCase())}</tspan><tspan dx="4" class="ef-fv" fill="${q[4]}">${esc(efNum(v(q[0]), q[2]))}</tspan><tspan dx="1" class="ef-fu">${q[3]}</tspan></text>`).join("")
+    + `<circle class="ef-live" cx="471" cy="259.5" r="2.2" fill="#3fbf8f"/><text x="476" y="262" class="ef-fl" fill="#3fbf8f">Live</text></svg>`;
+}
+PLUGIN_TYPES["180-1"] = {
+  name: "Energiefluss",
+  read: x => {
+    const s = x.querySelector("settings") || x.documentElement, ko = {};
+    EF_KEYS.forEach(k => { let val = s ? s.getAttribute(k) : null;
+      if (val === null) { const e = [...x.querySelectorAll("*")].find(n => n.localName === k || n.getAttribute("name") === k || n.getAttribute("key") === k || n.getAttribute("id") === k);
+        val = e ? e.getAttribute("ko") || e.getAttribute("co") || e.getAttribute("value") || e.getAttribute("tag") || e.textContent : ""; }
+      ko[k] = resKo(String(val || "").trim()); });
+    log("··", "Energiefluss (Rohdaten): " + new XMLSerializer().serializeToString(x).replace(/\s+/g, " ").slice(0, 600));
+    return { ko };
+  },
+  tags: d => Object.values(d.ko),
+  html: d => Object.values(d.ko).some(Boolean) ? `<div class="ef-box">${efSvg(d)}</div>` : '<div class="note">Warte auf Daten – dem Plugin ist kein KO zugewiesen.</div>',
+  htmlClassic: d => `<div class="ef-box ef-cl">${Object.values(d.ko).some(Boolean) ? efSvg(d) : '<div class="cl-qmsg"><span>Warte auf Daten</span></div>'}</div>`,
+  act: () => {}
 };
 
 /* 0-2 Kamera (Original: hs_client_camera.QuadCamera). Das Original holt die Bilder direkt von der Kamera (Digest-Anmeldung).

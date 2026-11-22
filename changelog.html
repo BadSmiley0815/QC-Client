@@ -81,7 +81,7 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <header class="hero">
   <div>
     <div class="kicker"><i></i> QC-Client · qc.html</div>
-    <h1>Der QuadClient im Browser – Version 0.9.57</h1>
+    <h1>Der QuadClient im Browser – Version 0.9.60</h1>
     <p class="lead">Eigener HTML5-Client für den Gira HomeServer. Er lädt die vorhandene QC-Visu, nutzt die QC-Benutzerrechte und läuft auf jedem Gerät mit Browser – ohne App, ohne Zusatzdateien.</p>
     <div class="pills">
       <span class="pill">Aufruf: <b>https://&lt;HS-IP&gt;/opt/hs-client/qc.html</b></span>
@@ -145,6 +145,9 @@ footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid va
 <h2>Änderungen</h2>
 <p class="sub">Neueste Version oben. <span class="tag t-neu">neu</span> <span class="tag t-fix">korrigiert</span> <span class="tag t-offen">noch offen</span></p>
 <div class="tl">
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.60</span>Energiefluss: Linien fließen wieder</h3><ul><li><span class="tag t-neu">neu</span> Die Linien im Energiefluss laufen jetzt immer in Flussrichtung, auch wenn im Betriebssystem „Animationen reduzieren“ eingeschaltet ist (dann standen sie still).</li></ul></div></div>
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.59</span>Energiefluss wie im QuadClient</h3><ul><li><span class="tag t-neu">neu</span> Der Energiefluss sieht jetzt aus wie im QuadClient (nach einem Mitschnitt): gefüllte Kreise mit farbigem Symbol, Wert und „W“ untereinander, Linien nur zum Haus und nur bei Fluss, Fußzeile als Balken mit farbigen Werten und „Live“. Bei Einspeisung ist die Linie PV–Netz eine Vermutung.</li></ul></div></div>
+<div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.58</span>Plugin „Energiefluss“ (180-1)</h3><ul><li><span class="tag t-neu">neu</span> Das Zusatz-Plugin „Energiefluss“ wird angezeigt: vier Kreise für PV-Anlage, Speicher, Netz und Haus, Tageswerte und eine Fußzeile mit Eigennutzung, Autarkie, Einspeisung und Netzbezug; gestrichelte Linien laufen in Flussrichtung. Eigene Zeichnung. Die Anzeige ist bisher nur am nachgebauten HomeServer geprüft.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.57</span>Zufallswerte: jede Zeile mit eigenem Wert</h3><ul><li><span class="tag t-neu">neu</span> Hängen mehrere Zeilen oder Kacheln des Ressourcen-Plugins am selben KO, bekommt mit Zufallswerten trotzdem jede ihren eigenen Wert (vorher zeigten alle dieselbe Zahl).</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.56</span>Ressourcen: Zufallswerte zum Ausprobieren</h3><ul><li><span class="tag t-neu">neu</span> Im Ressourcen-Plugin lassen sich Zufallswerte einschalten (Menü links „Ressourcen → Zufallswerte“, in „Klassisch“ im System-Menü). Alle 5 Sekunden wechseln die Werte von Bilanz, Wertanzeige, Instrument und Diagramm-Kachel. Nur Anzeige: nichts wird gesendet, die echten Werte bleiben erhalten; nach dem Neuladen wieder aus.</li></ul></div></div>
 <div class="rel minor"><span class="dot"></span><div class="card"><h3><span class="ver">v0.9.55</span>Meldeanlage und Alarmzentrale mit Symbolen</h3><ul><li><span class="tag t-neu">neu</span> Anordnung wie im QuadClient: Titel oben links, Symbol unten links, rechts ein Zustandsfeld mit Symbol (bereit, scharf, nicht bereit, Alarm), das zugleich der Knopf zum Scharf-/Unscharfschalten ist. Eigene Zeichnungen, keine Symbole des Herstellers.</li></ul></div></div>
