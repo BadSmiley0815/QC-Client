@@ -3,6 +3,21 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.57 – Zufallswerte: jede Zeile mit eigenem Wert
+- **Behoben:** Hängen mehrere Zeilen oder Kacheln des Ressourcen-Plugins am selben KO, zeigten sie mit Zufallswerten alle dieselbe Zahl. Jetzt bekommt jede Zeile ihren eigenen Wert (am echten HomeServer aufgefallen, dort hängen die Test-Kacheln an einem gemeinsamen Test-KO).
+
+## 0.9.56 – Ressourcen: Zufallswerte zum Ausprobieren
+- **Neu:** Im Ressourcen-Plugin lassen sich Zufallswerte einschalten (Menü links: „Ressourcen → Zufallswerte“, in „Klassisch“ im System-Menü „Zufallswerte“). Alle 5 Sekunden bekommen Bilanz, Wertanzeige, Instrument und Diagramm-Kachel neue Werte – so sieht man ohne angeschlossene Zähler, was die Anzeige kann (Bezug/Einspeisung, Speicher, Zeiger, Farbstufen). Solange sie laufen, steht „Zufallswerte“ dabei.
+- Nur Anzeige: Es wird nichts an den HomeServer gesendet, die echten Werte bleiben erhalten und andere Elemente zeigen sie weiter. Nicht gespeichert – nach dem Neuladen ist es wieder aus. Die Diagramm-Verläufe aus den Archiven bleiben echt.
+
+## 0.9.55 – Meldeanlage und Alarmzentrale mit Symbolen
+- **Verbessert:** Meldeanlage und Alarmzentrale in „Klassisch“ in der Anordnung des QuadClients: Titel oben links, Symbol unten links, rechts ein Zustandsfeld. Das Feld zeigt den Zustand als Symbol (Schild mit Haken = bereit, mit Schloss = scharf, durchgestrichen = nicht bereit, Warndreieck = Alarm) und ist zugleich der Knopf zum Scharf-/Unscharfschalten; Quittung und Überfall haben ihr eigenes Feld. Der Zustand steht zusätzlich als Text da. In „Modern“ steht ein Symbol vor jedem Kacheltitel.
+- Die Symbole sind eigene Zeichnungen, keine des Herstellers.
+
+## 0.9.54 – Scharfschalten und Quittieren mit PIN
+- **Neu:** Meldeanlage und Alarmzentrale: Bereiche scharf und unscharf schalten und quittieren. Die PIN des QuadClients kann der Client nicht lesen (wo sie liegt, ist nicht bekannt); stattdessen legt man beim ersten Bedienen eine vierstellige PIN fest, die nur auf diesem Gerät gilt – gespeichert wird nur ein Hashwert im Browser. Die Quittung erscheint, solange ein Alarm ansteht.
+- Belegt aus QuadConfig: Scharfschalt-Eingang 1 = scharf, 0 = unscharf. Vermutung: Quittung sendet 1. Am echten HomeServer mit internen Test-KOs ausprobiert; an einer echten Meldeanlage oder Alarmzentrale noch nicht – vor dem Einsatz dort bitte selbst prüfen.
+
 ## 0.9.53 – Überfall-Alarm als Halteknopf, Feuer-Kachel der Alarmzentrale
 - **Neu:** Überfall-Alarm in Meldeanlage und Alarmzentrale: Der Knopf muss wie im QuadClient gedrückt gehalten werden, ein Balken läuft mit; erst danach wird gesendet, Loslassen bricht ab. Haltedauer (2 Sekunden) und gesendeter Wert (1) sind Vermutungen – bitte an der eigenen Anlage prüfen, bevor man sich darauf verlässt. Scharf-/Unscharfschalten und Quittieren gehen weiterhin nicht.
 - **Verbessert:** Plugin KNX-Alarmzentrale: Die Kachel „Feuer-Alarm“ steht wie im QuadClient immer da (ohne Alarm: „Kein Alarm“); bei der Meldeanlage erscheint sie weiterhin nur bei Alarm.

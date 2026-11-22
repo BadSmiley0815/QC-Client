@@ -526,10 +526,27 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     ok("unbekannte Art wird übersprungen und im Protokoll genannt", await pr.evaluate(() => document.getElementById("log").textContent.includes("unbekannte Art „Unbekannt“")));
     await pr.evaluate(() => WSI.onmessage({ data: "1|9502|450.0|0" })); await pr.waitForTimeout(300);
     ok("KO-Telegramm: Netz wechselt auf Bezug", (await pr.textContent("#pbody")).replace(/\s+/g, " ").includes("Netz-Bezug450 W"));
+    { const tz = async () => (await pr.textContent("#pbody")).replace(/\s+/g, " "), t0 = await tz();                // v0.9.56: Zufallswerte, nur Anzeige
+      const nSent = await pr.evaluate(() => { window.__zs = 0; const o = WSI.send; WSI.send = function (m) { if (!/^80/.test(m)) window.__zs++; return o && o.apply(this, arguments); }; return 0; });
+      await pr.selectOption("#reszsel", "1"); await pr.waitForTimeout(300); const t1 = await tz();
+      ok("Zufallswerte: eingeschaltet, gekennzeichnet, Anzeige ändert sich", t1.includes("Zufallswerte (Test)") && t1.replace(/Zufallswerte[^E]*/, "") !== t0, t1.slice(0, 200));
+      await pr.evaluate(() => resDemoTick()); await pr.waitForTimeout(100); const t2 = await tz();
+      ok("Zufallswerte: nächster Wechsel bringt neue Werte, Takt 5 s", t2 !== t1 && await pr.evaluate(() => RES_DEMO_MS === 5000 && RES_DEMO !== null), t2.slice(0, 200));
+      ok("Zufallswerte: echte Werte unberührt, nichts gesendet", await pr.evaluate(() => V.get("9501") === "1500.0" && V.get("9502") === "450.0" && window.__zs === 0) && nSent === 0);
+      await pr.selectOption("#reszsel", "0"); await pr.waitForTimeout(300); const t3 = await tz();
+      ok("Zufallswerte aus: wieder die echten Werte, Kennzeichnung weg", t3 === t0 && !t3.includes("Zufallswerte"), t3.slice(0, 200)); }
     await pr.evaluate(() => { PLUGS["950"].quad = "1"; PLUGS["950"].vis = "1"; }); await pr.selectOption("#uisel", "classic"); await pr.waitForTimeout(600);
     await pr.evaluate(() => clPlugin("950")); await pr.waitForTimeout(900);
     ok("Klassisch: Kacheln im Quadranten", (await pr.textContent("#cl-q1b")).includes("Netz-Bezug") && (await pr.locator("#cl-q1b svg.rgauge").count()) === 1, await pr.textContent("#cl-q1b"));
     ok("Klassisch (v0.9.52): Werteliste der Bilanz beginnt unter dem Titel", await pr.evaluate(() => { const t = document.querySelector("#cl-q1b .res-tile:has(.list)"); return t.querySelector(".list .row").getBoundingClientRect().top >= t.querySelector(".cap").getBoundingClientRect().bottom - 1; }));
+    await pr.evaluate(() => document.querySelector('#cl-sys [data-sysa="resdemo"]').click()); await pr.waitForTimeout(300);
+    ok("Klassisch (v0.9.56): Zufallswerte über das System-Menü, Kennzeichnung in der Blätterleiste", (await pr.locator("#cl-q1b .cl-pgb .res-demo").count()) === 1 && (await pr.textContent('#cl-sys [data-sysa="resdemo"]')) === "Zufallswerte: ein" && !(await pr.textContent("#cl-q1b")).includes("Netz-Bezug450 W"), await pr.textContent("#cl-q1b"));
+    await pr.evaluate(() => resDemo(false)); await pr.waitForTimeout(200);
+    await pr.evaluate(() => { const d = HOSTS.find(h => h.plug && h.plug.cls === "50-1" && h.plug.data).plug.data; window.__k0 = d.tiles[0].kos.slice(); d.tiles[0].kos = ["9501", "9501", "9501", ""]; resDemo(true); }); await pr.waitForTimeout(200);
+    ok("v0.9.57: Zeilen am selben KO bekommen eigene Zufallswerte", await pr.evaluate(() => { const r = [...document.querySelectorAll("#cl-q1b .res-tile")][0].querySelectorAll(".row b"); return r.length === 3 && new Set([...r].map(x => x.textContent)).size >= 2; }), await pr.textContent("#cl-q1b"));
+    await pr.evaluate(() => { resDemo(false); const d = HOSTS.find(h => h.plug && h.plug.cls === "50-1" && h.plug.data).plug.data; window.__k1 = d.tiles[0].kos.join(); d.tiles[0].kos = window.__k0; resDemo(false); }); await pr.waitForTimeout(200);
+    ok("v0.9.57: nach dem Ausschalten hängen die Zeilen wieder an ihren KOs", await pr.evaluate(() => window.__k1 === "9501,9501,9501," && HOSTS.every(h => !h.plug || !h.plug.data || !h.plug.data.tiles || h.plug.data.tiles.every(t => !t.zk))));
+    ok("Klassisch: nach dem Ausschalten wieder echte Werte", (await pr.textContent("#cl-q1b")).replace(/\s+/g, " ").includes("Netz-Bezug450 W") && (await pr.locator("#cl-q1b .res-demo").count()) === 0);
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pr.close(); }
 
   console.log("Plugin Meldeanlage 1-15, nur Anzeige (v0.9.51, erfundene Einstellungen)");
@@ -547,14 +564,14 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await pm.evaluate(() => { WSI.onmessage({ data: "1|9650|1.0|0" }); WSI.onmessage({ data: "1|9604|1.0|0" }); WSI.onmessage({ data: "1|9613|0.0|0" }); WSI.onmessage({ data: "1|9611|0.0|0" }); }); await pm.waitForTimeout(300);
     x = await tx();
     ok("KO-Telegramme: Feuer-Alarm erscheint, Extern meldet Alarm, Intern nicht bereit", await pm.locator("#pbody .ma-fire").count() === 1 && x.includes("ExternAlarm") && x.includes("InternNicht bereit zum Scharfschalten"), x.slice(0, 300));
-    ok("kein Bedienknopf für Scharfschalten oder Quittung, Hinweis steht da", await pm.locator("#pbody .ma-area button, #pbody .ma-fire button").count() === 0 && await pm.locator("#pbody [data-pa]").count() === 0 && x.includes("gedrückt halten"), x.slice(-200));
+    ok("Bereiche mit Knopf zum Scharfschalten, Quittung erst bei Alarm, Hinweis steht da", await pm.locator("#pbody .ma-area .ma-arm").count() === 2 && await pm.locator("#pbody .ma-ack").count() === 1 && x.includes("gedrückt halten"), x.slice(-200));
     await pm.evaluate(() => document.querySelectorAll("#pbody .pval").forEach(e => e.click())); const s1 = await sent(pm);
     ok("Antippen der Kacheln sendet nichts an den HomeServer", s1.length === 0, JSON.stringify(s1));
     ok("unbekannte Art wird übersprungen und im Protokoll genannt", await pm.evaluate(() => document.getElementById("log").textContent.includes("Meldeanlage: unbekannte Art „Unbekannt“")));
     await pm.evaluate(() => { PLUGS["951"].quad = "1"; PLUGS["951"].vis = "1"; }); await pm.selectOption("#uisel", "classic"); await pm.waitForTimeout(600);
     await pm.evaluate(() => clPlugin("951")); await pm.waitForTimeout(900);
     const mq = pm.locator("#cl-q1b"), mt = async () => (await mq.textContent()).replace(/\s+/g, " ");
-    ok("Klassisch (v0.9.52): Kacheln in zwei Spalten ohne Rollen, Quittung fehlt, Feuer bei Alarm da", await mq.locator(".cl-vgrid .cl-vt").count() === 6 && await mq.locator(".ma-ack").count() === 0 && await mq.locator(".ma-fire").count() === 1
+    ok("Klassisch: Kacheln in zwei Spalten ohne Rollen, Quittung bei Alarm da", await mq.locator(".cl-vgrid .cl-vt").count() === 6 && await mq.locator(".ma-ack").count() === 1
       && await mq.locator(".cl-vgrid").evaluate(e => e.scrollHeight <= e.clientHeight + 1 && getComputedStyle(e).gridTemplateColumns.trim().split(/\s+/).length === 2), await mt());
     ok("Klassisch: Zustand der Bereiche und Statuszeilen in der Kachel", (await mt()).includes("ExternAlarm") && (await mt()).includes("InternNicht bereit") && (await mt()).includes("Anlage bereit"), await mt());
     ok("Klassisch: Melderliste zeigt die Anzahl groß", (await mq.locator(".ma-det .big").textContent()).trim() === "2");
@@ -588,6 +605,57 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await pz.evaluate(() => document.querySelectorAll("#cl-q1b .cl-vt").forEach(e => e.click())); const s3 = await sent(pz);
     ok("nur Anzeige: nichts wird gesendet", s3.length === 0, JSON.stringify(s3));
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pz.close(); }
+
+  console.log("Meldeanlage: Scharf-/Unscharfschalten und Quittieren mit Geräte-PIN (v0.9.54)");
+  { const pa = await start(b, "Demo", ["2|9601|1.0|0", "2|9603|0.0|0", "2|9604|0.0|0", "2|9611|0.0|0", "2|9613|0.0|0", "2|9614|0.0|0", "2|9650|0.0|0"]);
+    const errs = []; pa.on("pageerror", e => errs.push(e.message));
+    await pa.evaluate(() => openPlugin("Meldeanlage", "951")); await pa.waitForTimeout(700); await sent(pa);
+    const arm = () => pa.locator("#pbody .ma-area .ma-arm").first(), pin = async v => { await pa.fill("#dinput", v); await pa.click("#dok"); await pa.waitForTimeout(250); };
+    ok("Knopf zeigt „scharf schalten“, Quittung ohne Alarm nicht da", (await arm().textContent()).trim() === "scharf schalten" && await pa.locator("#pbody .ma-ack").count() === 0);
+    await arm().click(); await pa.waitForTimeout(200);
+    ok("erstes Bedienen: PIN festlegen", (await pa.textContent("#dtitle")).includes("PIN festlegen"));
+    await pin("12"); ok("PIN braucht vier Ziffern", (await pa.textContent("#derr")).includes("vier Ziffern"));
+    await pin("4711"); ok("PIN wird wiederholt abgefragt", (await pa.textContent("#dtitle")).includes("wiederholen"));
+    await pin("4711"); let k = await sent(pa);
+    ok("danach wird scharf geschaltet: 1 auf den Scharfschalt-Eingang", k.length === 1 && /^1\|9602\|1(\.0)?$/.test(k[0]), JSON.stringify(k));
+    ok("gespeichert wird nur ein Hashwert, nicht die PIN", await pa.evaluate(() => { const v = Object.entries(localStorage).filter(([n]) => n.includes("mapin.")); return v.length === 1 && !v[0][1].includes("4711") && v[0][1].length > 30; }));
+    await pa.evaluate(() => WSI.onmessage({ data: "1|9603|1.0|0" })); await pa.waitForTimeout(300);
+    ok("bei scharfem Bereich heißt der Knopf „unscharf schalten“", (await arm().textContent()).trim() === "unscharf schalten");
+    await arm().click(); await pa.waitForTimeout(200); await pin("0000"); k = await sent(pa);
+    ok("falsche PIN sendet nichts und fragt erneut", k.length === 0 && (await pa.textContent("#dtext")).includes("PIN falsch"), JSON.stringify(k));
+    await pin("4711"); k = await sent(pa);
+    ok("richtige PIN schaltet unscharf: 0", k.length === 1 && /^1\|9602\|0(\.0)?$/.test(k[0]), JSON.stringify(k));
+    await arm().click(); await pa.waitForTimeout(200); await pa.click("#dcancel"); await pa.waitForTimeout(200); k = await sent(pa);
+    ok("Abbrechen sendet nichts", k.length === 0, JSON.stringify(k));
+    await pa.evaluate(() => WSI.onmessage({ data: "1|9604|1.0|0" })); await pa.waitForTimeout(300);
+    ok("bei Alarm erscheint die Quittung", await pa.locator("#pbody .ma-ack .ma-ackb").count() === 1);
+    await pa.locator("#pbody .ma-ackb").click(); await pa.waitForTimeout(200); await pin("4711"); k = await sent(pa);
+    ok("Quittieren sendet 1 auf das Quittungs-KO", k.length === 1 && /^1\|9625\|1(\.0)?$/.test(k[0]), JSON.stringify(k));
+    await pa.evaluate(() => { PLUGS["951"].quad = "1"; PLUGS["951"].vis = "1"; }); await pa.selectOption("#uisel", "classic"); await pa.waitForTimeout(600);
+    await pa.evaluate(() => clPlugin("951")); await pa.waitForTimeout(700);
+    await pa.locator("#cl-q1b .ma-area .ma-arm").first().click(); await pa.waitForTimeout(200); await pin("4711"); k = await sent(pa);
+    ok("Klassisch: Knopf in der Kachel schaltet nach PIN", k.length === 1 && /^1\|9602\|0(\.0)?$/.test(k[0]), JSON.stringify(k));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pa.close(); }
+
+  console.log("Meldeanlage/Alarmzentrale mit eigenen Symbolen, Anordnung wie im QuadClient (v0.9.55)");
+  { const pi = await start(b, "Demo", ["2|9601|1.0|0", "2|9603|0.0|0", "2|9604|0.0|0", "2|9611|0.0|0", "2|9613|1.0|0", "2|9614|0.0|0", "2|9650|0.0|0", "2|9621|Anlage bereit|0", "2|9640|2.0|0"]);
+    const errs = []; pi.on("pageerror", e => errs.push(e.message));
+    await pi.evaluate(() => { PLUGS["951"].quad = "1"; PLUGS["951"].vis = "1"; }); await pi.selectOption("#uisel", "classic"); await pi.waitForTimeout(600);
+    await pi.evaluate(() => clPlugin("951")); await pi.waitForTimeout(700);
+    const q = pi.locator("#cl-q1b");
+    ok("jede Kachel hat links unten ein Symbol", await q.locator(".cl-vt").count() === 6 && await q.locator(".cl-vt .ico svg").count() === 6);
+    ok("Zustandsfeld rechts: Extern bereit (grün umrandet), Intern scharf (gefüllt)", await q.locator(".ma-area .ma-sq.ok").count() === 1 && await q.locator(".ma-area .ma-sq.on").count() === 1);
+    ok("Symbol unten links, Zustandsfeld rechts in der Kachel, nichts ragt heraus", await q.locator(".ma-area").first().evaluate(t => { const r = t.getBoundingClientRect(), i = t.querySelector(".ico").getBoundingClientRect(), s = t.querySelector(".ma-sq").getBoundingClientRect(), c = t.querySelector(".cap").getBoundingClientRect();
+      return i.left - r.left < 30 && i.top > c.bottom - 2 && r.right - s.right < 20 && s.left > i.right && s.top >= r.top && s.bottom <= r.bottom && i.bottom <= r.bottom + 1; }));
+    ok("Zustandsfeld ist als Feld erkennbar: Rahmen, „scharf“ gefüllt", await q.locator(".ma-area .ma-sq.ok").evaluate(e => parseFloat(getComputedStyle(e).borderTopWidth) >= 1) && await q.locator(".ma-area .ma-sq.on").evaluate(e => /233, 165, 45/.test(getComputedStyle(e).backgroundColor)));
+    ok("Zustand steht zusätzlich als Text da", (await q.locator(".ma-area .ma-stt").first().textContent()).trim() === "Scharfschaltbereit");
+    await pi.evaluate(() => WSI.onmessage({ data: "1|9604|1.0|0" })); await pi.waitForTimeout(300);
+    ok("Alarm: rotes Feld mit Warndreieck, Quittung mit eigenem Feld", await q.locator(".ma-area .ma-sq.al").count() === 1 && await q.locator(".ma-ack button.ma-sq").count() === 1);
+    await q.locator('[data-pa="pg"][data-d="1"]').click(); await pi.waitForTimeout(200);
+    ok("Überfall: Haltefeld mit Symbol", await q.locator(".ma-raid button.ma-hold.ma-sq svg").count() === 1);
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pi.close();
+    const pj = await start(b, "Demo", ["2|9601|1.0|0"]); await pj.evaluate(() => openPlugin("Meldeanlage", "951")); await pj.waitForTimeout(700);
+    ok("Modern: Symbol vor jedem Kacheltitel", await pj.locator("#pbody .pval .cap .ma-ci svg").count() >= 6, String(await pj.locator("#pbody .pval .cap .ma-ci svg").count())); await pj.close(); }
 
   console.log("Balkendiagramme klassisch wie im QuadClient (v0.9.52)");
   { const pb = await start(b, "Demo", ["2|9301|123.44|0", "2|9302|7.0|0", "2|9303|68.0|0"]); const errs = []; pb.on("pageerror", e => errs.push(e.message));

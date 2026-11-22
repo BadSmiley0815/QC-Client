@@ -104,7 +104,7 @@ button{font:inherit;color:inherit}
 .rgauge{width:150px;height:150px;display:block}.rgauge .gv{font-size:20px;fill:currentColor;font-variant-numeric:tabular-nums;font-weight:600}.rgauge .gu{font-size:12px;fill:currentColor;opacity:.7}.rgauge .gu.gpct{font-size:16px;opacity:.82;font-weight:700}.rgauge .gm{font-size:14px;fill:currentColor;opacity:.82;font-weight:700}
 .cl-vt .gauge .rgauge{width:100%;height:100%}
 .cl-pgb{position:absolute;left:0;right:0;bottom:0;height:30px;display:flex;background:#111}.cl-pgb button{flex:1;display:grid;place-items:center;color:#e6e6e6!important;border-left:1px solid #000!important}
-.cl-pgb button:disabled{color:#444!important}.cl-pgb svg{width:18px;height:18px}
+.cl-pgb button:disabled{color:#444!important}.cl-pgb .res-demo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;color:#e9a52d;background:#111;padding:1px 7px;border-radius:8px;pointer-events:none;white-space:nowrap}.cl-pgb svg{width:18px;height:18px}
 .rbal{display:flex;flex-direction:column;gap:10px}.rbr{display:flex;align-items:center;gap:12px}.rbr .ri{width:60px;height:60px;flex:none;color:var(--ink)}.rbr .ri svg{width:100%;height:100%;display:block}
 .rbt{flex:1;min-width:0}.rbt .rl{font-size:13px;color:var(--muted);margin-bottom:4px}.rbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.rbar i{display:block;height:100%;border-radius:5px}
 .rv{min-width:9em;text-align:right;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}.rv .ra{font-size:12px;margin-right:6px}
@@ -233,6 +233,21 @@ html:not(.cl-gira) .clp-s:not(.v) .kn{top:calc(50% - 17px);bottom:auto;height:34
 .ma-hold{position:relative;overflow:hidden;border:1px solid var(--err);border-radius:8px;padding:6px 12px;background:transparent;color:var(--err);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;font-size:13px}
 .ma-hold i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--err);opacity:.35;pointer-events:none}.ma-hold.holding i{width:100%;transition:width 2s linear}
 .ma-hold.sent{background:var(--err);color:#fff}
+.cl-vt .chip{font-size:12px;padding:4px 10px;color:#e6e6e6}
+/* v0.9.55 Meldeanlage/Alarmzentrale: eigene Symbole; Anordnung wie im QuadClient (Titel oben links, Symbol unten links, Zustandsfeld rechts) */
+.ma-ci{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px}.ma-ci svg{width:100%;height:100%;display:block}
+.cl-vt .ma-stt{position:absolute;left:calc(22px + var(--ic));right:calc(var(--rh) * .74 + 22px);bottom:calc(var(--rh) * .15);font-size:12px;line-height:1.15;color:#9a9a9a}
+.ma-sq{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:calc(var(--rh) * .74);height:calc(var(--rh) * .74);border-radius:10px;border:1px solid #ffffff22;background:#ffffff0d;
+  display:grid;place-items:center;color:#cfd4d0;padding:0;overflow:hidden}
+.ma-sq svg{width:62%;height:62%;display:block;position:relative}button.ma-sq{cursor:pointer}button.ma-sq:hover{border-color:#ffffff55}
+.ma-sq.ok{color:#a5d86f;border-color:#a5d86f66}.ma-sq.on{background:#e9a52d;border-color:#e9a52d;color:#1c1c1c}.ma-sq.off{color:#7d827f}
+.ma-sq.al{background:#c0392b;border-color:#c0392b;color:#fff;animation:mablink 1.2s ease-in-out infinite}.ma-sq.una{color:#ff8a7a;border-color:#c0392b}
+.ma-hold.ma-sq{position:absolute;color:#ff8a7a;border-color:#c0392b99;font-size:0}.ma-hold.ma-sq.sent{background:#c0392b;color:#fff}
+@keyframes mablink{50%{opacity:.55}}html.cl-gira .ma-sq{border-radius:0}.ma-hold.ma-sq span{display:none}.cl-vt:has(.ma-sq) .cap{right:calc(var(--rh) * .74 + 22px)}
+/* die Grundregel „#classic button“ nimmt Knöpfen Rahmen und Fläche – für die Zustandsfelder ausdrücklich wieder setzen */
+#classic button.ma-sq{border:1px solid #ffffff22;background:#ffffff0d;color:#cfd4d0}#classic button.ma-sq.ok{color:#a5d86f;border-color:#a5d86f66}
+#classic button.ma-sq.on{background:#e9a52d;border-color:#e9a52d;color:#1c1c1c}#classic button.ma-sq.off{color:#7d827f}#classic button.ma-sq.al{background:#c0392b;border-color:#c0392b;color:#fff}
+#classic button.ma-sq.una{color:#ff8a7a;border-color:#c0392b}#classic button.ma-hold.ma-sq{color:#ff8a7a;border-color:#c0392b99}#classic button.ma-hold.ma-sq.sent{background:#c0392b;color:#fff}
 .mrow time{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px;min-width:12.5em}
 .mrow span{min-width:0;overflow-wrap:anywhere}
 @media (max-width:560px){.mrow{flex-direction:column;gap:2px}.mrow time{min-width:0}}
@@ -452,7 +467,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div class="cl-quad" style="top:87px"><div id="cl-q1c"></div><div id="cl-q1b" class="cl-qb"></div></div>
   <div class="cl-quad" style="top:408px"><div id="cl-q2c"></div><div id="cl-q2b" class="cl-qb"></div></div>
   <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-pg="1">Plugins</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
-  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button><div id="cl-ver"></div></div>
+  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="resdemo">Zufallswerte: aus</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button><div id="cl-ver"></div></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
 <dialog id="clpop" aria-label="Bedienung"></dialog>
@@ -512,7 +527,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.53";
+const VERSION = "0.9.57";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2312,13 +2327,45 @@ function resRead(a, i) {
   }
   return null;
 }
+/* v0.9.56 Zufallswerte zum Ausprobieren: gelten nur für die Anzeige im Ressourcen-Plugin. Es wird nichts gesendet,
+   die echten Werte (V) bleiben unberührt, andere Elemente zeigen weiter die echten. Nicht gespeichert – nach dem Neuladen wieder aus. */
+const RES_DEMO_MS = 5000, RES_FAKE = new Map(); let RES_DEMO = null, RES_ZN = 0;
+/* v0.9.57: Solange die Zufallswerte laufen, bekommt jede Zeile einen eigenen Schlüssel statt ihres KOs – sonst zeigen Zeilen,
+   die am selben KO hängen, alle dieselbe Zahl. Die Diagramm-Kachel behält ihre KOs (die Reihen gehören auch der Detailansicht). */
+function resDemoKeys(t, on) {
+  if (on && !t.zk && t.kind !== "chart") { t.zk = { kos: t.kos, ko: t.ko, v: t.vals && t.vals.map(v => v.ko) }; const id = "z" + (++RES_ZN) + ":";
+    t.kos = t.kos.map((k, i) => k ? id + i : k); if (t.kind === "gauge") t.ko = t.kos[0]; if (t.vals) t.vals.forEach((v, i) => { v.ko = id + i; }); }
+  if (!on && t.zk) { t.kos = t.zk.kos; if (t.kind === "gauge") t.ko = t.zk.ko; if (t.vals) t.vals.forEach((v, i) => { v.ko = t.zk.v[i]; }); delete t.zk; }
+}
+const resKoNum = ko => RES_FAKE.has(ko) ? RES_FAKE.get(ko) : num(ko);
+function resDemoTick() {
+  const rnd = (a, b, d) => +(a + Math.random() * (b - a)).toFixed(d || 0), put = (ko, v) => { if (ko) RES_FAKE.set(ko, v); };
+  HOSTS.forEach(h => { if (!h.plug || h.plug.cls !== "50-1" || !h.plug.data) return;
+    h.plug.data.tiles.forEach(t => { resDemoKeys(t, true);
+      if (t.kind === "bal") { const k = /^k/i.test(t.unit) ? 1000 : 1; put(t.kos[0], rnd(0, 8000 / k, t.dec)); put(t.kos[1], rnd(-4000 / k, 4000 / k, t.dec)); put(t.kos[2], rnd(-2500 / k, 2500 / k, t.dec)); put(t.kos[3], rnd(0, 100)); }
+      else if (t.kind === "vals") t.vals.forEach(v => put(v.ko, rnd(0, v.unit === "%" ? 100 : 1000, v.dec)));
+      else if (t.kind === "gauge") put(t.ko, rnd(t.min, t.max, t.dec));
+      else t.ser.forEach(x => put(x.ko, rnd(0, x.max || 1000, x.d)));
+    });
+    renderHost(h); });
+}
+function resDemo(on) {
+  clearInterval(RES_DEMO); RES_DEMO = null; RES_FAKE.clear();
+  HOSTS.forEach(h => { if (h.plug && h.plug.cls === "50-1" && h.plug.data) h.plug.data.tiles.forEach(t => resDemoKeys(t, false)); });
+  if (on) { RES_DEMO = setInterval(resDemoTick, RES_DEMO_MS); resDemoTick(); }
+  else HOSTS.forEach(h => { if (h.plug && h.plug.cls === "50-1") renderHost(h); });
+  log("··", "Ressourcen: Zufallswerte " + (on ? "ein (nur Anzeige, nichts wird gesendet)" : "aus"));
+  const sb = document.querySelector('#cl-sys [data-sysa="resdemo"]'); if (sb) sb.textContent = "Zufallswerte: " + (on ? "ein" : "aus");
+  const se = $("reszsel"); if (se) se.value = on ? "1" : "0";
+}
+const resDemoNote = () => RES_DEMO ? '<div class="note res-demo" style="color:#e9a52d;margin-bottom:8px">Zufallswerte (Test) – keine Messwerte</div>' : "";
 function resGaugeColor(t, v) {
   if (v === undefined || t.mode === "grad") return "#00BE00";
   const c = t.mode === "inv" ? ["#00BE00", "#E6C502", "#E10000"] : ["#E10000", "#E6C502", "#00BE00"];
   return v < t.lim[0] ? c[0] : v < t.lim[1] ? c[1] : c[2];
 }
 function resGauge(t) {                                      // Zeigerinstrument als Bogen (240°), Wert in der Mitte
-  const n = t.ko ? num(t.ko) : undefined, R = 40, c = 50, a0 = 150, sw = 240;
+  const n = t.ko ? resKoNum(t.ko) : undefined, R = 40, c = 50, a0 = 150, sw = 240;
   const P = a => { const r = a * Math.PI / 180; return (c + R * Math.cos(r)).toFixed(2) + " " + (c + R * Math.sin(r)).toFixed(2); };
   const arc = (a1, a2) => `M${P(a1)}A${R} ${R} 0 ${a2 - a1 > 180 ? 1 : 0} 1 ${P(a2)}`;
   const f = n === undefined ? 0 : Math.max(0, Math.min(1, (n - t.min) / (t.max - t.min)));
@@ -2328,14 +2375,14 @@ function resGauge(t) {                                      // Zeigerinstrument 
     + `<text x="19" y="96" text-anchor="middle" class="gm">${esc(resNum(t.min, 0))}</text><text x="81" y="96" text-anchor="middle" class="gm">${esc(resNum(t.max, 0))}</text></svg>`;
 }
 function resBalRows(t) {                                    // Zeilen der Kachel: Erzeugung, Netz, Speicher
-  const g = num(t.kos[0]), dm = num(t.kos[1]), bt = t.kos[2] ? num(t.kos[2]) : undefined;
+  const g = resKoNum(t.kos[0]), dm = resKoNum(t.kos[1]), bt = t.kos[2] ? resKoNum(t.kos[2]) : undefined;
   const ab = n => n === undefined ? undefined : Math.abs(n);
   const r = [{ l: t.l.g, v: resVal(g, t) }, { l: resSign(dm, t.l.d1, t.l.d2), v: resVal(ab(dm), t) }];
   if (t.bat) r.push({ l: resSign(bt, t.l.b1, t.l.b2), v: resVal(ab(bt), t) });
   return r;
 }
 function resBalDetail(t) {                                  // Detailansicht der Bilanz: Balken je Quelle, Pfeil zeigt zum Haus (Wert ≥ 0) oder weg
-  const g = num(t.kos[0]), dm = num(t.kos[1]), bt = t.bat ? num(t.kos[2]) : undefined, ch = t.bat && t.kos[3] ? num(t.kos[3]) : undefined;
+  const g = resKoNum(t.kos[0]), dm = resKoNum(t.kos[1]), bt = t.bat ? resKoNum(t.kos[2]) : undefined, ch = t.bat && t.kos[3] ? resKoNum(t.kos[3]) : undefined;
   const mx = Math.max(Math.abs(g || 0), Math.abs(dm || 0), Math.abs(bt || 0), 1), ic = k => { const s = qf(resIco(t.cat, k)); return s ? `<span class="ri">${s}</span>` : '<span class="ri"></span>'; };
   const row = (slot, label, n, col, arrow) => `<div class="rbr">${ic(slot)}<div class="rbt"><div class="rl">${esc(label)}</div><div class="rbar"><i style="width:${n === undefined ? 0 : Math.min(100, Math.abs(n) / mx * 100).toFixed(1)}%;background:${col}"></i></div></div>`
     + `<div class="rv">${arrow ? `<span class="ra" style="color:${col}">${n === undefined ? "" : n >= 0 ? "▶" : "◀"}</span>` : ""}${esc(resVal(n === undefined ? undefined : Math.abs(n), t))}</div></div>`;
@@ -2347,7 +2394,7 @@ function resBalDetail(t) {                                  // Detailansicht der
     + row("ico_balance", "Bilanz", sum, "var(--muted)", false)
     + (ch !== undefined ? `<div class="rbr"><span class="ri"></span><div class="rbt"><div class="rl">Ladezustand</div><div class="rbar"><i style="width:${Math.max(0, Math.min(100, ch))}%;background:var(--cool)"></i></div></div><div class="rv">${esc(resNum(ch, 0))} %</div></div>` : "") + `</div>`;
 }
-const resChartCur = s => { const n = s.ko ? num(s.ko) : undefined; return n === undefined ? "–" : fmt(n, s.d) + (s.unit ? " " + s.unit : ""); };
+const resChartCur = s => { const n = s.ko ? resKoNum(s.ko) : undefined; return n === undefined ? "–" : fmt(n, s.d) + (s.unit ? " " + s.unit : ""); };
 PLUGIN_TYPES["50-1"] = {
   name: "Ressourcen",
   read: x => {
@@ -2370,12 +2417,12 @@ PLUGIN_TYPES["50-1"] = {
     if (d.bal !== null) { const t = d.tiles[d.bal]; return t ? back + `<div class="cap" style="margin-bottom:8px;font-weight:600">${esc(t.name)}</div>` + resBalDetail(t) : ""; }
     const pages = Math.max(1, Math.ceil(d.tiles.length / RES_PERPAGE)), pg = Math.min(d.page, pages - 1), list = d.tiles.slice(pg * RES_PERPAGE, pg * RES_PERPAGE + RES_PERPAGE);
     const nav = pages > 1 ? `<div style="display:flex;gap:6px;justify-content:center;margin-top:10px"><button class="chip" data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><span class="note" style="align-self:center">${pg + 1} / ${pages}</span><button class="chip" data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>` : "";
-    return '<div class="pgrid">' + list.map((t, k) => {
+    return resDemoNote() + '<div class="pgrid">' + list.map((t, k) => {
       const i = pg * RES_PERPAGE + k, ic = t.icon && qf(t.icon), open = t.kind === "bal" || t.ci !== undefined;
       const tag = open ? "button" : "div", at = open ? ` data-pa="open" data-i="${i}" style="text-align:left;cursor:pointer;font:inherit;color:inherit"` : "";
       let body = "";
       if (t.kind === "bal") body = resBalRows(t).map(r => `<div class="row"><span>${esc(r.l)}</span><b>${esc(r.v)}</b></div>`).join("");
-      else if (t.kind === "vals") body = t.vals.map(v => { const n = num(v.ko); return `<div class="row"><span>${esc(v.label)}</span><b>${esc(resVal(n, v))}</b></div>`; }).join("");
+      else if (t.kind === "vals") body = t.vals.map(v => { const n = resKoNum(v.ko); return `<div class="row"><span>${esc(v.label)}</span><b>${esc(resVal(n, v))}</b></div>`; }).join("");
       else if (t.kind === "gauge") body = `<div style="display:flex;justify-content:center">${resGauge(t)}</div>`;
       else body = t.ser.map(s => `<div class="row"><span>${esc(s.label)}</span><b>${esc(resChartCur(s))}</b></div>`).join("");
       return `<${tag} class="pval"${at}><div class="cap">${esc(t.name)}</div>${body}</${tag}>`;
@@ -2392,13 +2439,13 @@ PLUGIN_TYPES["50-1"] = {
       const i = pg * RES_PERPAGE + k, ic = t.icon && qf(t.icon), open = t.kind === "bal" || t.ci !== undefined;
       let inner = "";
       if (t.kind === "bal") inner = `<div class="list">${resBalRows(t).map(r => `<div class="row"><span>${esc(r.l)}</span><b>${esc(r.v)}</b></div>`).join("")}</div>`;
-      else if (t.kind === "vals") inner = t.vals.length === 1 ? `<div class="big">${esc(resVal(num(t.vals[0].ko), t.vals[0]))}</div>`
-        : `<div class="list">${t.vals.map(x => `<div class="row"><span>${esc(x.label)}</span><b>${esc(resVal(num(x.ko), x))}</b></div>`).join("")}</div>`;
+      else if (t.kind === "vals") inner = t.vals.length === 1 ? `<div class="big">${esc(resVal(resKoNum(t.vals[0].ko), t.vals[0]))}</div>`
+        : `<div class="list">${t.vals.map(x => `<div class="row"><span>${esc(x.label)}</span><b>${esc(resVal(resKoNum(x.ko), x))}</b></div>`).join("")}</div>`;
       else if (t.kind === "gauge") inner = `<div class="gauge">${resGauge(t)}</div>`;
       else inner = t.ser.length === 1 ? `<div class="big">${esc(resChartCur(t.ser[0]))}</div>` : `<div class="list">${t.ser.map(s => `<div class="row"><span>${esc(s.label)}</span><b>${esc(resChartCur(s))}</b></div>`).join("")}</div>`;
       return `<div class="cl-vt res-tile${open ? " cl-open" : ""}"${open ? ` data-pa="open" data-i="${i}"` : ""}><div class="cap">${esc(t.name)}</div>${ic ? `<div class="ico">${ic}</div>` : ""}${inner}</div>`;
     }).join("");
-    return `<div class="cl-vgrid" style="${v}">${tiles}</div><div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>`;
+    return `<div class="cl-vgrid" style="${v}">${tiles}</div><div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button>${RES_DEMO ? '<span class="res-demo">Zufallswerte</span>' : ""}</div>`;
   },
   act: async (d, b) => {
     const T16 = PLUGIN_TYPES["1-16"], pa = b.dataset.pa;
@@ -2658,21 +2705,61 @@ document.addEventListener("input", e => {                       // Suche ohne Ne
 const maBit = ko => { const n = num(ko); return n === undefined ? null : n !== 0; };
 const maTxt = ko => { const v = V.get(ko); return v === undefined ? "" : String(v).trim(); };
 const maArea = t => { const rd = maBit(t.co[0]), sc = maBit(t.co[2]), al = maBit(t.co[3]);
-  if (al) return ["Alarm", "var(--err)"]; if (sc) return ["Scharf", "var(--on)"]; if (maBit(t.co[5])) return ["Unscharf nach Alarm", "var(--err)"]; if (rd) return ["Scharfschaltbereit", "var(--ok)"];
-  return rd === null && sc === null && al === null ? ["–", "var(--muted)"] : ["Nicht bereit zum Scharfschalten", "var(--muted)"]; };
+  if (al) return ["Alarm", "var(--err)", "al"]; if (sc) return ["Scharf", "var(--on)", "on"]; if (maBit(t.co[5])) return ["Unscharf nach Alarm", "var(--err)", "una"]; if (rd) return ["Scharfschaltbereit", "var(--ok)", "ok"];
+  return rd === null && sc === null && al === null ? ["–", "var(--muted)", "na"] : ["Nicht bereit zum Scharfschalten", "var(--muted)", "off"]; };
 /* v0.9.53 Überfall-Alarm: wie im QuadClient muss der Knopf gedrückt gehalten werden (Fortschrittsbalken), erst dann wird gesendet.
    Vermutung: Haltedauer 2 Sekunden, gesendet wird der Wert 1 auf „Überfall-Alarm senden“ (co1). Loslassen vorher bricht ab. */
 const MA_HOLD_MS = 2000; let maHold = null;
-const maHoldBtn = (t, i) => t.co[0] ? `<button type="button" class="ma-hold" data-hold="${i}" title="Zum Auslösen gedrückt halten"><i></i>auslösen (halten)</button>` : "";
+const maHoldBtn = (t, i, sq) => t.co[0] ? `<button type="button" class="ma-hold${sq ? " ma-sq" : ""}" data-hold="${i}" title="Überfall-Alarm: zum Auslösen gedrückt halten" aria-label="Überfall-Alarm auslösen, gedrückt halten"><i></i>${sq ? maIco("siren") : ""}<span>auslösen (halten)</span></button>` : "";
 const maHoldEnd = () => { if (!maHold) return; clearTimeout(maHold.timer); const b = document.querySelector(".ma-hold.holding"); if (b) b.classList.remove("holding"); maHold = null; };
 document.addEventListener("pointerdown", e => {
   const b = e.target.closest && e.target.closest(".ma-hold"), H = b && hostOfEl(b), t = H && H.plug && H.plug.data && H.plug.data.tiles && H.plug.data.tiles[+b.dataset.hold];
   if (!t || t.kind !== "raid" || !t.co[0]) return; e.preventDefault(); maHoldEnd(); b.classList.add("holding");
   maHold = { timer: setTimeout(() => { maHold = null; send(t.co[0], 1); log("··", "Überfall-Alarm ausgelöst (" + (H.plug.title || "") + ")");
-    const n = H.body.querySelector('.ma-hold[data-hold="' + b.dataset.hold + '"]'); if (n) { n.classList.remove("holding"); n.classList.add("sent"); n.lastChild.textContent = "gesendet"; } }, MA_HOLD_MS) };
+    const n = H.body.querySelector('.ma-hold[data-hold="' + b.dataset.hold + '"]'); if (n) { n.classList.remove("holding"); n.classList.add("sent"); const sp = n.querySelector("span"); if (sp) sp.textContent = "gesendet"; } }, MA_HOLD_MS) };
 });
 ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, maHoldEnd));
 document.addEventListener("pointerout", e => { if (maHold && e.target.closest && e.target.closest(".ma-hold") && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".ma-hold"))) maHoldEnd(); });
+/* v0.9.54 Scharf-/Unscharfschalten und Quittieren. Belegt aus QuadConfig: „Scharfschalt-Eingang“ 1 = scharf, 0 = unscharf; „Quittung“ quittiert,
+   schaltet unscharf bzw. setzt „Unscharf nach Alarm“ zurück. Im QuadClient schützt eine vierstellige PIN, die dort in der Quadrantenkonfiguration
+   eingestellt wird – wo sie liegt, ist nicht bekannt, der Client kann sie nicht lesen. Deshalb eigene PIN je Gerät und Plugin-Instanz:
+   beim ersten Bedienen festlegen, gespeichert wird nur ein Hashwert im Browser. Vermutung: Quittung sendet den Wert 1; die Quittung erscheint,
+   solange ein Alarm ansteht (Bereich, „Unscharf nach Alarm“, Feuer, Überfall). */
+const maSha = async s => crypto.subtle ? [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].map(b => b.toString(16).padStart(2, "0")).join("") : hash(s);
+async function maPin(id) {
+  const key = "mapin." + cfg.host + "." + id, old = store.get(key, ""), four = v => /^\d{4}$/.test(v) ? "" : "Bitte vier Ziffern";
+  if (!old) {
+    const p = await ask({ title: "PIN festlegen", text: "Vierstellige PIN für Scharf-/Unscharfschalten und Quittieren. Sie gilt nur auf diesem Gerät.", type: "password", mode: "numeric", check: four });
+    if (p === null) return false;
+    const q = await ask({ title: "PIN wiederholen", text: "", type: "password", mode: "numeric", check: v => v === p ? "" : "Stimmt nicht überein" });
+    if (q === null) return false;
+    store.set(key, await maSha(key + "|" + p)); log("··", "Meldeanlage: PIN für dieses Gerät festgelegt"); return true;
+  }
+  for (let txt = "";;) { const p = await ask({ title: "PIN eingeben", text: txt, type: "password", mode: "numeric", check: four });
+    if (p === null) return false; if (await maSha(key + "|" + p) === old) return true; txt = "PIN falsch – bitte noch einmal"; }
+}
+/* Eigene Zeichnungen (keine Symbole des Herstellers): Linien in der Farbe des Feldes, 24 × 24. */
+const MA_ICO = {
+  house: '<path d="M3 11l9-7 9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>',
+  houseIn: '<path d="M3 11l9-7 9 7"/><path d="M5.5 9.5V20h13V9.5"/><circle cx="12" cy="12.6" r="1.6"/><path d="M9.4 18c.4-1.9 1.3-2.8 2.6-2.8s2.2.9 2.6 2.8"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.2"/>',
+  list: '<circle cx="5" cy="7" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="5" cy="17" r="1.5"/><path d="M10 7h10M10 12h10M10 17h10"/>',
+  log: '<path d="M6 3.5h9l4 4v13H6z"/><path d="M15 3.5v4h4"/><path d="M9 12h7M9 16h7"/>',
+  flame: '<path d="M12 3c1 3.6 5 5.4 5 10a5 5 0 0 1-10 0c0-2 .9-3.3 2-4.3.3 1.6.9 2.4 1.8 2.7C10.3 9 10.8 6 12 3z"/>',
+  siren: '<path d="M7 17.5V13a5 5 0 0 1 10 0v4.5"/><path d="M5 17.5h14V20.5H5z"/><path d="M12 3v2M4.5 6.5L6 8M19.5 6.5L18 8"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8 5.2-5.8"/>',
+  shield: '<path d="M12 3l7 2.6V11c0 4.3-2.9 7.7-7 9.5C7.9 18.7 5 15.3 5 11V5.6z"/>',
+  alert: '<path d="M12 4l9 15.5H3z"/><path d="M12 10v4.5"/><path d="M12 17v.2"/>' };
+MA_ICO.shieldOk = MA_ICO.shield + '<path d="M9 11.8l2.2 2.2 3.8-4.3"/>';
+MA_ICO.shieldLock = MA_ICO.shield + '<rect x="9.2" y="11" width="5.6" height="4.4" rx=".8"/><path d="M10.3 11V9.7a1.7 1.7 0 0 1 3.4 0V11"/>';
+MA_ICO.shieldOff = MA_ICO.shield + '<path d="M5 4l14 16"/>';
+const maIco = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MA_ICO[k] || ""}</svg>`;
+const maKindIco = t => t.kind === "area" ? (t.type === "CInternalAreaItem" ? "houseIn" : "house") : { info: "info", det: "list", msg: "log", fire: "flame", raid: "siren", ack: "check" }[t.kind] || "info";
+const maCap = t => `<div class="cap"><span class="ma-ci">${maIco(maKindIco(t))}</span>${esc(t.name)}</div>`;
+const MA_STATE = { al: "alert", una: "alert", on: "shieldLock", ok: "shieldOk", off: "shieldOff", na: "shield" };
+const maAlarm = d => d.tiles.some(t => (t.kind === "area" && (maBit(t.co[3]) || maBit(t.co[5]))) || (t.kind === "fire" && maBit(t.co[0])) || (t.kind === "raid" && maBit(t.co[1])));
+const maArmBtn = (t, i) => t.co[1] ? `<button class="chip ma-arm" data-pa="arm" data-i="${i}">${maBit(t.co[2]) ? "unscharf schalten" : "scharf schalten"}</button>` : "";
+const maAckBtn = (t, i) => `<button class="chip ma-ackb" data-pa="ack" data-i="${i}">quittieren</button>`;
 const MA_KINDS = { CExternalAreaItem: "area", CInternalAreaItem: "area", CInfoItem: "info", CDetectorsItem: "det", CMessagesItem: "msg", CFireItem: "fire", CConfirmationItem: "ack", CRaidItem: "raid" };
 PLUGIN_TYPES["1-15"] = {
   name: "Meldeanlage",
@@ -2682,7 +2769,7 @@ PLUGIN_TYPES["1-15"] = {
       const kind = MA_KINDS[a.type];
       if (!kind) { log("··", "Meldeanlage: unbekannte Art „" + a.type + "“ übersprungen"); return; }
       const co = []; for (let i = 1; i <= 10; i++) co.push(a["co" + i] && a["co" + i] !== "0" ? a["co" + i] : "");
-      tiles.push({ kind, name: a.name || "", co, interval: parseInt(a.interval, 10) || 0 });
+      tiles.push({ kind, type: a.type, name: a.name || "", co, interval: parseInt(a.interval, 10) || 0 });
     });
     return { tiles, msgs: null, err: "", at: null, all: false, sub: null, page: 0 };
   },
@@ -2702,27 +2789,29 @@ PLUGIN_TYPES["1-15"] = {
   html: d => {
     const wide = ' style="grid-column:1/-1"';
     const out = d.tiles.map(t => {
-      if (t.kind === "area") { const [s, c] = maArea(t); return `<div class="pval ma-area"><div class="cap">${esc(t.name)}</div><div class="big" style="color:${c};font-size:18px">${esc(s)}</div></div>`; }
-      if (t.kind === "fire") return maBit(t.co[0]) ? `<div class="pval ma-fire" style="border-color:var(--err)"><div class="cap">${esc(t.name)}</div><div class="big" style="color:var(--err);font-size:18px">Feuer-Alarm</div></div>`
-        : d.az ? `<div class="pval ma-fire"><div class="cap">${esc(t.name)}</div><div class="big" style="color:var(--muted);font-size:18px">Kein Alarm</div></div>` : "";
+      if (t.kind === "area") { const [s, c] = maArea(t); return `<div class="pval ma-area">${maCap(t)}<div class="big" style="color:${c};font-size:18px">${esc(s)}</div>${t.co[1] ? `<div style="margin-top:8px">${maArmBtn(t, d.tiles.indexOf(t))}</div>` : ""}</div>`; }
+      if (t.kind === "ack") return t.co[0] && maAlarm(d) ? `<div class="pval ma-ack">${maCap(t)}${maAckBtn(t, d.tiles.indexOf(t))}</div>` : "";
+      if (t.kind === "fire") return maBit(t.co[0]) ? `<div class="pval ma-fire" style="border-color:var(--err)">${maCap(t)}<div class="big" style="color:var(--err);font-size:18px">Feuer-Alarm</div></div>`
+        : d.az ? `<div class="pval ma-fire">${maCap(t)}<div class="big" style="color:var(--muted);font-size:18px">Kein Alarm</div></div>` : "";
       if (t.kind === "info") { const l = t.co.slice(1, 4).map(maTxt).filter(Boolean);
-        return `<div class="pval ma-info"><div class="cap">${esc(t.name)}</div>${l.length ? l.map(s => `<div>${esc(s)}</div>`).join("") : '<div class="note">–</div>'}</div>`; }
+        return `<div class="pval ma-info">${maCap(t)}${l.length ? l.map(s => `<div>${esc(s)}</div>`).join("") : '<div class="note">–</div>'}</div>`; }
       if (t.kind === "det") { const n = num(t.co[9]), l = t.co.slice(1, 9).map(maTxt).filter(Boolean);
-        return `<div class="pval ma-det"><div class="cap">${esc(t.name)}</div><div class="row"><span>fehlend oder offen</span><b>${n === undefined ? "–" : n}</b></div>${l.map(s => `<div>${esc(s)}</div>`).join("")}</div>`; }
+        return `<div class="pval ma-det">${maCap(t)}<div class="row"><span>fehlend oder offen</span><b>${n === undefined ? "–" : n}</b></div>${l.map(s => `<div>${esc(s)}</div>`).join("")}</div>`; }
       if (t.kind === "msg") { const all = d.msgs || [], list = d.all ? all.slice(0, 300) : all.slice(0, 5);
-        return `<div class="pval ma-msg"${wide}><div class="cap">${esc(t.name)}</div>${!t.co[0] ? '<div class="note">Kein Archiv eingerichtet.</div>' : !d.msgs ? '<div class="note">Lade Meldungen …</div>' :
+        return `<div class="pval ma-msg"${wide}>${maCap(t)}${!t.co[0] ? '<div class="note">Kein Archiv eingerichtet.</div>' : !d.msgs ? '<div class="note">Lade Meldungen …</div>' :
           (d.err ? `<div class="note">Meldungen konnten nicht geladen werden: ${esc(d.err)}</div>` : "") +
           (list.length ? `<div class="mlist">${list.map(m => `<div class="mrow"><time>${esc(camTxt(m.date))}</time><span>${esc(m.text)}</span></div>`).join("")}</div>` : '<div class="note">Keine Meldungen.</div>') +
           (all.length > 5 ? `<div style="margin-top:8px"><button class="chip" data-pa="all">${d.all ? "Nur die neuesten" : "Alle " + all.length + " Meldungen"}</button></div>` : "")}</div>`; }
-      if (t.kind === "raid") { const al = maBit(t.co[1]); return `<div class="pval ma-raid"${al ? ' style="border-color:var(--err)"' : ""}><div class="cap">${esc(t.name)}</div>${al ? '<div class="big" style="color:var(--err);font-size:18px">Überfall-Alarm</div>' : ""}${maHoldBtn(t, d.tiles.indexOf(t))}</div>`; }
+      if (t.kind === "raid") { const al = maBit(t.co[1]); return `<div class="pval ma-raid"${al ? ' style="border-color:var(--err)"' : ""}>${maCap(t)}${al ? '<div class="big" style="color:var(--err);font-size:18px">Überfall-Alarm</div>' : ""}${maHoldBtn(t, d.tiles.indexOf(t))}</div>`; }
       return "";
     }).join("");
     const ops = d.tiles.some(t => t.kind === "area" || t.kind === "ack" || t.kind === "raid");
-    return `<div class="pgrid">${out}</div>` + (ops ? '<p class="note" style="margin:10px 0 0">Scharf- und Unscharfschalten und Quittieren gehen im Client noch nicht. Überfall-Alarm: Knopf gedrückt halten.</p>' : "");
+    return `<div class="pgrid">${out}</div>` + (ops ? '<p class="note" style="margin:10px 0 0">Scharf-/Unscharfschalten und Quittieren fragen eine PIN ab, die nur auf diesem Gerät gilt. Überfall-Alarm: Knopf gedrückt halten.</p>' : "");
   },
   /* v0.9.52 Original-Stil (Klassisch), nach Bildschirmfotos des QuadClients: Kacheln in zwei Spalten × drei Zeilen, Titel oben links, Zustand rechts;
-     Melderliste und Ereignisspeicher öffnen eine Unteransicht. Feuer-Alarm nur bei Alarm, Quittung gar nicht (nur Bedienung).
-     Die Symbole des Originals fehlen noch; der Zustand steht als Text statt als Symbolknopf. Weiterhin nur Anzeige. */
+     Melderliste und Ereignisspeicher öffnen eine Unteransicht. Feuer-Alarm nur bei Alarm, Quittung nur solange ein Alarm ansteht.
+     v0.9.55: eigene Symbole – links unten die Art der Kachel, rechts das Zustandsfeld (Schild: bereit, gesperrt = scharf, durchgestrichen = nicht bereit,
+     Warndreieck = Alarm). Das Zustandsfeld ist zugleich der Knopf zum Scharf-/Unscharfschalten, bei Quittung und Überfall der Bedienknopf. */
   htmlClassic: d => {
     const sub = d.sub !== null && d.tiles[d.sub];
     if (sub) { const back = `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><button class="chip" data-pa="back">${svg("left")} Übersicht</button><b>${esc(sub.name)}</b></div>`;
@@ -2732,24 +2821,31 @@ PLUGIN_TYPES["1-15"] = {
         (d.err ? `<p class="note">Meldungen konnten nicht geladen werden: ${esc(d.err)}</p>` : "") +
         (all.length ? `<div class="mlist" style="max-height:none">${all.slice(0, 300).map(m => `<div class="mrow"><time>${esc(camTxt(m.date))}</time><span>${esc(m.text)}</span></div>`).join("")}</div>` : '<p class="note">Keine Meldungen.</p>'); }
       return `<div class="ma-sub" style="height:274px;overflow:auto;padding:8px;background:#1c1c1c;color:#e6e6e6">${back}${body}</div>`; }
-    const vis = d.tiles.map((t, i) => [t, i]).filter(([t]) => t.kind !== "ack" && (t.kind !== "fire" || d.az || maBit(t.co[0])));
+    const vis = d.tiles.map((t, i) => [t, i]).filter(([t]) => (t.kind !== "ack" || (t.co[0] && maAlarm(d))) && (t.kind !== "fire" || d.az || maBit(t.co[0])));
     const per = 6, R = 3, pages = Math.max(1, Math.ceil(vis.length / per)), pg = d.page = Math.max(0, Math.min(d.page || 0, pages - 1)), gh = 274 - 30, rh = (gh - 12 - (R - 1) * 6) / R;
     const v = `--rh:${rh.toFixed(1)}px;--fc:${(rh * 0.19).toFixed(1)}px;--fb:${(rh * 0.36).toFixed(1)}px;--ic:${(rh * 0.5).toFixed(1)}px;grid-template-rows:repeat(${R},1fr);height:${gh}px`;
-    const st = (s, c) => `<div class="big" style="font-size:calc(var(--fb) * .58);color:${c};max-width:52%;white-space:normal;text-align:right;line-height:1.1">${esc(s)}</div>`;
+    const sq = (cls, ico, attr = "", tag = "div") => `<${tag} class="ma-sq ${cls}"${attr}>${maIco(ico)}</${tag}>`;
+    const stt = (s, c) => `<div class="ma-stt"${c ? ` style="color:${c}"` : ""}>${esc(s)}</div>`;
     const tiles = vis.slice(pg * per, pg * per + per).map(([t, i]) => {
       const open = t.kind === "det" || t.kind === "msg"; let inner = "";
-      if (t.kind === "area") { const [s, c] = maArea(t); inner = st(s === "Nicht bereit zum Scharfschalten" ? "Nicht bereit" : s, c === "var(--muted)" ? "#9a9a9a" : c); }
-      else if (t.kind === "fire") inner = maBit(t.co[0]) ? st("Feuer-Alarm", "var(--err)") : st("Kein Alarm", "#9a9a9a");
-      else if (t.kind === "raid") inner = `<div class="big" style="font-size:13px">${maBit(t.co[1]) ? '<span style="color:var(--err);margin-right:8px">Überfall-Alarm</span>' : ""}${maHoldBtn(t, i)}</div>`;
+      if (t.kind === "area") { const [s, c, k] = maArea(t), on = maBit(t.co[2]), lbl = on ? "unscharf schalten" : "scharf schalten";
+        inner = stt(s === "Nicht bereit zum Scharfschalten" ? "Nicht bereit" : s, c === "var(--muted)" ? "" : c) +
+          (t.co[1] ? sq(k + " ma-arm", MA_STATE[k], ` type="button" data-pa="arm" data-i="${i}" title="${lbl}" aria-label="${lbl}"`, "button") : sq(k, MA_STATE[k])); }
+      else if (t.kind === "ack") inner = stt("Alarm quittieren") + sq("ok ma-ackb", "check", ` type="button" data-pa="ack" data-i="${i}" title="quittieren" aria-label="quittieren"`, "button");
+      else if (t.kind === "fire") { const f = maBit(t.co[0]); inner = stt(f ? "Feuer-Alarm" : "Kein Alarm", f ? "var(--err)" : "") + sq(f ? "al" : "off", f ? "alert" : "flame"); }
+      else if (t.kind === "raid") inner = (maBit(t.co[1]) ? stt("Überfall-Alarm", "var(--err)") : stt("gedrückt halten")) + maHoldBtn(t, i, true);
       else if (t.kind === "info") inner = `<div class="list">${t.co.slice(1, 4).map(maTxt).map(s => `<div class="row"><span></span><b>${esc(s) || "&nbsp;"}</b></div>`).join("")}</div>`;
       else if (t.kind === "det") { const n = num(t.co[9]); inner = `<div class="big">${n === undefined ? "–" : n}</div>`; }
       else if (t.kind === "msg") inner = `<div class="big" style="font-size:calc(var(--fb) * .58);color:#9a9a9a">${d.msgs ? d.msgs.length + " Meldungen" : ""}</div>`;
-      return `<div class="cl-vt ma-${t.kind}${open ? " cl-open" : ""}${t.kind === "info" ? " multi" : ""}"${open ? ` data-pa="sub" data-i="${i}"` : ""}><div class="cap">${esc(t.name)}${open ? " ▸" : ""}</div>${inner}</div>`;
+      return `<div class="cl-vt ma-${t.kind}${open ? " cl-open" : ""}${t.kind === "info" ? " multi" : ""}"${open ? ` data-pa="sub" data-i="${i}"` : ""}><div class="cap">${esc(t.name)}${open ? " ▸" : ""}</div><div class="ico">${maIco(maKindIco(t))}</div>${inner}</div>`;
     }).join("");
     return `<div class="cl-vgrid" style="${v}">${tiles}</div><div class="cl-pgb"><button data-pa="pg" data-d="-1" ${pg ? "" : "disabled"}>${svg("up")}</button><button data-pa="pg" data-d="1" ${pg < pages - 1 ? "" : "disabled"}>${svg("down")}</button></div>`;
   },
-  act: (d, b) => { const pa = b.dataset.pa;
-    if (pa === "all") d.all = !d.all; else if (pa === "sub") d.sub = +b.dataset.i; else if (pa === "back") d.sub = null; else if (pa === "pg") d.page = (d.page || 0) + (+b.dataset.d || 0); }
+  act: async (d, b) => { const pa = b.dataset.pa, t = d.tiles[+b.dataset.i], id = PLUG && PLUG.id;
+    if (pa === "all") d.all = !d.all; else if (pa === "sub") d.sub = +b.dataset.i; else if (pa === "back") d.sub = null; else if (pa === "pg") d.page = (d.page || 0) + (+b.dataset.d || 0);
+    else if (pa === "arm" && t && t.kind === "area" && t.co[1]) { const on = !maBit(t.co[2]);
+      if (await maPin(id)) { send(t.co[1], on ? 1 : 0); log("··", "Meldeanlage: „" + t.name + "“ " + (on ? "scharf" : "unscharf") + " geschaltet"); } }
+    else if (pa === "ack" && t && t.kind === "ack" && t.co[0]) { if (await maPin(id)) { send(t.co[0], 1); log("··", "Meldeanlage: quittiert"); } } }
 };
 
 /* 1-21 KNX-Alarmzentrale (v0.9.52, nur Anzeige): gleiche Einstellungsdatei wie die Meldeanlage, mit diesen Unterschieden (aus QuadConfig):
@@ -2836,6 +2932,7 @@ function buildNav() {
     <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>
     <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
   h += `<label class="startsel">Gira-Addins <select id="addinsel"><option value="0">aus</option><option value="1" ${ADDINS_ON ? "selected" : ""}>ein (Versuch: Wetter)</option></select></label>`;
+  h += `<label class="startsel">Ressourcen <select id="reszsel"><option value="0">echte Werte</option><option value="1" ${RES_DEMO ? "selected" : ""}>Zufallswerte (Test, alle 5 s)</option></select></label>`;
   $("cl-ver").textContent = "QC-Client v" + VERSION;                                   // v0.9.47: Version auch im System-Menü der klassischen Ansicht
   { const cp = store.get("camproxy", null), sb = document.querySelector('#cl-sys [data-sysa="camproxy"]'); if (sb) sb.textContent = "Kamera-Proxy: " + (cp && cp.url ? "eingerichtet" : "aus");
     h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
@@ -2850,6 +2947,7 @@ function buildNav() {
   $("startsel").onchange = e => store.set("start", e.target.value);
   $("cpbtn").onclick = camProxyDlg;
   $("addinsel").onchange = e => addinSwitch(e.target.value === "1");
+  $("reszsel").onchange = e => resDemo(e.target.value === "1");
   $("clstylesel").onchange = e => clSetStyle(e.target.value);
   $("uisel").onchange = e => clSetUi(e.target.value);
 }
@@ -3528,6 +3626,7 @@ $("classic").addEventListener("click", e => {
     if (t.dataset.sysa === "log") { $("cl-log").querySelector("pre").textContent = $("log").textContent; $("cl-log").classList.remove("hidden"); }
     if (t.dataset.sysa === "logclose") $("cl-log").classList.add("hidden");
     if (t.dataset.sysa === "camproxy") camProxyDlg();                                    // v0.9.44: auch ohne Wechsel nach „Modern“
+    if (t.dataset.sysa === "resdemo") resDemo(!RES_DEMO);                               // v0.9.56
     if (t.dataset.sysa === "copy") $("logcopy").click();
     if (t.dataset.sysa === "logout") { clShow(false); $("logout").click(); } }
 });

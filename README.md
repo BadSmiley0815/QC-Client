@@ -26,7 +26,7 @@ ohne Dateien hochzuladen, ohne CSV-Exporte, ohne Vorbereitung im Experten.
   (abrufen/lernen), Schalten mit PIN, Werteingabe, Müll, Anzeigen
 - Schaltuhren anzeigen, anlegen, ändern, löschen (Uhrzeit, Zufall, Sonnenauf-/-untergang,
   Wochentage, Sondertage)
-- Webseiten aus dem Menü eingebettet, Plugins „Wertanzeige“, „Sonos“, „Kamera“, „Kamera-Archiv“, „Meldungsarchiv“, „Diagramm“, „Balkendiagramme“, „Ressourcen“ sowie „Meldeanlage“ und „KNX-Alarmzentrale“ (beide nur Anzeige) (weitere folgen)
+- Webseiten aus dem Menü eingebettet, Plugins „Wertanzeige“, „Sonos“, „Kamera“, „Kamera-Archiv“, „Meldungsarchiv“, „Diagramm“, „Balkendiagramme“, „Ressourcen“ sowie „Meldeanlage“ und „KNX-Alarmzentrale“ (weitere folgen)
 - Zwei Ansichten: „Modern“ und „Klassisch“ (wie der Windows-QuadClient, Zeilen aus den Vorlagen des HS)
 - Neustart-Erkennung, automatisches Wiederverbinden mit „Jetzt verbinden“, Hell/Dunkel, Handy-tauglich
 
