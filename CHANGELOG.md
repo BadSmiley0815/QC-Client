@@ -3,6 +3,17 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.62 – Klassische Ansicht am Handy größer
+- **Verbessert:** Am Handy (unter 900 px Breite) ist die klassische Ansicht jetzt rund anderthalbmal so groß: Die Bühne ist 453 statt 680 breit. Dafür stehen Funktionszeilen zweizeilig – oben Symbol und Name über die ganze Breite, darunter die drei Felder der Vorlage nebeneinander; Szenentasten nutzen die ganze zweite Zeile. Pro Seite passen halb so viele Funktionszeilen, Raumlisten bleiben einzeilig. Das Menü hat weiter zwei Spalten, jetzt ohne CSS-zoom. Ab 900 px Breite ist nichts geändert.
+- Beitrag der Android-Sitzung. Geprüft: Tests gegen den nachgebauten HomeServer und im Android-Emulator (412 × 708, Demo-Visu). Nicht geprüft: echtes Gerät, Vorlagen mit Zeitschaltuhr in der Zeile, Platzhalter „Vorlage fehlt“, Stil „Gira“, eingebettete Webseiten.
+- `android/build.ps1`: zwei wahlfreie Parameter `-QcHtml` und `-OutDir` zum Ausprobieren einer anderen `qc.html`; ohne sie unverändert.
+
+## 0.9.61 – Energiefluss: zusätzliche Verbraucher und Zufallswerte
+- **Neu:** Der Energiefluss zeigt zusätzliche Verbraucher als kleine Kreise mit Symbol, Leistung und Name – gedacht für bis zu vier Wallboxen, Waschmaschine, Spülmaschine, Trockner und zehn sonstige (höchstens 17). Je Verbraucher wählbar: Name, eines von 16 eigenen Symbolen und der Anschlusspunkt (Haus als Vorgabe, sonst PV, Speicher oder Netz). Die Linie läuft vom Anschlusspunkt zum Verbraucher, bei negativem Wert zurück; ohne Leistung steht ein dünner Strich. Ab 10 kW in kW.
+- Die Verbraucher kommen aus den Einstellungen eines **eigenen Plugins 99-3** (ID vorläufig): `<ko id tag>` für die zwölf Grundwerte, `<vb id name icon an tag>` je Verbraucher. Das Plugin 180-1 des Drittanbieters kennt keine Verbraucher. **Das Plugin 99-3 für QuadConfig und den Windows-QuadClient gibt es noch nicht** – bis dahin lassen sich die Verbraucher nur mit den Zufallswerten ansehen. Es gehört ins Repo QC-Plugins. Idee und Vorbild ist das Plugin „Energiefluss“ (180-1); dessen ursprünglicher Autor ist [johannesbonn](https://knx-user-forum.de/member/39809-johannesbonn) aus dem KNX-User-Forum. Aus seinem Paket ist nichts übernommen.
+- **Neu:** Der Schalter „Zufallswerte“ (Seitenleiste bzw. System-Menü) gilt jetzt auch für den Energiefluss: alle 5 s neue, in sich stimmige Werte (Netz = PV − Haus ∓ Speicher), gekennzeichnet mit „ZUFALLSWERTE“. Hat die Instanz keine Verbraucher, zeigt der Test neun Beispiel-Verbraucher. Nur Anzeige, es wird nichts gesendet.
+- Geprüft: Tests gegen den nachgebauten HomeServer mit erfundenen Einstellungen. Am echten HomeServer noch nicht ausprobiert.
+
 ## 0.9.60 – Energiefluss: Linien fließen wieder
 - **Behoben:** Die Linien im Energiefluss standen still, wenn im Betriebssystem „Animationen reduzieren“ eingeschaltet ist (so auf dem Rechner, an dem es auffiel). Sie laufen jetzt immer in Flussrichtung – zum Haus hin, beim Laden des Speichers vom Haus weg –, weil die Richtung hier die Aussage ist.
 
@@ -63,7 +74,7 @@ Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Rep
 
 ## 0.9.47 – Raum- und Plugin-Sprung aus importierten Vorlagen
 - **Behoben:** Importierte Navigations-Vorlagen (z. B. „Navigation mit Status“) springen jetzt in den Raum bzw. öffnen das Plugin, das in der Funktion eingestellt ist. Bisher erschien beim Antippen nur das Fenster mit allen Einstellungen.
-- In „Modern“ zeigt die Kachel je Sprungziel einen Knopf mit dem Namen des Raums oder Plugins; in „Klassisch“ wirken die Tasten der Zeile wie im QuadClient.
+- In „Modern“ zeigt die Kachel je Sprungziel einen Knopf mit dem Namen des Raums oder Plugins; in „Klassisch“ wirken die Tasten der Zeile wie im QuadClient.
 - **Behoben:** Nach einem Update arbeitete der Client mit dem im Browser aufgehobenen Projektstand der alten Version weiter, bis das Projekt neu übertragen wurde. Dadurch wirkten der Raum- und Plugin-Sprung und die „Sichtbarkeit im Raum“ aus v0.9.45 zunächst nicht. Der aufgehobene Stand wird jetzt mit der neuen Version neu aufgebaut.
 - **Verbessert:** Das Uhr-Symbol der Zeitschaltuhr steht in „Klassisch“ jetzt wie im QuadClient in der dritten Spalte der Zeile (rot = Uhr aus, grün = aktiv) statt neben dem Namen. Nur wenn die Vorlage die dritte Spalte selbst belegt, bleibt es neben dem Namen.
 - **Neu:** Im Menü „System“ der klassischen Ansicht steht unten die Versionsnummer des Clients.

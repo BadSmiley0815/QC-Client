@@ -33,7 +33,7 @@ async function start(b, user, extra = []) {
     if (n === "demo.addin.wetter_907.json") return addinMode === "ohne" ? r.fulfill({ status: 404, body: "" }) : r.fulfill({ status: 200, contentType: "application/json", body: Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), T("demo_addin_907.json")]) });
     if (u.includes("/quad/load/ADDINS/SETTINGS907.JSON?SID")) return r.fulfill({ status: 200, contentType: "application/json", body: '{"ort":"Demostadt"}' });
     const f = { "client_project.xml": "demo_project.xml", "client_templates.xml": "demo_templates.xml", "client_language.xml": "demo_language.xml",
-      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml", "1-15_951.xml": "demo_1-15_951.xml", "1-21_952.xml": "demo_1-21_952.xml", "180-1_953.xml": "demo_180-1_953.xml" }[n];
+      "quad_plugin.xml": "demo_plugin.xml", "1-2_900.xml": "demo_1-2_900.xml", "1-25_902.xml": "demo_1-25_902.xml", "0-7_903.xml": "demo_0-7_903.xml", "0-4_904.xml": "demo_0-4_904.xml", "0-3_905.xml": "demo_0-3_905.xml", "1-16_906.xml": "demo_1-16_906.xml", "0-2_901.xml": "demo_0-2_901.xml", "1-3_907.xml": "demo_1-3_907.xml", "1-2_908.xml": "demo_1-2_908.xml", "99-2_909.xml": "demo_99-2_909.xml", "50-1_950.xml": "demo_50-1_950.xml", "1-15_951.xml": "demo_1-15_951.xml", "1-21_952.xml": "demo_1-21_952.xml", "180-1_953.xml": "demo_180-1_953.xml", "99-3_954.xml": "demo_99-3_954.xml" }[n];
     if (n === "client_design.xml") return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_design.xml") });
     if (u.includes("/quad/public/design_4/public_templates.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_templates.xml") });
     if (u.includes("/quad/public/public_language.xml")) return r.fulfill({ status: 200, contentType: "text/xml", body: T("demo_public_language.xml") });
@@ -572,6 +572,54 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     await pe.evaluate(() => clPlugin("953")); await pe.waitForTimeout(900);
     ok("Klassisch: Zeichnung füllt den Quadranten, ohne überzustehen", await pe.evaluate(() => { const q = document.querySelector("#cl-q1b"), s = q.querySelector("svg.ef"); if (!s) return false; const a = q.getBoundingClientRect(), r = s.getBoundingClientRect(); return r.height > 200 && r.bottom <= a.bottom + 1 && r.right <= a.right + 1 && r.left >= a.left - 1; }));
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pe.close(); }
+
+  console.log("Energiefluss mit Verbrauchern 99-3 und Zufallswerte (v0.9.61, erfundene Einstellungen)");
+  { const pv = await start(b, "Demo", ["2|9821|5000.0|0", "2|9822|600.0|0", "2|9823|9000.0|0", "2|9824|-4600.0|0", "2|9825|55.0|0", "2|9826|2.0|0", "2|9841|7400.0|0", "2|9842|0.0|0", "2|9843|900.0|0", "2|9844|-40.0|0",
+      "2|9801|4200.0|0", "2|9803|1900.0|0", "2|9804|1500.0|0", "2|9812|1.0|0"]);
+    const errs = []; pv.on("pageerror", e => errs.push(e.message));
+    await pv.evaluate(() => openPlugin("Energiefluss Verbraucher", "954")); await pv.waitForTimeout(900); await sent(pv);
+    const nt = async k => (await pv.textContent(`#pbody [data-ef="${k}"]`)).replace(/\s+/g, " "), cls = k => pv.getAttribute(`#pbody [data-ef="${k}"]`, "class");
+    ok("Grundwerte aus <ko id tag>: PV, Haus, Netz-Bezug, Speicher entlädt", (await nt("pv")).includes("PV-ANLAGE5000W") && (await nt("haus")).includes("HAUS9000W") && (await nt("netz")).includes("4600WBezug") && (await nt("bat")).includes("600W entlädt55 %"), await nt("bat"));
+    ok("vier Verbraucher, der ohne KO fehlt", await pv.locator("#pbody .ef-vb").count() === 4 && await pv.locator('#pbody [data-ef="vb:wb2"]').count() === 0);
+    ok("Verbraucher: Name, Leistung, Vorgabe-Name ohne Angabe", (await nt("vb:wb1")).includes("Wallbox Garage") && (await nt("vb:wb1")).includes("7400 W") && (await nt("vb:wm")).includes("Waschmaschine") && (await nt("vb:wm")).includes("0 W"), await nt("vb:wb1") + "|" + await nt("vb:wm"));
+    ok("Anschlusspunkt: Haus als Vorgabe, PV und Speicher wählbar; unbekanntes Symbol fällt auf die Vorgabe", await pv.evaluate(() => { const a = k => document.querySelector(`#pbody [data-ef="vb:${k}"]`).dataset.an, d = HOSTS.find(h => h.plug && h.plug.cls === "99-3").plug.data;
+      const l = k => document.querySelector(`#pbody [data-ef="vbl:${k}"]`).getAttribute("d");
+      return a("wb1") === "haus" && a("wm") === "haus" && a("s1") === "pv" && a("s2") === "bat" && l("wb1").startsWith("M253 197L") && l("s1").startsWith("M253 44L") && l("s2").startsWith("M95 120L") && d.vb.find(q => q.id === "s2").icon === "steckdose" && d.vb.find(q => q.id === "wm").icon === "wasch"; }));
+    ok("Linien: mit Leistung fließend, ohne Leistung dünner Strich, negativ rückwärts", (await cls("vbl:wb1")) === "ef-l on" && (await cls("vbl:wm")) === "ef-l0" && (await cls("vbl:s2")) === "ef-l on rev", await cls("vbl:s2"));
+    await pv.evaluate(() => { WSI.onmessage({ data: "1|9842|12800.0|0" }); WSI.onmessage({ data: "1|9841|0.0|0" }); }); await pv.waitForTimeout(300);
+    ok("KO-Telegramm: Verbraucher wechselt, ab 10 kW in kW", (await nt("vb:wm")).includes("12.8 kW") && (await cls("vbl:wm")) === "ef-l on" && (await cls("vbl:wb1")) === "ef-l0", await nt("vb:wm"));
+    ok("Plätze: bis zehn am Haus eine Reihe mit Namen, darüber zwei Reihen ohne; höchstens 17", await pv.evaluate(() => { const mk = (n, an) => Array.from({ length: n }, (_, i) => ({ id: an + i, name: "V", icon: "sonst", an, ko: "" }));
+      const a = efPlace(mk(10, "haus")), c = efPlace(mk(13, "haus").concat(mk(2, "pv"), mk(1, "bat"), mk(1, "netz"))), uniq = l => new Set(l.map(p => p.s.x + "," + p.s.y)).size === l.length;
+      const T = PLUGIN_TYPES["99-3"], x = new DOMParser().parseFromString("<project>" + Array.from({ length: 20 }, (_, i) => `<vb id="s${i}" tag="${7000 + i}"/>`).join("") + "</project>", "text/xml");
+      return a.length === 10 && uniq(a) && a.every(p => p.s.nm && p.s.y === 199) && c.length === 17 && uniq(c) && c.filter(p => p.q.an === "haus").every(p => !p.s.nm && p.s.y > 150) && c.filter(p => p.q.an !== "haus").every(p => p.s.y === 24) && T.read(x).vb.length === 17 && T.tags(T.read(x)).filter(Boolean).length === 17; }));
+    const real = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
+    await pv.selectOption("#reszsel", "1"); await pv.waitForTimeout(300); const z1 = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
+    ok("Zufallswerte: gekennzeichnet, eigene Verbraucher bleiben, Werte ändern sich", z1.includes("ZUFALLSWERTE") && await pv.locator("#pbody .ef-vb").count() === 4 && z1.includes("Wallbox Garage") && z1.replace("ZUFALLSWERTE", "") !== real, z1.slice(0, 200));
+    await pv.evaluate(() => { openPlugin("Energiefluss", "953"); }); await pv.waitForTimeout(900); await pv.evaluate(() => efDemoTick()); await pv.waitForTimeout(200);
+    const z2 = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
+    ok("Zufallswerte im Plugin 180-1: neun Beispiel-Verbraucher an Haus, PV und Speicher", z2.includes("ZUFALLSWERTE") && await pv.locator("#pbody .ef-vb").count() === 9 && await pv.locator('#pbody .ef-vb[data-an="pv"]').count() === 1 && await pv.locator('#pbody .ef-vb[data-an="bat"]').count() === 1 && z2.includes("Wärmepumpe"), z2.slice(0, 200));
+    ok("Zufallswerte: Haus mindestens so groß wie seine Verbraucher, Netz = Bilanz", await pv.evaluate(() => HOSTS.filter(h => h.plug && h.plug.data && h.plug.data.fake).every(h => { const f = h.plug.data.fake, s = f.vb.filter(q => q.an === "haus").reduce((a, q) => a + q.val, 0);
+      return f.haus >= s && Math.abs(f.netz - (f.pv - f.haus - (f.batstate === 1 ? f.bat : -f.bat))) <= 1; })));
+    await pv.selectOption("#reszsel", "0"); await pv.waitForTimeout(300); const z3 = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
+    ok("Zufallswerte aus: echte Werte, keine Beispiel-Verbraucher, nichts gesendet", !z3.includes("ZUFALLSWERTE") && z3.includes("PV-ANLAGE4200W") && await pv.locator("#pbody .ef-vb").count() === 0 && (await sent(pv)).length === 0 && await pv.evaluate(() => V.get("9801") === "4200.0"), z3.slice(0, 200));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pv.close(); }
+
+  console.log("Klassisch am Handy größer (v0.9.62)");
+  { const ph = await start(b, "Demo", ["2|111|1.0|0", "2|116|42.0|0"]); const errs = []; ph.on("pageerror", e => errs.push(e.message));
+    await ph.selectOption("#uisel", "classic"); await ph.waitForTimeout(500); await ph.setViewportSize({ width: 400, height: 860 }); await ph.waitForTimeout(500);
+    const m = await ph.evaluate(() => { const t = [...document.querySelectorAll("#cl-left .cl-mt")].map(e => e.getBoundingClientRect()); return { s: CL.s, n: t.length, w: Math.round(t[0].width), cols: new Set(t.map(r => Math.round(r.left))).size, max: Math.max(...t.map(r => r.right)), zoom: getComputedStyle(document.querySelector("#cl-left .cl-mt")).zoom }; });
+    ok("Bühne 453 breit: Maßstab rund 0,88 statt 0,59; Menü zwei Spalten ohne CSS-zoom, nichts steht über", Math.abs(m.s - 400 / 453) < 0.01 && m.cols === 2 && m.max <= 401 && m.w > 180 && (m.zoom === "1" || m.zoom === "normal" || m.zoom === undefined), JSON.stringify(m));
+    await ph.click('#cl-left .cl-mt:has-text("Wohnen")'); await ph.waitForTimeout(400);
+    const r = await ph.evaluate(() => { const row = [...document.querySelectorAll("#cl-left .cl-row[data-ref]")].find(e => e.querySelector(".cl-name") && e.querySelector(".cl-name").textContent === "Deckenlicht"), nm = row.querySelector(".cl-name"), rb = row.getBoundingClientRect(), nb = nm.getBoundingClientRect();
+      const ps = [...row.querySelectorAll(".cl-p")].map(e => e.getBoundingClientRect()).filter(q => q.width > 0);
+      return { r2: row.classList.contains("r2"), h: row.offsetHeight, fs: parseFloat(getComputedStyle(nm).fontSize) * CL.s, below: ps.length > 0 && ps.every(q => q.top >= nb.top + 30 * CL.s && q.bottom <= rb.bottom + 1 && q.left >= -1 && q.right <= 401),
+        n: ps.length, over: document.documentElement.scrollWidth - window.innerWidth, rows: document.querySelectorAll("#cl-left .cl-row[data-ref]").length, cap: Math.floor(CL.rows / 2) }; });
+    ok("Funktionszeile zweizeilig (80 hoch), Name mindestens 17 px groß", r.r2 && r.h === 80 && r.fs >= 17, JSON.stringify(r));
+    ok("Felder der Vorlage stehen in der zweiten Zeile und bleiben im Bild, kein waagrechter Überlauf", r.below && r.over <= 0, JSON.stringify(r));
+    ok("pro Seite halb so viele Funktionszeilen", r.rows <= r.cap && r.cap >= 5, JSON.stringify(r));
+    await ph.setViewportSize({ width: 1366, height: 768 }); await ph.waitForTimeout(500);
+    ok("breit unverändert: Zeile 40 hoch, einzeilig", await ph.evaluate(() => { const row = document.querySelector("#cl-left .cl-row[data-ref]"); return !!row && !row.classList.contains("r2") && row.offsetHeight === 40; }));
+    ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await ph.close(); }
 
   console.log("Plugin Meldeanlage 1-15, nur Anzeige (v0.9.51, erfundene Einstellungen)");
   { const pm = await start(b, "Demo", ["2|9601|1.0|0", "2|9603|0.0|0", "2|9604|0.0|0", "2|9611|1.0|0", "2|9613|1.0|0", "2|9614|0.0|0",

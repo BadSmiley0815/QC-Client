@@ -127,15 +127,25 @@ html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) 
 /* v0.9.36 – Klassisch auf dem Handy (schmales Fenster): eine Spalte, 680 breit. Menü/Liste und die beiden Plugin-Quadranten
    sind zwei Seiten (Leiste unten: „Plugins“); die Liste nutzt die ganze Höhe (--lh = Listenhöhe, Zeilenzahl in CL.rows). */
 #clstage{--lh:600px}
-#classic.cl-phone #clstage{width:680px;height:calc(var(--lh) + 168px)}
-#classic.cl-phone .cl-head{width:680px}
-#classic.cl-phone #cl-time{left:300px}#classic.cl-phone #cl-tout{left:509px}#classic.cl-phone #cl-tin{left:595px}
-#classic.cl-phone #cl-left{height:calc(var(--lh) + 40px)}
-#classic.cl-phone .cl-bar{top:var(--lh)}#classic.cl-phone .cl-vl{height:var(--lh)}
-#classic.cl-phone #cl-nav{top:calc(var(--lh) + 126px);width:680px}
+#classic.cl-phone #clstage{width:453px;height:calc(var(--lh) + 168px)}
+#classic.cl-phone .cl-head{width:453px}
+#classic.cl-phone #cl-time{left:186px}#classic.cl-phone #cl-tout{left:282px}#classic.cl-phone #cl-tin{left:368px}
+#classic.cl-phone #cl-left{width:453px;height:calc(var(--lh) + 40px)}
+#classic.cl-phone .cl-bar{top:var(--lh);width:453px;display:flex}#classic.cl-phone .cl-vl{display:none}
+#classic.cl-phone .cl-bar button{position:static;flex:1;width:auto!important}
+#classic.cl-phone #cl-nav{top:calc(var(--lh) + 126px);width:453px}
+/* v0.9.62 – Handy größer: Die Bühne ist 453 statt 680 breit (Maßstab rund 0,9 statt 0,6). Dafür stehen Funktionszeilen
+   zweizeilig: oben Symbol und Name über die ganze Breite, darunter die drei Felder der Vorlage nebeneinander. */
+#classic.cl-phone .cl-row,#classic.cl-phone .cl-lrow{width:453px}
+#classic.cl-phone .cl-row.r2{height:80px}
+#classic.cl-phone .cl-name{width:365px}
+#classic.cl-phone .cl-p{top:41px}
+#classic.cl-phone .cl-p:not(.cl-scn)[data-pos="1"]{left:20px!important}#classic.cl-phone .cl-p:not(.cl-scn)[data-pos="2"]{left:171px!important}#classic.cl-phone .cl-p:not(.cl-scn)[data-pos="3"]{left:322px!important}
+#classic.cl-phone .cl-p.cl-open{left:59px!important}
+#classic.cl-phone .cl-uhr{left:413px}#classic.cl-phone .cl-uhr.p3{left:322px;top:41px}
 #classic.cl-phone #cl-nav button:disabled{display:none}
 #cl-nav button[data-pg]{display:none}#classic.cl-phone #cl-nav button[data-pg]{display:block}
-#classic.cl-phone .cl-quad{left:0}
+#classic.cl-phone .cl-quad{left:0;width:453px}#classic.cl-phone .cl-qctl{width:453px}
 /* v0.9.40 – Handy: EIN Plugin über die ganze Seite (wie die Gira-App) statt zwei verkleinerter Quadranten. Eine Auswahlzeile
    blättert durch alle Plugins; der Inhalt ist die bewegliche Darstellung der Ansicht Modern in echten Pixeln (--pz hebt den
    Maßstab der Bühne wieder auf), dunkel wie die klassische Ansicht. */
@@ -143,14 +153,13 @@ html:not(.cl-gira) .cl-vt .row{border-bottom-color:#ffffff14}html:not(.cl-gira) 
 #classic.cl-phone .cl-quad{top:87px!important;height:calc(var(--lh) + 37px)}
 #classic.cl-phone .cl-qctl{height:64px}
 #classic.cl-phone .cl-qa{height:64px;width:72px}#classic.cl-phone .cl-qa svg{width:28px;height:28px}
-.cl-psel{position:absolute;left:72px;top:6px;width:536px;height:58px;display:grid;place-items:center;background:#2b2b2b;border-radius:6px 6px 0 0;font-size:26px;color:#e6e6e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}
+.cl-psel{position:absolute;left:72px;right:72px;top:6px;height:58px;display:grid;place-items:center;background:#2b2b2b;border-radius:6px 6px 0 0;font-size:26px;color:#e6e6e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}
 /* v0.9.41: transform statt zoom – unter zoom antworten ältere WebViews (vor Chromium 128) bei getBoundingClientRect in anderen Einheiten, das Fadenkreuz der Diagramme säße daneben. */
-#classic.cl-phone .cl-qb{transform:scale(var(--pz));transform-origin:0 0;top:64px;width:calc(680px / var(--pz));height:calc((var(--lh) - 27px) / var(--pz));padding:10px;background:#141615;font-size:15px;
+#classic.cl-phone .cl-qb{transform:scale(var(--pz));transform-origin:0 0;top:64px;width:calc(453px / var(--pz));height:calc((var(--lh) - 27px) / var(--pz));padding:10px;background:#141615;font-size:15px;
   color-scheme:dark;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;
   --acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;--ok:#5cc07c;--err:#ff6b5b;--cool:#6aa5df;color:var(--ink)}
 #classic.cl-phone:not(.pg-plug) .cl-quad{visibility:hidden}#classic.cl-phone.pg-plug #cl-left{display:none}
-#classic.cl-phone #cl-log{left:0;height:calc(var(--lh) + 37px)}
-#classic.cl-phone .cl-mt{zoom:1.5}
+#classic.cl-phone #cl-log{left:0;width:453px;height:calc(var(--lh) + 37px)}
 #cl-log pre{flex:1;overflow:auto;margin:0;padding:10px;font-size:12px;white-space:pre-wrap}#cl-log button{padding:10px;border-top:1px solid #333}
 #clcard{border:1px solid #2b302d;border-radius:14px;padding:12px;width:min(420px,94vw);--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;--acc:#f0954a;--acc-soft:#3a2a1d;--on:#f2b33d;color-scheme:dark;background:var(--bg);color:var(--ink)}
 .cl-badge{border-radius:50%;background:#000}.cl-bdg>svg{width:100%;height:100%;display:block}
@@ -210,6 +219,7 @@ svg.ef{display:block;width:100%;font-variant-numeric:tabular-nums}.ef text:not([
 .ef .ef-s{font-size:8.5px;opacity:.72}.ef .ef-fc{font-size:6.5px;letter-spacing:.5px;opacity:.6;fill:currentColor}.ef .ef-fv{font-size:9.5px;font-weight:600}.ef .ef-fu{font-size:6.5px;opacity:.6;fill:currentColor}.ef .ef-fl{font-size:7px;font-weight:700}
 .ef .ef-l{fill:none;stroke-width:1.7;stroke-dasharray:5 4;animation:efrun 1s linear infinite}.ef .ef-l.rev{animation-direction:reverse}@keyframes efrun{to{stroke-dashoffset:-9}}
 .ef .ef-live{animation:eflive 2s ease-in-out infinite}@keyframes eflive{50%{opacity:.35}}
+.ef .ef-l0{fill:none;stroke:var(--ef-rim);stroke-width:1}.ef .ef-vv{font-size:7.5px;font-weight:600}.ef .ef-vn{font-size:6px;opacity:.72}.ef .ef-demo{font-size:6.5px;font-weight:700;letter-spacing:.5px}
 @media (prefers-reduced-motion:reduce){.ef .ef-live{animation:none}}   /* v0.9.60: die Linien laufen immer – die Richtung ist die Aussage */
 .pval{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
 .pval .cap{font-size:13px;color:var(--muted);margin-bottom:4px}
@@ -534,7 +544,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.60";
+const VERSION = "0.9.62";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2359,9 +2369,9 @@ function resDemoTick() {
 function resDemo(on) {
   clearInterval(RES_DEMO); RES_DEMO = null; RES_FAKE.clear();
   HOSTS.forEach(h => { if (h.plug && h.plug.cls === "50-1" && h.plug.data) h.plug.data.tiles.forEach(t => resDemoKeys(t, false)); });
-  if (on) { RES_DEMO = setInterval(resDemoTick, RES_DEMO_MS); resDemoTick(); }
-  else HOSTS.forEach(h => { if (h.plug && h.plug.cls === "50-1") renderHost(h); });
-  log("··", "Ressourcen: Zufallswerte " + (on ? "ein (nur Anzeige, nichts wird gesendet)" : "aus"));
+  if (on) { RES_DEMO = setInterval(() => { resDemoTick(); efDemoTick(); }, RES_DEMO_MS); resDemoTick(); efDemoTick(); }
+  else { HOSTS.forEach(h => { if (h.plug && h.plug.cls === "50-1") renderHost(h); }); efDemoOff(); }
+  log("··", "Ressourcen und Energiefluss: Zufallswerte " + (on ? "ein (nur Anzeige, nichts wird gesendet)" : "aus"));
   const sb = document.querySelector('#cl-sys [data-sysa="resdemo"]'); if (sb) sb.textContent = "Zufallswerte: " + (on ? "ein" : "aus");
   const se = $("reszsel"); if (se) se.value = on ? "1" : "0";
 }
@@ -2480,12 +2490,53 @@ const EF_ICO = { pv: '<circle cx="12" cy="12" r="5.2" fill="#f5a623"/><path d="M
   haus: '<path d="M5 11.5h14V21H5z" fill="#e9e3d2"/><path d="M2.5 12.2L12 3.5l9.5 8.7z" fill="#e0563b"/><path d="M10.2 21v-5.5h3.6V21z" fill="#4a9af5"/>',
   netz: '<path d="M13.5 1.5L5 13.3h5.6L9.4 22.5 19 10.4h-5.8z" fill="#f0803c"/>' };
 const efNum = (n, d) => n === undefined ? "---" : Number(n).toFixed(d);
+/* v0.9.61 Zusätzliche Verbraucher (eigenes Plugin 99-3, ID vorläufig – das Plugin 180-1 kennt keine): bis zu 17 kleine Kreise mit
+   Symbol, Leistung und Name, jeder an einem Anschlusspunkt (Haus, PV, Speicher oder Netz). Die Linie läuft vom Anschlusspunkt zum
+   Verbraucher, bei negativem Wert zurück; ohne Leistung steht ein dünner Strich. Plätze: Haus unten links/rechts (über zehn: zwei
+   Reihen ohne Namen), PV oben innen, Speicher oben links außen, Netz oben rechts außen. Einstellungen der Instanz:
+   <project version="1"><ko id="pv|bat|…" tag="KO-ID"/>… <vb id="wb1…wb4|wm|sm|tr|s1…s10" name icon an="haus|pv|bat|netz" tag="KO-ID"/>…
+   Ohne name/icon gilt die Vorgabe des Platzes (Wallbox, Waschmaschine, Spülmaschine, Trockner, Verbraucher). Symbole sind eigene. */
+const EF_PLUG = "99-3", EF_VB_MAX = 17, EF_VB_COL = "#b08af0", efCls = c => c === "180-1" || c === EF_PLUG;
+const EF_VICO = {
+  wallbox: '<rect x="6" y="2.5" width="12" height="15" rx="2.5" fill="#4a9af5"/><path d="M12.8 5.5l-3 5h2.2l-.8 4 3.2-5.2h-2.2z" fill="#fff"/><path d="M9 17.5v2.2a2 2 0 0 0 2 2h4" stroke="#9aa0a6" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+  auto: '<path d="M3 16v-3.2l2.2-.8 1.8-4.2a2 2 0 0 1 1.8-1.2h6.4a2 2 0 0 1 1.8 1.2l1.8 4.2 2.2.8V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" fill="#4a9af5"/><path d="M7.6 11.6l1.3-3h6.2l1.3 3z" fill="#cfe3fb"/><circle cx="7.5" cy="17" r="2.2" fill="#30343a"/><circle cx="16.5" cy="17" r="2.2" fill="#30343a"/>',
+  wasch: '<rect x="4" y="2.5" width="16" height="19" rx="2" fill="#c8ccd0"/><circle cx="12" cy="13.5" r="5" fill="#4a9af5" stroke="#6b7078" stroke-width="1.2"/><circle cx="7" cy="5.5" r="1" fill="#6b7078"/><path d="M10 5.5h7" stroke="#6b7078" stroke-width="1.2"/>',
+  spuel: '<rect x="4" y="2.5" width="16" height="19" rx="2" fill="#c8ccd0"/><path d="M4 7.5h16M8 5h3" stroke="#6b7078" stroke-width="1.2"/><circle cx="12" cy="14.5" r="4" fill="#fff" stroke="#4a9af5" stroke-width="1.4"/><circle cx="12" cy="14.5" r="1.6" fill="#4a9af5"/>',
+  trockner: '<rect x="4" y="2.5" width="16" height="19" rx="2" fill="#c8ccd0"/><circle cx="12" cy="13.5" r="5" fill="#f0803c" stroke="#6b7078" stroke-width="1.2"/><path d="M9.5 13.5c1-1.6 1.6 1.6 2.5 0s1.6 1.6 2.5 0" stroke="#fff" stroke-width="1.1" fill="none"/><circle cx="17" cy="5.5" r="1" fill="#6b7078"/><path d="M7 5.5h7" stroke="#6b7078" stroke-width="1.2"/>',
+  herd: '<rect x="4" y="3" width="16" height="18" rx="2" fill="#6b7078"/><circle cx="9" cy="8" r="2" fill="#e0563b"/><circle cx="15" cy="8" r="2" fill="#e0563b"/><rect x="7" y="13" width="10" height="6" rx="1" fill="#30343a"/>',
+  kuehl: '<rect x="6" y="2" width="12" height="20" rx="2" fill="#cfe3fb"/><path d="M6 9h12" stroke="#4a9af5" stroke-width="1.2"/><path d="M9 5v2M9 12v4" stroke="#4a9af5" stroke-width="1.4" stroke-linecap="round"/>',
+  wp: '<rect x="2.5" y="6" width="19" height="13" rx="2" fill="#c8ccd0"/><circle cx="9" cy="12.5" r="4.2" fill="#30343a"/><path d="M9 8.6v7.8M5.1 12.5h7.8" stroke="#9aa0a6" stroke-width="1.2"/><path d="M16 10h3M16 12.5h3M16 15h3" stroke="#6b7078" stroke-width="1.1"/>',
+  boiler: '<rect x="7" y="2" width="10" height="20" rx="4" fill="#e9e3d2"/><path d="M12 8c2 2.4 2.8 3.6 2.8 5a2.8 2.8 0 0 1-5.6 0c0-1.4.8-2.6 2.8-5z" fill="#e0563b"/>',
+  klima: '<rect x="2.5" y="5" width="19" height="8" rx="2" fill="#c8ccd0"/><path d="M5 10.5h14" stroke="#6b7078" stroke-width="1.1"/><path d="M8 16v3M12 16v4M16 16v3" stroke="#4a9af5" stroke-width="1.5" stroke-linecap="round"/>',
+  licht: '<path d="M12 2.5a6 6 0 0 0-3.4 10.9c.6.5.9 1.1.9 1.8V16h5v-.8c0-.7.3-1.3.9-1.8A6 6 0 0 0 12 2.5z" fill="#f5c542"/><path d="M9.8 18h4.4M10.4 20.5h3.2" stroke="#9aa0a6" stroke-width="1.5" stroke-linecap="round"/>',
+  steckdose: '<circle cx="12" cy="12" r="9" fill="#c8ccd0"/><circle cx="8.6" cy="12" r="1.5" fill="#30343a"/><circle cx="15.4" cy="12" r="1.5" fill="#30343a"/><path d="M12 3.6v2M12 18.4v2" stroke="#6b7078" stroke-width="1.6"/>',
+  pool: '<path d="M2.5 14c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.7 0 3.2-1.6 4.8 0 3.1 1.6 4.7 0M2.5 19c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.7 0 3.2-1.6 4.8 0 3.1 1.6 4.7 0" stroke="#4a9af5" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M8 11.5V5a2 2 0 0 1 4 0M14 11.5V5a2 2 0 0 1 4 0" stroke="#9aa0a6" stroke-width="1.5" fill="none"/>',
+  tv: '<rect x="2.5" y="4.5" width="19" height="12.5" rx="1.5" fill="#30343a"/><rect x="4.2" y="6.2" width="15.6" height="9.1" fill="#4a9af5"/><path d="M8 20.5h8M12 17v3.5" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="round"/>',
+  pc: '<rect x="3" y="4" width="18" height="12" rx="1.5" fill="#6b7078"/><rect x="4.6" y="5.6" width="14.8" height="8.8" fill="#cfe3fb"/><path d="M1.5 19.5h21" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"/>',
+  sonst: '<path d="M9 2.5v5M15 2.5v5M12 17v4.5" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"/><path d="M6 7.5h12V11a6 6 0 0 1-12 0z" fill="#57c26a"/>' };
+const EF_VB_DEF = { wb: ["Wallbox", "wallbox"], wm: ["Waschmaschine", "wasch"], sm: ["Spülmaschine", "spuel"], tr: ["Trockner", "trockner"], s: ["Verbraucher", "steckdose"] };
+const efVbDef = id => { const m = /^(wb|wm|sm|tr|s)(\d*)$/.exec(id) || [0, "s", ""], q = EF_VB_DEF[m[1]]; return { name: q[0] + (m[2] ? " " + m[2] : ""), icon: q[1] }; };
+const efVal = (d, k) => d.fake ? d.fake[k] : d.ko[k] ? num(d.ko[k]) : undefined;          // d.fake: Zufallswerte (Test), sonst das KO
+const efOn = (d, k) => d.fake ? d.fake[k] !== undefined : !!d.ko[k];
+const efVbs = d => ((d.fake && d.fake.vb) || d.vb || []).slice(0, EF_VB_MAX);
+const efVbVal = q => q.val !== undefined ? q.val : q.ko ? num(q.ko) : undefined;
+const efHas = d => !!d.fake || Object.values(d.ko).some(Boolean) || !!(d.vb && d.vb.length);
+function efPlace(vb) {                                       // Verbraucher auf feste Plätze verteilen -> [{ q, s: Platz, a: Anschlusspunkt }]
+  const AN = { pv: [253, 44], bat: [95, 120], netz: [412, 120], haus: [253, 197] }, two = vb.filter(q => q.an === "haus").length > 10;
+  const row = (y, r, nm) => ({ L: [0, 1, 2, 3, 4].map(i => ({ x: 194 - 40 * i, y, r, nm })), R: [0, 1, 2, 3, 4].map(i => ({ x: 312 + 40 * i, y, r, nm })) });
+  const zip = (a, b) => a.flatMap((s, i) => [s, b[i]]), top = row(24, 13, true), bot = two ? [row(183, 10, false), row(218, 10, false)] : [row(199, 13, true)];
+  const order = { haus: bot.flatMap(r => zip(r.R, r.L)), pv: zip(top.R, top.L), bat: [...top.L].reverse(), netz: [...top.R].reverse() };
+  const all = [...order.haus, ...order.pv], used = new Set(), out = [];
+  ["bat", "netz", "pv", "haus"].forEach(an => vb.filter(q => q.an === an).forEach(q => { const s = order[an].find(s => !used.has(s)) || all.find(s => !used.has(s));
+    if (s) { used.add(s); out.push({ q, s, a: AN[an] }); } }));
+  return out;
+}
 function efFlows(d) {                                        // welche Linie gezeichnet wird; rev = Punkte laufen vom Haus weg
-  const v = k => d.ko[k] ? num(d.ko[k]) : undefined, pv = v("pv") || 0, netz = v("netz") || 0, bs = v("batstate");
+  const v = k => efVal(d, k), pv = v("pv") || 0, netz = v("netz") || 0, bs = v("batstate");
   return { bs: bs === 1 ? 1 : bs === 2 ? 2 : 0, pvHaus: pv > 0, netzHaus: netz < 0, pvNetz: netz > 0, batHaus: bs === 1 || bs === 2, batRev: bs === 1 };
 }
 function efSvg(d) {
-  const v = k => d.ko[k] ? num(d.ko[k]) : undefined, f = efFlows(d), netz = v("netz"), abs = n => n === undefined ? undefined : Math.abs(n);
+  const v = k => efVal(d, k), has = k => efOn(d, k), f = efFlows(d), netz = v("netz"), abs = n => n === undefined ? undefined : Math.abs(n), P = efPlace(efVbs(d));
   const N = { pv: [253, 44, "#f5a623", "PV-Anlage"], bat: [95, 120, "#3fbf8f", "Speicher"], netz: [412, 120, "var(--ef-nz)", "Netz"], haus: [253, 197, "#4a9af5", "Haus"] };
   const line = (id, x1, y1, x2, y2, col, rev) => f[id] ? `<path class="ef-l on${rev ? " rev" : ""}" data-ef="${id}" d="M${x1} ${y1}L${x2} ${y2}" stroke="${col}"/>` : "";
   const node = (k, val, unit, sub) => { const [x, y, col, name] = N[k];
@@ -2495,14 +2546,23 @@ function efSvg(d) {
       + `<text x="${x}" y="${y + 8}" text-anchor="middle" class="ef-v" fill="${col}">${esc(efNum(val, 0))}</text>`
       + `<text x="${x}" y="${y + 19}" text-anchor="middle" class="ef-s">${esc(unit)}</text>`
       + (sub ? `<text x="${x}" y="${y + 30}" text-anchor="middle" class="ef-s">${esc(sub)}</text>` : "") + `</g>`; };
-  const foot = [["evpct", "Eigenver.", 0, "%", "#f5a623", 26], ["autpct", "Autarkie", 0, "%", "#3fbf8f", 130], ["einsp", "Einspeisung", 1, "kWh", "#4a9af5", 230], ["bezug", "Netzbezug", 1, "kWh", "var(--ef-nz)", 357]].filter(q => d.ko[q[0]]);
-  return `<svg class="ef" viewBox="0 0 507 273" role="img" aria-label="Energiefluss">`
+  const foot = [["evpct", "Eigenver.", 0, "%", "#f5a623", 26], ["autpct", "Autarkie", 0, "%", "#3fbf8f", 130], ["einsp", "Einspeisung", 1, "kWh", "#4a9af5", 230], ["bezug", "Netzbezug", 1, "kWh", "var(--ef-nz)", 357]].filter(q => has(q[0]));
+  const vbLine = [...P].sort((x, y) => !!efVbVal(x.q) - !!efVbVal(y.q)).map(({ q, s, a }) => { const w = efVbVal(q) || 0;   // ruhende Striche zuunterst
+    return `<path class="${w ? "ef-l on" + (w < 0 ? " rev" : "") : "ef-l0"}" data-ef="vbl:${esc(q.id)}" d="M${a[0]} ${a[1]}L${s.x} ${s.y}"${w ? ` stroke="${EF_VB_COL}"` : ""}/>`; }).join("");
+  const vbNode = P.map(({ q, s }) => { const w = efVbVal(q), sc = +(s.r / 18.5).toFixed(3), nm = q.name.length > 10 ? q.name.slice(0, 9) + "…" : q.name;
+    const t = w === undefined ? "--- W" : Math.abs(w) >= 10000 ? (w / 1000).toFixed(1) + " kW" : Math.round(w) + " W";
+    return `<g class="ef-n ef-vb" data-ef="vb:${esc(q.id)}" data-an="${q.an}"><title>${esc(q.name)}</title><circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="var(--ef-bg)" stroke="var(--ef-rim)"/>`
+      + `<g transform="translate(${+(s.x - 12 * sc).toFixed(2)} ${+(s.y - 12 * sc).toFixed(2)}) scale(${sc})">${EF_VICO[q.icon] || EF_VICO.steckdose}</g>`
+      + `<text x="${s.x}" y="${s.y + s.r + 9}" text-anchor="middle" class="ef-vv" fill="${EF_VB_COL}">${esc(t)}</text>`
+      + (s.nm ? `<text x="${s.x}" y="${s.y + s.r + 17}" text-anchor="middle" class="ef-vn">${esc(nm)}</text>` : "") + `</g>`; }).join("");
+  return `<svg class="ef" viewBox="0 0 507 273" role="img" aria-label="Energiefluss">` + vbLine
     + line("pvHaus", 253, 84, 253, 157, "#f5a623") + line("batHaus", 132, 132, 216, 184, "#3fbf8f", f.batRev) + line("netzHaus", 375, 132, 290, 184, "var(--ef-nz)")
     + line("pvNetz", 288, 62, 377, 103, "#f5a623")
-    + node("pv", v("pv"), "W", d.ko.pvkwh ? efNum(v("pvkwh"), 1) + " kWh" : "")
-    + node("bat", abs(v("bat")), f.bs === 1 ? "W lädt" : f.bs === 2 ? "W entlädt" : "W", d.ko.soc ? efNum(v("soc"), 0) + " %" : "")
+    + node("pv", v("pv"), "W", has("pvkwh") ? efNum(v("pvkwh"), 1) + " kWh" : "")
+    + node("bat", abs(v("bat")), f.bs === 1 ? "W lädt" : f.bs === 2 ? "W entlädt" : "W", has("soc") ? efNum(v("soc"), 0) + " %" : "")
     + node("netz", abs(netz), "W", netz === undefined || netz === 0 ? "" : netz > 0 ? "Einspeisung" : "Bezug")
-    + node("haus", v("haus"), "W", d.ko.evkwh ? efNum(v("evkwh"), 1) + " kWh" : "")
+    + node("haus", v("haus"), "W", has("evkwh") ? efNum(v("evkwh"), 1) + " kWh" : "") + vbNode
+    + (d.fake ? `<text x="5" y="8" class="ef-demo" fill="#e9a52d">ZUFALLSWERTE</text>` : "")
     + `<path d="M0 244.5H507V273H0z" fill="var(--ef-ft)"/><path d="M0 244.5H507" stroke="var(--ef-rim)"/>`
     + foot.map((q, i) => `${i ? `<path d="M${q[5] - 9} 253v12" stroke="var(--ef-rim)"/>` : ""}<text x="${q[5]}" y="262" class="ef-f" data-ef="${q[0]}"><tspan class="ef-fc">${esc(q[1].toUpperCase())}</tspan><tspan dx="4" class="ef-fv" fill="${q[4]}">${esc(efNum(v(q[0]), q[2]))}</tspan><tspan dx="1" class="ef-fu">${q[3]}</tspan></text>`).join("")
     + `<circle class="ef-live" cx="471" cy="259.5" r="2.2" fill="#3fbf8f"/><text x="476" y="262" class="ef-fl" fill="#3fbf8f">Live</text></svg>`;
@@ -2518,11 +2578,35 @@ PLUGIN_TYPES["180-1"] = {
     log("··", "Energiefluss (Rohdaten): " + new XMLSerializer().serializeToString(x).replace(/\s+/g, " ").slice(0, 600));
     return { ko };
   },
-  tags: d => Object.values(d.ko),
-  html: d => Object.values(d.ko).some(Boolean) ? `<div class="ef-box">${efSvg(d)}</div>` : '<div class="note">Warte auf Daten – dem Plugin ist kein KO zugewiesen.</div>',
-  htmlClassic: d => `<div class="ef-box ef-cl">${Object.values(d.ko).some(Boolean) ? efSvg(d) : '<div class="cl-qmsg"><span>Warte auf Daten</span></div>'}</div>`,
+  tags: d => [...Object.values(d.ko), ...(d.vb || []).map(q => q.ko)],
+  html: d => efHas(d) ? `<div class="ef-box">${efSvg(d)}</div>` : '<div class="note">Warte auf Daten – dem Plugin ist kein KO zugewiesen.</div>',
+  htmlClassic: d => `<div class="ef-box ef-cl">${efHas(d) ? efSvg(d) : '<div class="cl-qmsg"><span>Warte auf Daten</span></div>'}</div>`,
   act: () => {}
 };
+PLUGIN_TYPES[EF_PLUG] = { ...PLUGIN_TYPES["180-1"],
+  read: x => { const ko = {}, vb = [], tag = e => resKo((e.getAttribute("tag") || "").trim()); EF_KEYS.forEach(k => { ko[k] = ""; });
+    x.querySelectorAll("project > ko").forEach(e => { const id = e.getAttribute("id"); if (EF_KEYS.includes(id)) ko[id] = tag(e); });
+    x.querySelectorAll("project > vb").forEach(e => { if (!tag(e)) return;                       // ohne KO: nicht belegt
+      if (vb.length >= EF_VB_MAX) { log("··", "Energiefluss: mehr als " + EF_VB_MAX + " Verbraucher – „" + (e.getAttribute("name") || e.getAttribute("id") || "") + "“ wird nicht gezeigt"); return; }
+      const id = (e.getAttribute("id") || "").trim() || "s" + (vb.length + 1), df = efVbDef(id), an = e.getAttribute("an"), ic = e.getAttribute("icon");
+      vb.push({ id, name: (e.getAttribute("name") || "").trim() || df.name, icon: EF_VICO[ic] ? ic : df.icon, an: ["haus", "pv", "bat", "netz"].includes(an) ? an : "haus", ko: tag(e) }); });
+    return { ko, vb }; }
+};
+/* v0.9.61 Zufallswerte (Test) auch im Energiefluss – derselbe Schalter wie bei den Ressourcen, nur Anzeige, nichts wird gesendet.
+   Hat die Instanz keine Verbraucher (180-1 kennt keine), zeigt der Test Beispiel-Verbraucher, damit man sieht, was geht. */
+const EF_DEMO_VB = [["wb1", "Wallbox 1", "wallbox", "haus"], ["wb2", "Wallbox 2", "auto", "haus"], ["wm", "Waschmaschine", "wasch", "haus"], ["sm", "Spülmaschine", "spuel", "haus"], ["tr", "Trockner", "trockner", "haus"],
+  ["s1", "Wärmepumpe", "wp", "haus"], ["s2", "Pool", "pool", "haus"], ["s3", "Heizstab", "boiler", "pv"], ["s4", "Notstrom", "steckdose", "bat"]].map(q => ({ id: q[0], name: q[1], icon: q[2], an: q[3], ko: "" }));
+function efDemoTick() {
+  const rnd = (a, b, dd) => +(a + Math.random() * (b - a)).toFixed(dd || 0);
+  HOSTS.forEach(h => { if (!h.plug || !efCls(h.plug.cls) || !h.plug.data) return; const d = h.plug.data;
+    const pv = Math.random() < .2 ? 0 : rnd(200, 8000), bs = 1 + Math.floor(Math.random() * 3), bat = bs === 3 ? 0 : rnd(100, 2500);
+    const top = { pv, bat: bs === 2 ? bat : 0 };                                                // an PV/Speicher hängt nur etwas, wenn die Quelle liefert
+    const vb = (d.vb && d.vb.length ? d.vb : EF_DEMO_VB).map(q => ({ ...q, val: Math.random() < .3 ? 0 : q.an in top ? rnd(0, Math.min(2400, top[q.an])) : rnd(20, q.icon === "wallbox" || q.icon === "auto" ? 11000 : 2400) }));
+    const haus = rnd(200, 900) + vb.filter(q => q.an === "haus").reduce((a, q) => a + q.val, 0), netz = pv - haus - (bs === 1 ? bat : -bat) || -1;
+    d.fake = { pv, bat, haus, netz, batstate: bs, soc: rnd(5, 100), evkwh: rnd(2, 30, 1), pvkwh: rnd(0, 45, 1), evpct: rnd(20, 100), autpct: rnd(20, 100), einsp: rnd(0, 30, 1), bezug: rnd(0, 15, 1), vb };
+    renderHost(h); });
+}
+function efDemoOff() { HOSTS.forEach(h => { if (h.plug && efCls(h.plug.cls) && h.plug.data && h.plug.data.fake) { delete h.plug.data.fake; renderHost(h); } }); }
 
 /* 0-2 Kamera (Original: hs_client_camera.QuadCamera). Das Original holt die Bilder direkt von der Kamera (Digest-Anmeldung).
    Im Browser klappt das nur, wenn die Kamera ohne Anmeldung per https erreichbar ist oder das Bild über den HS kommt
@@ -2998,7 +3082,7 @@ function buildNav() {
     <label class="startsel">Ansicht <select id="uisel"><option value="modern">Modern</option><option value="classic" ${CLASSIC ? "selected" : ""}>Klassisch (QuadClient)</option></select></label>
     <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
   h += `<label class="startsel">Gira-Addins <select id="addinsel"><option value="0">aus</option><option value="1" ${ADDINS_ON ? "selected" : ""}>ein (Versuch: Wetter)</option></select></label>`;
-  h += `<label class="startsel">Ressourcen <select id="reszsel"><option value="0">echte Werte</option><option value="1" ${RES_DEMO ? "selected" : ""}>Zufallswerte (Test, alle 5 s)</option></select></label>`;
+  h += `<label class="startsel">Ressourcen, Energiefluss <select id="reszsel"><option value="0">echte Werte</option><option value="1" ${RES_DEMO ? "selected" : ""}>Zufallswerte (Test, alle 5 s)</option></select></label>`;
   $("cl-ver").textContent = "QC-Client v" + VERSION;                                   // v0.9.47: Version auch im System-Menü der klassischen Ansicht
   { const cp = store.get("camproxy", null), sb = document.querySelector('#cl-sys [data-sysa="camproxy"]'); if (sb) sb.textContent = "Kamera-Proxy: " + (cp && cp.url ? "eingerichtet" : "aus");
     h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
@@ -3231,7 +3315,7 @@ function clRow(ref, el, label, i) {
       panels += `<div class="cl-p" data-ref="${esc(ref)}" data-pos="${pos}" style="left:${[343, 455, 567][pos - 1]}px">${clPanel(el, P, X)}</div>`; } }
   else panels = `<div class="cl-p cl-open" data-ref="${esc(ref)}" style="left:343px;width:335px"><div class="cl-a cl-t" style="left:0;top:11px;width:330px;text-align:center;font-size:13px;color:#8a8a8a">${CL.err ? "Vorlage nicht geladen" : CL.tpl ? "Vorlage " + esc(el.tpl) + " fehlt" : "…"}</div></div>`;
   const uhr = el.timer && TIMERS.has(el.timer), u3 = uhr && T && !sc && !p3;        // Zeitschaltuhr in der Zeile: wie im Original in der dritten Spalte (v0.9.47), sonst neben dem Namen
-  return `<div class="cl-row" style="top:${i * 40}px" data-ref="${esc(ref)}"><div class="cl-ico">${ico}</div>
+  return `<div class="cl-row${clPhone() ? " r2" : ""}" style="top:${i * (clPhone() ? 80 : 40)}px" data-ref="${esc(ref)}"><div class="cl-ico">${ico}</div>
     <button class="cl-name${ico ? "" : " noico"}${uhr && !u3 ? " uhr" : ""}" data-open="${esc(ref)}" title="Alle Einstellungen">${esc(name)}</button>${uhr ? `<button class="cl-uhr${u3 ? " p3" : ""}${TIMERS.get(el.timer).active ? " on" : ""}" data-uhr="${esc(ref)}" title="Zeitschaltuhr">${svg("clock")}</button>` : ""}${panels}</div>`;
 }
 /* Szenen/Auslöser 1–4-fach (1-109) im Stil „Modern“: Tasten gleichmäßig über die Felder 1 und 2 verteilt
@@ -3242,8 +3326,8 @@ function clScenes(ref, el, T, X) {
     const zs = [...new Set(clActs(P, X).map(a => a.getAttribute("click") || "1"))].sort((a, b) => a - b);
     zs.forEach(z => btns.push({ pos, z })); }
   if (!btns.length || btns.length > 4) return "";
-  const W = 222, g = 4, bw = (W - (btns.length - 1) * g) / btns.length, mode = String(X.par("$par_button_mode") || "0");
-  return btns.map((b, k) => { const suf = k ? "_" + (k + 1) : "", x = 343 + k * (bw + g);
+  const ph = clPhone(), W = ph ? 445 : 222, g = 4, bw = (W - (btns.length - 1) * g) / btns.length, mode = String(X.par("$par_button_mode") || "0");   // Handy: Tasten über die ganze zweite Zeile
+  return btns.map((b, k) => { const suf = k ? "_" + (k + 1) : "", x = (ph ? 4 : 343) + k * (bw + g);
     const bg = qf(X.par("$par_push_ico" + suf), true), ic = mode !== "0" && qf(X.par("$par_button_icon" + suf));
     const t = mode !== "1" ? (X.txt("$par_push" + suf) || X.txt("#SZENE")) : "";
     return `<div class="cl-p cl-scn" data-ref="${esc(ref)}" data-pos="${b.pos}" style="left:${x}px;width:${bw}px">
@@ -3269,8 +3353,8 @@ function clLeft() {
   if (!v) return { title: "Menü", html: "" };
   const top = CL.top[cur] || 0;
   if (cur.startsWith("m:")) {
-    // Kacheln: breit 3 Spalten je 80 hoch, Handy 2 Spalten in 1,5-facher Größe (CSS zoom) – ohne Blättern passt eine Reihe mehr
-    const cols = clPhone() ? 2 : 3, th = clPhone() ? 120 : 80, LH = CL.rows * 40, full = Math.floor((LH + 40) / th) * cols, part = Math.floor(LH / th) * cols;
+    // Kacheln je 80 hoch: breit 3 Spalten, Handy 2 Spalten (Bühne 453 breit) – ohne Blättern passt eine Reihe mehr
+    const cols = clPhone() ? 2 : 3, th = 80, LH = CL.rows * 40, full = Math.floor((LH + 40) / th) * cols, part = Math.floor(LH / th) * cols;
     const bar = !(cur === "m:0" && v.items.length <= full), per = bar ? part : full, items = v.items.slice(top, top + per);
     let h = items.map((m, i) => clMenuTile(m, i % cols, Math.floor(i / cols))).join("");
     if (bar) h += clBar(cur !== "m:0", top > 0, top + per < v.items.length, per);
@@ -3283,10 +3367,10 @@ function clLeft() {
     return { title: v.title, html: rows + clBar(true, top > 0, top + R < v.rooms.length, R) };
   }
   const list = v.items.filter(i => P_.els[i.ref] && P_.els[i.ref].kind !== "spacer");
-  const shown = list.slice(top, top + R);
-  const rows = shown.map((it, i) => clRow(it.ref, P_.els[it.ref], it.label, i)).join("") + Array.from({ length: R - shown.length }, (_, k) => `<div class="cl-row" style="top:${(shown.length + k) * 40}px"></div>`).join("");
+  const rl = clPhone() ? 2 : 1, PR = Math.floor(R / rl), shown = list.slice(top, top + PR);   // Handy: Zeilen doppelt hoch (v0.9.62)
+  const rows = shown.map((it, i) => clRow(it.ref, P_.els[it.ref], it.label, i)).join("") + Array.from({ length: R - shown.length * rl }, (_, k) => `<div class="cl-row" style="top:${(shown.length * rl + k) * 40}px"></div>`).join("");
   const lines = '<div class="cl-vl" style="left:340px"></div><div class="cl-vl" style="left:453px"></div><div class="cl-vl" style="left:566px"></div>';
-  return { title: v.title, html: lines + rows + (list.length ? "" : `<div class="cl-empty">${cur === "fav" ? "Noch keine Favoriten." : "Keine Elemente."}</div>`) + clBar(true, top > 0, top + R < list.length, R) };
+  return { title: v.title, html: lines + rows + (list.length ? "" : `<div class="cl-empty">${cur === "fav" ? "Noch keine Favoriten." : "Keine Elemente."}</div>`) + clBar(true, top > 0, top + PR < list.length, PR) };
 }
 function clBar(back, up, down, per) {
   return `<div class="cl-bar"><button data-cl="back" ${back ? "" : "disabled"} style="left:0;width:226px">zurück</button>
@@ -3319,7 +3403,7 @@ function clPhoneCur() { const all = clPlugAll(); let p = PLUGS && PLUGS[CL.pid];
 function clPhoneSel() {
   const { all, p, i } = clPhoneCur();
   return `<div class="cl-qctl"><button class="cl-qa" data-pnav="-1" style="left:0" ${i > 0 ? "" : "disabled"}>${svg("left")}</button><div class="cl-psel">${p ? esc(p.title) : ""}</div>
-    <button class="cl-qa" data-pnav="1" style="left:608px" ${i < all.length - 1 ? "" : "disabled"}>${svg("right")}</button></div>`;
+    <button class="cl-qa" data-pnav="1" style="right:0" ${i < all.length - 1 ? "" : "disabled"}>${svg("right")}</button></div>`;
 }
 function clHostClose(H) { if (!H) return; if (H.plug && H.plug.data) clearTimeout(H.plug.data.timer); H.plug = null; H.body.innerHTML = ""; }
 function clPhoneOpen() {
@@ -3341,11 +3425,11 @@ function clHead() {
   $("cl-tout").innerHTML = `<span class="cl-ti">${qf("status_temp_out") || ""}</span>${t("temp_out")}`;
   $("cl-tin").innerHTML = `<span class="cl-ti">${qf("status_temp_in") || ""}</span>${t("temp_in")}`;
 }
-/* Maßstab und Aufteilung. Breit: 1366 × 768 eingepasst. Handy: 680 breit auf die Fensterbreite, die Liste bekommt so viele
-   Zeilen, wie in die Höhe passen (mindestens 15). Rückgabe: true, wenn sich die Aufteilung geändert hat (neu zeichnen). */
+/* Maßstab und Aufteilung. Breit: 1366 × 768 eingepasst. Handy: 453 breit auf die Fensterbreite, die Liste bekommt so viele
+   Zeilen, wie in die Höhe passen (mindestens 10). Rückgabe: true, wenn sich die Aufteilung geändert hat (neu zeichnen). */
 function clScale() {
-  const st = $("clstage"), C = $("classic"), ph = clPhone(), W = ph ? 680 : 1366; let s, rows = 15, H = 768;
-  if (ph) { s = window.innerWidth / 680; rows = Math.max(15, Math.floor((window.innerHeight / s - 168) / 40)); H = rows * 40 + 168; s = Math.min(s, window.innerHeight / H); }
+  const st = $("clstage"), C = $("classic"), ph = clPhone(), W = ph ? 453 : 1366; let s, rows = 15, H = 768;
+  if (ph) { s = window.innerWidth / 453; rows = Math.max(10, Math.floor((window.innerHeight / s - 168) / 40)); H = rows * 40 + 168; s = Math.min(s, window.innerHeight / H); }
   else s = Math.min(window.innerWidth / 1366, window.innerHeight / 768);
   const changed = rows !== CL.rows || ph !== C.classList.contains("cl-phone");
   CL.rows = rows; CL.s = s; st.style.setProperty("--lh", rows * 40 + "px"); st.style.setProperty("--pz", ph ? String(1 / s) : "1");
@@ -3669,7 +3753,7 @@ function clPlugin(id) {
   for (const q of [1, 2]) { const i = clQuadList(q).findIndex(p => p.id === id); if (i >= 0) { CL.qsel[q] = i; CL.qoff[q] = Math.max(0, Math.min(i - 1, clQuadList(q).length - 3)); clRender(); return; } }
   const H = CL.hosts[1]; $("cl-q1c").innerHTML = `<div class="cl-qctl"><button class="cl-tab act" style="left:57px;width:566px">${esc((PLUGS[id] || {}).title || "")}</button></div>`; openPlugin("", id, H);
 }
-function clFrame(title, url) { $("cl-title").textContent = title; $("cl-left").innerHTML = `<iframe src="${esc(url)}" referrerpolicy="no-referrer" style="position:absolute;left:0;top:0;width:680px;height:${CL.rows * 40}px;border:0;background:#fff"></iframe>` + clBar(true, false, false, CL.rows); }
+function clFrame(title, url) { $("cl-title").textContent = title; $("cl-left").innerHTML = `<iframe src="${esc(url)}" referrerpolicy="no-referrer" style="position:absolute;left:0;top:0;width:100%;height:${CL.rows * 40}px;border:0;background:#fff"></iframe>` + clBar(true, false, false, CL.rows); }
 $("classic").addEventListener("click", e => {
   const t = e.target.closest("button,[data-open]"); if (!t || t.disabled) return;
   if (t.dataset.m) { menuAct(t.dataset.m); return; }

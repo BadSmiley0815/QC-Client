@@ -13,6 +13,8 @@
 param(
     [string]$ToolsDir = "$env:LOCALAPPDATA\QC-Client-Android",
     [int]$ShellRev = 1,          # Stand der Huelle, erhoehen bei Aenderungen an android\ (siehe android\CHANGELOG.md)
+    [string]$QcHtml = '',        # andere qc.html als die des Repos einbauen (zum Ausprobieren)
+    [string]$OutDir = '',        # Ausgabeordner, Vorgabe android\build
     [switch]$Debuggable          # debuggable: WebView laesst sich ueber chrome://inspect ansehen
 )
 $ErrorActionPreference = 'Stop'
@@ -42,7 +44,7 @@ $env:JAVA_HOME = $jdk
 $env:PATH = "$jdk\bin;$env:PATH"
 
 # ---- Version aus qc.html ----
-$qc = Join-Path $repo 'qc.html'
+$qc = if ($QcHtml) { $QcHtml } else { Join-Path $repo 'qc.html' }
 $m = Select-String -Path $qc -Pattern 'const VERSION = "(\d+)\.(\d+)\.(\d+)"' | Select-Object -First 1
 if (-not $m) { throw 'VERSION in qc.html nicht gefunden.' }
 $g = $m.Matches[0].Groups
@@ -51,8 +53,10 @@ $verCode = [int]$g[1].Value * 1000000 + [int]$g[2].Value * 10000 + [int]$g[3].Va
 Write-Host "QC-Client $verName (Code $verCode) - JDK: $jdk - build-tools: $(Split-Path -Leaf $bt) - $($plat.Name)"
 
 # ---- Bauen ----
-$out = Join-Path $here 'build'
-if (Test-Path $out) { Remove-Item $out -Recurse -Force }
+$out = if ($OutDir) { $OutDir } else { Join-Path $here 'build' }
+# Nur die eigenen Bau-Reste entfernen, nie den ganzen Ordner (bei -OutDir koennte dort Fremdes liegen)
+foreach ($d in 'assets', 'classes', 'dex') { if (Test-Path "$out\$d") { Remove-Item "$out\$d" -Recurse -Force } }
+Remove-Item "$out\QC-Client-*.apk", "$out\base.apk", "$out\aligned.apk", "$out\res.zip" -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force "$out\assets", "$out\classes", "$out\dex" | Out-Null
 Copy-Item $qc "$out\assets\qc.html"
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><!-- erfundene Einstellungen des eigenen Plugins 99-3 (Energiefluss mit Verbrauchern) -->
+<project version="1">
+  <ko id="pv" tag="9821"/><ko id="bat" tag="9822"/><ko id="haus" tag="9823"/><ko id="netz" tag="9824"/><ko id="soc" tag="9825"/><ko id="batstate" tag="9826"/><ko id="evkwh" tag="0"/>
+  <vb id="wb1" name="Wallbox Garage" icon="wallbox" an="haus" tag="9841"/>
+  <vb id="wb2" name="Wallbox Carport" icon="auto" an="haus" tag="0"/>
+  <vb id="wm" tag="9842"/>
+  <vb id="s1" name="Heizstab" icon="boiler" an="pv" tag="9843"/>
+  <vb id="s2" name="Notstrom" icon="gibtsnicht" an="bat" tag="9844"/>
+</project>

@@ -17,5 +17,6 @@
     <plugin_instance id="951" class="1-15" master_id="" title="Meldeanlage" group="3" project="1-15_951.xml" userdef="userdef951.dat" visibleinqc="0" />
     <plugin_instance id="952" class="1-21" master_id="" title="Alarmzentrale" group="3" project="1-21_952.xml" userdef="userdef952.dat" visibleinqc="0" />
     <plugin_instance id="953" class="180-1" master_id="" title="Energiefluss" group="3" project="180-1_953.xml" userdef="userdef953.dat" visibleinqc="0" />
+    <plugin_instance id="954" class="99-3" master_id="" title="Energiefluss Verbraucher" group="3" project="99-3_954.xml" userdef="userdef954.dat" visibleinqc="0" />
   </instances>
 </plugins>
