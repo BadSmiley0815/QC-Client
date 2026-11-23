@@ -574,7 +574,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pe.close(); }
 
   console.log("Energiefluss mit Verbrauchern 99-3 und Zufallswerte (v0.9.61, erfundene Einstellungen)");
-  { const pv = await start(b, "Demo", ["2|9821|5000.0|0", "2|9822|600.0|0", "2|9823|9000.0|0", "2|9824|-4600.0|0", "2|9825|55.0|0", "2|9826|2.0|0", "2|9841|7400.0|0", "2|9842|0.0|0", "2|9843|900.0|0", "2|9844|-40.0|0",
+  { const pv = await start(b, "Demo", ["2|9821|5000.0|0", "2|9822|600.0|0", "2|9823|9000.0|0", "2|9824|-4600.0|0", "2|9825|55.0|0", "2|9826|2.0|0", "2|9841|7400.0|0", "2|9842|0.0|0", "2|9843|900.0|0", "2|9844|-40.0|0", "2|9851|3000.0|0", "2|9852|1500.0|0", "2|9853|600.0|0",
       "2|9801|4200.0|0", "2|9803|1900.0|0", "2|9804|1500.0|0", "2|9812|1.0|0"]);
     const errs = []; pv.on("pageerror", e => errs.push(e.message));
     await pv.evaluate(() => openPlugin("Energiefluss Verbraucher", "954")); await pv.waitForTimeout(900); await sent(pv);
@@ -592,6 +592,18 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
       const a = efPlace(mk(10, "haus")), c = efPlace(mk(13, "haus").concat(mk(2, "pv"), mk(1, "bat"), mk(1, "netz"))), uniq = l => new Set(l.map(p => p.s.x + "," + p.s.y)).size === l.length;
       const T = PLUGIN_TYPES["99-3"], x = new DOMParser().parseFromString("<project>" + Array.from({ length: 20 }, (_, i) => `<vb id="s${i}" tag="${7000 + i}"/>`).join("") + "</project>", "text/xml");
       return a.length === 10 && uniq(a) && a.every(p => p.s.nm && p.s.y === 199) && c.length === 17 && uniq(c) && c.filter(p => p.q.an === "haus").every(p => !p.s.nm && p.s.y > 150) && c.filter(p => p.q.an !== "haus").every(p => p.s.y === 24) && T.read(x).vb.length === 17 && T.tags(T.read(x)).filter(Boolean).length === 17; }));
+    // v0.9.63 Einzelwerte hinter einem Hauptkreis (<teil an name tag>)
+    ok("Einzelwerte: PV und Speicher sind antippbar und zeigen die Anzahl, Haus und Netz nicht; der ohne KO zählt nicht", await pv.evaluate(() => { const g = k => document.querySelector(`#pbody [data-ef="${k}"]`), d = HOSTS.find(h => h.plug && h.plug.cls === "99-3").plug.data;
+      return g("pv").dataset.pa === "eft" && g("pv").querySelector(".ef-tb").textContent === "2" && g("bat").querySelector(".ef-tb").textContent === "1" && !g("haus").dataset.pa && !g("netz").querySelector(".ef-tb") && d.teil.length === 3 && !document.querySelector("#pbody .ef-tp"); }));
+    await pv.click('#pbody [data-ef="pv"]'); await pv.waitForTimeout(300);
+    const tp = async () => (await pv.locator("#pbody .ef-tp").count()) ? (await pv.textContent("#pbody .ef-tp")).replace(/\s+/g, " ") : "";
+    ok("Tipp auf PV: Einzelwerte mit Namen (Vorgabe „Wechselrichter 2“), Leistung und Summe", (await tp()).includes("PV-ANLAGE – EINZELWERTE") && (await tp()).includes("Wechselrichter Süd3000 W") && (await tp()).includes("Wechselrichter 21500 W") && (await tp()).includes("Summe4500 W") && !(await tp()).includes("ohne KO"), await tp());
+    await pv.evaluate(() => WSI.onmessage({ data: "1|9852|2000.0|0" })); await pv.waitForTimeout(300);
+    ok("KO-Telegramm ändert den Einzelwert, die Einblendung bleibt offen", (await tp()).includes("Wechselrichter 22000 W") && (await tp()).includes("Summe5000 W"), await tp());
+    await pv.click("#pbody .ef-tp", { position: { x: 5, y: 5 } }); await pv.waitForTimeout(300);
+    ok("Tipp auf die Einblendung schließt sie; nichts gesendet", (await tp()) === "" && (await sent(pv)).length === 0);
+    ok("höchstens acht Einzelwerte je Kreis, unbekannter Kreis wird übersprungen", await pv.evaluate(() => { const T = PLUGIN_TYPES["99-3"], x = new DOMParser().parseFromString("<project>" + Array.from({ length: 10 }, (_, i) => `<teil an="pv" tag="${7100 + i}"/>`).join("") + '<teil an="dach" tag="7200"/><teil an="netz" tag="7201"/></project>', "text/xml"), r = T.read(x);
+      return r.teil.filter(q => q.an === "pv").length === 8 && r.teil.length === 9 && r.teil[8].name === "Zähler 1" && T.tags(r).filter(Boolean).length === 9; }));
     const real = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
     await pv.selectOption("#reszsel", "1"); await pv.waitForTimeout(300); const z1 = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
     ok("Zufallswerte: gekennzeichnet, eigene Verbraucher bleiben, Werte ändern sich", z1.includes("ZUFALLSWERTE") && await pv.locator("#pbody .ef-vb").count() === 4 && z1.includes("Wallbox Garage") && z1.replace("ZUFALLSWERTE", "") !== real, z1.slice(0, 200));
@@ -600,8 +612,11 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     ok("Zufallswerte im Plugin 180-1: neun Beispiel-Verbraucher an Haus, PV und Speicher", z2.includes("ZUFALLSWERTE") && await pv.locator("#pbody .ef-vb").count() === 9 && await pv.locator('#pbody .ef-vb[data-an="pv"]').count() === 1 && await pv.locator('#pbody .ef-vb[data-an="bat"]').count() === 1 && z2.includes("Wärmepumpe"), z2.slice(0, 200));
     ok("Zufallswerte: Haus mindestens so groß wie seine Verbraucher, Netz = Bilanz", await pv.evaluate(() => HOSTS.filter(h => h.plug && h.plug.data && h.plug.data.fake).every(h => { const f = h.plug.data.fake, s = f.vb.filter(q => q.an === "haus").reduce((a, q) => a + q.val, 0);
       return f.haus >= s && Math.abs(f.netz - (f.pv - f.haus - (f.batstate === 1 ? f.bat : -f.bat))) <= 1; })));
+    await pv.click('#pbody [data-ef="pv"]'); await pv.waitForTimeout(300); const z4 = (await pv.textContent("#pbody .ef-tp")).replace(/\s+/g, " ");
+    ok("Zufallswerte im Plugin 180-1: drei Beispiel-Wechselrichter hinter PV, zusammen die PV-Leistung", z4.includes("Wechselrichter Süd") && z4.includes("Wechselrichter West") && await pv.evaluate(() => { const f = HOSTS.find(h => h.plug && h.plug.cls === "180-1").plug.data.fake, t = f.teil.filter(q => q.an === "pv");
+      return t.length === 3 && Math.abs(t.reduce((a, q) => a + q.val, 0) - f.pv) <= 3; }), z4);
     await pv.selectOption("#reszsel", "0"); await pv.waitForTimeout(300); const z3 = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
-    ok("Zufallswerte aus: echte Werte, keine Beispiel-Verbraucher, nichts gesendet", !z3.includes("ZUFALLSWERTE") && z3.includes("PV-ANLAGE4200W") && await pv.locator("#pbody .ef-vb").count() === 0 && (await sent(pv)).length === 0 && await pv.evaluate(() => V.get("9801") === "4200.0"), z3.slice(0, 200));
+    ok("Zufallswerte aus: echte Werte, keine Beispiel-Verbraucher, nichts gesendet", !z3.includes("ZUFALLSWERTE") && !z3.includes("EINZELWERTE") && z3.includes("PV-ANLAGE4200W") && await pv.locator("#pbody .ef-vb").count() === 0 && (await sent(pv)).length === 0 && await pv.evaluate(() => V.get("9801") === "4200.0"), z3.slice(0, 200));
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pv.close(); }
 
   console.log("Klassisch am Handy größer (v0.9.62)");

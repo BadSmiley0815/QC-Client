@@ -3,6 +3,12 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.63 – Energiefluss: Einzelwerte hinter einem Kreis
+- **Neu (Wunsch aus dem Forum):** Hinter jedem der vier großen Kreise (PV-Anlage, Speicher, Netz, Haus) können **Einzelwerte** liegen – zum Beispiel drei Wechselrichter hinter „PV-Anlage“. Der Kreis zeigt weiter die Gesamtleistung aus seinem KO und trägt dann eine kleine Zahl mit der Anzahl; ein Tipp darauf blendet die Einzelwerte mit Name, Leistung und Summe ein, ein weiterer Tipp schließt sie. Höchstens acht je Kreis.
+- Die Einzelwerte stehen in den Einstellungen des eigenen Plugins 99-3 als `<teil an="pv|bat|netz|haus" name tag="KO-ID"/>`; ohne Namen heißen sie „Wechselrichter n“, „Speicher n“, „Zähler n“ bzw. „Bereich n“. Die Verbraucher waren schon frei: gezeigt wird jeder mit KO, bis zu 17, mit eigenem Namen, Symbol und Anschlusspunkt.
+- „Zufallswerte“ zeigt jetzt auch drei Beispiel-Wechselrichter und zwei Beispiel-Speicher, deren Werte zusammen die Leistung des Kreises ergeben.
+- Geprüft am nachgebauten HomeServer und an einem echten HomeServer in der Ansicht „Klassisch“: eine Instanz des Plugins 99-3 (Repo QC-Plugins, Version 0.1.3) mit zwei Verbrauchern am Haus und zwei Einzelwerten hinter der PV-Anlage. Nicht geprüft: Ansicht „Modern“ und Handy-Breite am echten HomeServer, Einzelwerte hinter Speicher, Netz und Haus dort, der Windows-QuadClient.
+
 ## 0.9.62 – Klassische Ansicht am Handy größer
 - **Verbessert:** Am Handy (unter 900 px Breite) ist die klassische Ansicht jetzt rund anderthalbmal so groß: Die Bühne ist 453 statt 680 breit. Dafür stehen Funktionszeilen zweizeilig – oben Symbol und Name über die ganze Breite, darunter die drei Felder der Vorlage nebeneinander; Szenentasten nutzen die ganze zweite Zeile. Pro Seite passen halb so viele Funktionszeilen, Raumlisten bleiben einzeilig. Das Menü hat weiter zwei Spalten, jetzt ohne CSS-zoom. Ab 900 px Breite ist nichts geändert.
 - Beitrag der Android-Sitzung. Geprüft: Tests gegen den nachgebauten HomeServer und im Android-Emulator (412 × 708, Demo-Visu). Nicht geprüft: echtes Gerät, Vorlagen mit Zeitschaltuhr in der Zeile, Platzhalter „Vorlage fehlt“, Stil „Gira“, eingebettete Webseiten.

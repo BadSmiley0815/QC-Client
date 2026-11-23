@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: v0.9.62 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
+Stand: v0.9.63 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation zum Schluss.
 
 ## 1 · Offene Prüfungen (Mitschnitt mit dem Original-QC)
 
@@ -42,7 +42,7 @@ Stand: v0.9.62 · Reihenfolge: erst Funktionen, dann Komfort, App-Installation z
 - [x] Symbole aus der QC-Visu (v0.8.0)
 - [ ] Eigene Entwickler-ID von Gira (angefragt 14.11.2026) – bis dahin vorläufig 99-…; danach alle eigenen Vorlagen umstellen, Vorlagen in eigenes Repository
   - [ ] Eigenes Wetter-Plugin (vorläufig 99-1, Repo QC-Plugin, C#): Ort und Stations-KOs im Experten, Anzeige im Windows-QC; danach liest der QC-Client dessen Einstellung (Unterstützung der verworfenen Vorlage 99-4 dabei wieder entfernen)
-  - [ ] Eigenes Plugin „Energiefluss mit Verbrauchern“ (vorläufig 99-3, Repo QC-Plugin, C#): Grund-KOs und bis zu 17 Verbraucher (Name, Symbol, Anschlusspunkt) im Experten, Anzeige im Windows-QC. Der QC-Client liest dessen Einstellung schon und zeichnet die Verbraucher (v0.9.61; nachgebauter HS, am echten HS mit Zufallswerten angesehen). Vorbild ist das Plugin 180-1, ursprünglicher Autor [johannesbonn](https://knx-user-forum.de/member/39809-johannesbonn) – im Plugin und in dessen README nennen
+  - [ ] Eigenes Plugin „Energiefluss mit Verbrauchern“ (vorläufig 99-3, Repo QC-Plugin, C#): Grund-KOs, bis zu 17 Verbraucher (Name, Symbol, Anschlusspunkt) und Einzelwerte je Kreis (z. B. Wechselrichter, v0.9.63) im Experten, Anzeige im Windows-QC. Der QC-Client liest dessen Einstellung schon und zeichnet die Verbraucher (v0.9.61; nachgebauter HS, am echten HS mit Zufallswerten angesehen). Vorbild ist das Plugin 180-1, ursprünglicher Autor [johannesbonn](https://knx-user-forum.de/member/39809-johannesbonn) – im Plugin und in dessen README nennen
 - [x] Eigene Symbole in Funktionsvorlagen: `tools/hsm-build.py` + Testvorlage 99-3 (im Windows-QC bestätigt; Client lädt sie ab v0.9.4 aus public)
 - [x] Ansicht „Klassisch“ wie der Windows-QuadClient (v0.9.0)
   - [ ] Popups der Vorlagen im Original-Stil

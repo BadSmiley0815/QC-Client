@@ -6,4 +6,6 @@
   <vb id="wm" tag="9842"/>
   <vb id="s1" name="Heizstab" icon="boiler" an="pv" tag="9843"/>
   <vb id="s2" name="Notstrom" icon="gibtsnicht" an="bat" tag="9844"/>
+  <teil an="pv" name="Wechselrichter Süd" tag="9851"/><teil an="pv" tag="9852"/><teil an="pv" name="ohne KO" tag="0"/>
+  <teil an="bat" name="Speicher Keller" tag="9853"/>
 </project>
