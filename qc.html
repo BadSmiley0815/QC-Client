@@ -55,7 +55,7 @@ button{font:inherit;color:inherit}
 .cl-name{position:absolute!important;left:44px;top:0;width:292px;height:39px;text-align:left;font-size:21px!important;color:#C8C8C8!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cl-name.noico{left:11px}.cl-name.uhr{width:262px}.cl-name.noico.uhr{width:295px}
 .cl-uhr{position:absolute!important;left:306px;top:5px;width:30px;height:30px;padding:6px!important;color:#7d7d7d!important}.cl-uhr svg{width:18px;height:18px;display:block}.cl-uhr.on{color:#8fb000!important}
-.cl-uhr.p3{left:567px;top:0;width:110px;height:39px;padding:0!important;color:#d64545!important}.cl-uhr.p3 svg{width:26px;height:26px;margin:auto}
+.cl-uhr.p3{left:567px;top:0;width:110px;height:39px;padding:0!important;color:#d64545!important}.cl-uhr.p3 svg{width:26px;height:26px;margin:auto}.cl-uhr.p3.on{color:#8fb000!important}
 .cl-vl{position:absolute;top:0;width:2px;height:600px;background:#0a0a0a;z-index:1;pointer-events:none}
 .cl-p{position:absolute;top:1px;width:110px;height:39px;overflow:hidden;color:#e6e6e6}
 .cl-p.cl-open{cursor:pointer}
@@ -221,6 +221,7 @@ svg.ef{display:block;width:100%;font-variant-numeric:tabular-nums}.ef text:not([
 .ef .ef-live{animation:eflive 2s ease-in-out infinite}@keyframes eflive{50%{opacity:.35}}
 .ef .ef-l0{fill:none;stroke:var(--ef-rim);stroke-width:1}.ef .ef-vv{font-size:7.5px;font-weight:600}.ef .ef-vn{font-size:6px;opacity:.72}.ef .ef-demo{font-size:6.5px;font-weight:700;letter-spacing:.5px}
 .ef .ef-t,.ef .ef-tp{cursor:pointer}.ef .ef-tb{font-size:8px;font-weight:700;fill:#fff}.ef .ef-tn{font-size:8.5px}.ef .ef-tv{font-weight:600}
+.ef .ef-kv{font-size:10px;font-weight:700}.ef .ef-pop{animation:efpop .3s ease-out;transform-box:fill-box;transform-origin:center}@keyframes efpop{from{transform:translate(var(--dx),var(--dy)) scale(.35);opacity:.2}}
 @media (prefers-reduced-motion:reduce){.ef .ef-live{animation:none}}   /* v0.9.60: die Linien laufen immer – die Richtung ist die Aussage */
 .pval{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
 .pval .cap{font-size:13px;color:var(--muted);margin-bottom:4px}
@@ -485,7 +486,7 @@ input[type=color]{width:34px;height:30px;border:0;background:none;padding:0;flex
   <div class="cl-quad" style="top:87px"><div id="cl-q1c"></div><div id="cl-q1b" class="cl-qb"></div></div>
   <div class="cl-quad" style="top:408px"><div id="cl-q2c"></div><div id="cl-q2b" class="cl-qb"></div></div>
   <div id="cl-nav"><button data-nav="m:0">Menü</button><button data-pg="1">Plugins</button><button data-nav="fav">Favoriten</button><button disabled>MyTouch</button><button disabled>Notiz</button><button disabled></button><button data-sys="1">System</button></div>
-  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="resdemo">Zufallswerte: aus</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button><div id="cl-ver"></div></div>
+  <div id="cl-sys" class="hidden"><button data-sysa="modern">Ansicht: Modern</button><button data-sysa="style">Stil wechseln</button><button data-sysa="camproxy">Kamera-Proxy</button><button data-sysa="resdemo">Zufallswerte: aus</button><button data-sysa="efart">Energiefluss: verspielt</button><button data-sysa="log">Log anzeigen</button><button data-sysa="copy">Log kopieren</button><button data-sysa="logout">Abmelden</button><div id="cl-ver"></div></div>
   <div id="cl-log" class="hidden"><pre></pre><button data-sysa="logclose">Schließen</button></div>
 </div></section>
 <dialog id="clpop" aria-label="Bedienung"></dialog>
@@ -545,7 +546,7 @@ if (location.protocol === "http:" && location.hostname && !/^(localhost|127\.)/.
      C→S 80||  → S→C 81|zeit|        Keepalive
    Dateien: https://<HS>/quad/client/client_project.xml?<sid>
    ============================================================ */
-const VERSION = "0.9.63";
+const VERSION = "0.9.64";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = {
@@ -2527,13 +2528,36 @@ const efHas = d => !!d.fake || Object.values(d.ko).some(Boolean) || !!(d.vb && d
 const EF_TEIL_MAX = 8, EF_TEIL_DEF = { pv: "Wechselrichter", bat: "Speicher", netz: "Zähler", haus: "Bereich" };
 const efTeile = (d, k) => ((d.fake && d.fake.teil) || d.teil || []).filter(q => q.an === k).slice(0, EF_TEIL_MAX);
 const efW = w => w === undefined ? "--- W" : Math.abs(w) >= 10000 ? (w / 1000).toFixed(1) + " kW" : Math.round(w) + " W";
-function efPlace(vb) {                                       // Verbraucher auf feste Plätze verteilen -> [{ q, s: Platz, a: Anschlusspunkt }]
-  const AN = { pv: [253, 44], bat: [95, 120], netz: [412, 120], haus: [253, 197] }, two = vb.filter(q => q.an === "haus").length > 10;
-  const row = (y, r, nm) => ({ L: [0, 1, 2, 3, 4].map(i => ({ x: 194 - 40 * i, y, r, nm })), R: [0, 1, 2, 3, 4].map(i => ({ x: 312 + 40 * i, y, r, nm })) });
-  const zip = (a, b) => a.flatMap((s, i) => [s, b[i]]), top = row(24, 13, true), bot = two ? [row(183, 10, false), row(218, 10, false)] : [row(199, 13, true)];
+/* v0.9.64 Darstellung „Verspielt“ (Vorgabe) oder „Technisch“ – je Gerät gespeichert. Verspielt: Ein Tipp auf einen Kreis mit Einzelwerten
+   teilt ihn in kleine Kugeln (r = 22, Wert und Name), jede mit eigener Flusslinie; Verbraucher, die im Weg stehen, rücken nach außen.
+   Am Haus werden ab zwei Wallboxen bzw. zwei sonstigen Verbrauchern Sammelkugeln mit Summe und Anzahl gezeigt, ein Tipp teilt sie.
+   Technisch: wie v0.9.63 – Feld mit den Einzelwerten, alle Verbraucher einzeln. */
+let EF_ART = store.get("efart", "spiel") === "tech" ? "tech" : "spiel";
+const EF_POS = { pv: [253, 44], bat: [95, 120], netz: [412, 120], haus: [253, 197] }, EF_KR = 22;
+function efSetArt(a) { EF_ART = a === "tech" ? "tech" : "spiel"; store.set("efart", EF_ART);
+  HOSTS.forEach(h => { if (h.plug && efCls(h.plug.cls) && h.plug.data) { h.plug.data.open = ""; renderHost(h); } });
+  const sb = document.querySelector('#cl-sys [data-sysa="efart"]'); if (sb) sb.textContent = "Energiefluss: " + (EF_ART === "tech" ? "technisch" : "verspielt");
+  const se = $("efartsel"); if (se) se.value = EF_ART; }
+function efSplit(k, n) {                                     // Plätze der Teilkugeln: PV und Haus in einer Reihe, Speicher und Netz in bis zu drei Spalten
+  const [cx, cy] = EF_POS[k], cols = k === "bat" || k === "netz" ? Math.min(n, 3) : n, rows = Math.ceil(n / cols), y0 = k === "pv" ? 46 : k === "haus" ? 192 : cy - 28 * (rows - 1) - (rows > 1 ? 2 : 0);
+  return Array.from({ length: n }, (_, i) => { const r = Math.floor(i / cols), m = r === rows - 1 ? n - cols * r : cols; return { x: cx - 28 * (m - 1) + 56 * (i - cols * r), y: y0 + 56 * r }; });
+}
+const efIsWb = q => q.icon === "wallbox" || q.icon === "auto" || /^wb\d*$/.test(q.id);
+function efGroup(d, vb) {                                    // Verspielt: Wallboxen und sonstige Verbraucher am Haus je zu einer Sammelkugel (ab zwei)
+  if (EF_ART !== "spiel") return vb;
+  const G = [["wb", "Wallboxen", "wallbox", vb.filter(q => q.an === "haus" && efIsWb(q))], ["vb", "Verbraucher", "steckdose", vb.filter(q => q.an === "haus" && !efIsWb(q))]].filter(g => g[3].length > 1);
+  const out = [], inG = new Set(G.flatMap(g => g[3]));
+  G.forEach(g => { if (d.open === "g:" + g[0]) return out.push(...g[3].map(q => ({ ...q, og: g[0], side: g[0] === "wb" ? "R" : "L" })));
+    const w = g[3].map(efVbVal).filter(x => x !== undefined); out.push({ id: "g:" + g[0], name: g[1], icon: g[2], an: "haus", grp: g[3].length, side: g[0] === "wb" ? "R" : "L", ko: "", val: w.length ? w.reduce((a, x) => a + x, 0) : undefined }); });
+  return [...out, ...vb.filter(q => !inG.has(q))];
+}
+function efPlace(vb, blk) {                                  // Verbraucher auf feste Plätze verteilen -> [{ q, s: Platz, a: Anschlusspunkt }]; blk = { top, a, b }: gesperrter Bereich einer Reihe
+  const AN = EF_POS, two = vb.filter(q => q.an === "haus").length > 10, free = s => !blk || blk.top !== (s.y < 100) || s.x + s.r + 8 < blk.a || s.x - s.r - 8 > blk.b;
+  const row = (y, r, nm) => ({ L: [0, 1, 2, 3, 4].map(i => ({ x: 194 - 40 * i, y, r, nm })).filter(free), R: [0, 1, 2, 3, 4].map(i => ({ x: 312 + 40 * i, y, r, nm })).filter(free) });
+  const zip = (a, b) => Array.from({ length: Math.max(a.length, b.length) }, (_, i) => [a[i], b[i]]).flat().filter(Boolean), top = row(24, 13, true), bot = two ? [row(183, 10, false), row(218, 10, false)] : [row(199, 13, true)];
   const order = { haus: bot.flatMap(r => zip(r.R, r.L)), pv: zip(top.R, top.L), bat: [...top.L].reverse(), netz: [...top.R].reverse() };
   const all = [...order.haus, ...order.pv], used = new Set(), out = [];
-  ["bat", "netz", "pv", "haus"].forEach(an => vb.filter(q => q.an === an).forEach(q => { const s = order[an].find(s => !used.has(s)) || all.find(s => !used.has(s));
+  ["bat", "netz", "pv", "haus"].forEach(an => vb.filter(q => q.an === an).forEach(q => { const s = (an === "haus" && q.side ? bot.flatMap(r => r[q.side]) : []).find(s => !used.has(s)) || order[an].find(s => !used.has(s)) || all.find(s => !used.has(s));   // side: Wallboxen rechts, Verbraucher links
     if (s) { used.add(s); out.push({ q, s, a: AN[an] }); } }));
   return out;
 }
@@ -2542,10 +2566,24 @@ function efFlows(d) {                                        // welche Linie gez
   return { bs: bs === 1 ? 1 : bs === 2 ? 2 : 0, pvHaus: pv > 0, netzHaus: netz < 0, pvNetz: netz > 0, batHaus: bs === 1 || bs === 2, batRev: bs === 1 };
 }
 function efSvg(d) {
-  const v = k => efVal(d, k), has = k => efOn(d, k), f = efFlows(d), netz = v("netz"), abs = n => n === undefined ? undefined : Math.abs(n), P = efPlace(efVbs(d));
+  const v = k => efVal(d, k), has = k => efOn(d, k), f = efFlows(d), netz = v("netz"), abs = n => n === undefined ? undefined : Math.abs(n);
+  const spiel = EF_ART === "spiel", so = spiel && EF_POS[d.open] && efTeile(d, d.open).length ? d.open : "", SP = so ? efSplit(so, efTeile(d, so).length) : [];   // so: geteilter Kreis
+  const blk = so === "pv" || so === "haus" ? { top: so === "pv", a: SP[0].x - EF_KR, b: SP[SP.length - 1].x + EF_KR } : null, P = efPlace(efGroup(d, efVbs(d)), blk);
+  const pop = Date.now() - (d.popT || 0) < 400 ? " ef-pop" : "";
   const N = { pv: [253, 44, "#f5a623", "PV-Anlage"], bat: [95, 120, "#3fbf8f", "Speicher"], netz: [412, 120, "var(--ef-nz)", "Netz"], haus: [253, 197, "#4a9af5", "Haus"] };
   const line = (id, x1, y1, x2, y2, col, rev) => f[id] ? `<path class="ef-l on${rev ? " rev" : ""}" data-ef="${id}" d="M${x1} ${y1}L${x2} ${y2}" stroke="${col}"/>` : "";
-  const node = (k, val, unit, sub) => { const [x, y, col, name] = N[k], nt = efTeile(d, k).length;
+  const port = k => k === so ? SP.map((p, i) => ({ x: p.x, y: p.y, r: EF_KR, w: efVbVal(efTeile(d, k)[i]) })) : [{ x: N[k][0], y: N[k][1], r: 39 }];
+  const near = (p, L) => L.reduce((a, q) => Math.hypot(q.x - p.x, q.y - p.y) < Math.hypot(a.x - p.x, a.y - p.y) ? q : a);
+  const flow = (id, s, t, col, rev, one) => { if (!f[id]) return ""; const T = port(t), S = s !== so ? port(s) : one ? [near(T[0], port(s))] : port(s).filter(p => p.w);   // geteilt: jede Teilkugel mit Leistung fließt selbst
+    return S.map((p, i) => { const q = near(p, T), dx = q.x - p.x, dy = q.y - p.y, l = Math.hypot(dx, dy) || 1, c = [p.x + dx * (p.r + 1) / l, p.y + dy * (p.r + 1) / l, q.x - dx * (q.r + 1) / l, q.y - dy * (q.r + 1) / l].map(n => +n.toFixed(1));
+      return `<path class="ef-l on${rev ? " rev" : ""}" data-ef="${id}${i ? ":" + i : ""}" d="M${c[0]} ${c[1]}L${c[2]} ${c[3]}" stroke="${col}"/>`; }).join(""); };
+  const kug = k => { const [ox, oy, col] = N[k]; return efTeile(d, k).map((q, i) => { const p = SP[i], [a, u] = efW(efVbVal(q)).split(" "), c16 = t => t.length > 16 ? t.slice(0, 15) + "…" : t, sp = q.name.lastIndexOf(" ", 14);
+    const nm = k !== "bat" && k !== "netz" && q.name.length > 14 && sp > 2 ? [q.name.slice(0, sp), c16(q.name.slice(sp + 1))] : [c16(q.name)], ny = k === "haus" ? p.y + 31 : p.y - 33 + 7 * (2 - nm.length);   // Name: am Haus darunter, sonst darüber (dort laufen keine Linien)
+    return `<g class="ef-n ef-t ef-tk${pop}" data-ef="teil:${k}:${i}" data-pa="eft" data-k="" style="--dx:${ox - p.x}px;--dy:${oy - p.y}px"><title>${esc(q.name)}</title><circle cx="${p.x}" cy="${p.y}" r="${EF_KR}" fill="var(--ef-bg)" stroke="${col}"/>`
+      + `<g transform="translate(${p.x - 5} ${p.y - 19}) scale(.42)">${EF_ICO[k]}</g>`
+      + `<text x="${p.x}" y="${p.y + 6}" text-anchor="middle" class="ef-kv" fill="${col}">${esc(a)}</text><text x="${p.x}" y="${p.y + 14}" text-anchor="middle" class="ef-s">${esc(u)}</text>`
+      + `<text x="${p.x}" y="${ny}" text-anchor="middle" class="ef-vn">${nm.map((t, j) => `<tspan x="${p.x}"${j ? ' dy="7"' : ""}>${esc(t)}${j < nm.length - 1 ? " " : ""}</tspan>`).join("")}</text></g>`; }).join(""); };
+  const node = (k, val, unit, sub) => { const [x, y, col, name] = N[k], nt = efTeile(d, k).length; if (k === so) return kug(k);
     return `<g class="ef-n${nt ? " ef-t" : ""}" data-ef="${k}"${nt ? ` data-pa="eft" data-k="${k}"` : ""}><circle cx="${x}" cy="${y}" r="39" fill="var(--ef-bg)" stroke="var(--ef-rim)"/>`
       + (nt ? `<circle cx="${x + 28}" cy="${y - 28}" r="7" fill="${col}"/><text x="${x + 28}" y="${y - 25.3}" text-anchor="middle" class="ef-tb">${nt}</text>` : "")
       + `<g transform="translate(${x - 7.5} ${y - 35}) scale(.625)">${EF_ICO[k]}</g>`
@@ -2556,21 +2594,23 @@ function efSvg(d) {
   const foot = [["evpct", "Eigenver.", 0, "%", "#f5a623", 26], ["autpct", "Autarkie", 0, "%", "#3fbf8f", 130], ["einsp", "Einspeisung", 1, "kWh", "#4a9af5", 230], ["bezug", "Netzbezug", 1, "kWh", "var(--ef-nz)", 357]].filter(q => has(q[0]));
   const vbLine = [...P].sort((x, y) => !!efVbVal(x.q) - !!efVbVal(y.q)).map(({ q, s, a }) => { const w = efVbVal(q) || 0;   // ruhende Striche zuunterst
     return `<path class="${w ? "ef-l on" + (w < 0 ? " rev" : "") : "ef-l0"}" data-ef="vbl:${esc(q.id)}" d="M${a[0]} ${a[1]}L${s.x} ${s.y}"${w ? ` stroke="${EF_VB_COL}"` : ""}/>`; }).join("");
-  const vbNode = P.map(({ q, s }) => { const w = efVbVal(q), sc = +(s.r / 18.5).toFixed(3), nm = q.name.length > 10 ? q.name.slice(0, 9) + "…" : q.name;
+  const vbNode = P.map(({ q, s }) => { const w = efVbVal(q), sc = +(s.r / 18.5).toFixed(3), nm = q.name.length > 10 && !q.grp ? q.name.slice(0, 9) + "…" : q.name;
     const t = efW(w);
-    return `<g class="ef-n ef-vb" data-ef="vb:${esc(q.id)}" data-an="${q.an}"><title>${esc(q.name)}</title><circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="var(--ef-bg)" stroke="var(--ef-rim)"/>`
+    const tap = q.grp ? ` data-pa="eft" data-k="${esc(q.id)}"` : q.og ? ` data-pa="eft" data-k="" style="--dx:${(q.og === "wb" ? 312 : 194) - s.x}px;--dy:0px"` : "";   // Sammelkugel teilen / wieder zusammenfügen
+    return `<g class="ef-n ef-vb${tap ? " ef-t" : ""}${q.og ? pop : ""}" data-ef="vb:${esc(q.id)}" data-an="${q.an}"${tap}><title>${esc(q.name)}</title><circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="var(--ef-bg)" stroke="var(--ef-rim)"/>`
+      + (q.grp ? `<circle cx="${s.x + s.r - 2}" cy="${s.y - s.r + 2}" r="5.5" fill="${EF_VB_COL}"/><text x="${s.x + s.r - 2}" y="${s.y - s.r + 4.4}" text-anchor="middle" class="ef-tb" style="font-size:6.5px">${q.grp}</text>` : "")
       + `<g transform="translate(${+(s.x - 12 * sc).toFixed(2)} ${+(s.y - 12 * sc).toFixed(2)}) scale(${sc})">${EF_VICO[q.icon] || EF_VICO.steckdose}</g>`
       + `<text x="${s.x}" y="${s.y + s.r + 9}" text-anchor="middle" class="ef-vv" fill="${EF_VB_COL}">${esc(t)}</text>`
       + (s.nm ? `<text x="${s.x}" y="${s.y + s.r + 17}" text-anchor="middle" class="ef-vn">${esc(nm)}</text>` : "") + `</g>`; }).join("");
-  const tl = d.open && N[d.open] ? efTeile(d, d.open) : [], th = 38 + 13 * tl.length, ty = Math.round((244 - th) / 2), tv = tl.map(efVbVal).filter(w => w !== undefined);
+  const tl = !spiel && d.open && N[d.open] ? efTeile(d, d.open) : [], th = 38 + 13 * tl.length, ty = Math.round((244 - th) / 2), tv = tl.map(efVbVal).filter(w => w !== undefined);
   const panel = !tl.length ? "" : `<g class="ef-tp" data-pa="eft" data-k=""><rect x="0" y="0" width="507" height="244" fill="var(--ef-ft)" opacity=".6"/>`
     + `<rect x="148" y="${ty}" width="211" height="${th}" rx="6" fill="var(--ef-bg)" stroke="var(--ef-rim)"/>`
     + `<text x="158" y="${ty + 13}" class="ef-c">${esc(N[d.open][3].toUpperCase())} – EINZELWERTE</text><path d="M343 ${ty + 6}l6 6m0 -6l-6 6" stroke="currentColor" opacity=".6" fill="none"/>`
     + tl.map((q, i) => `<text x="158" y="${ty + 28 + 13 * i}" class="ef-tn" data-ef="teil:${d.open}:${i}">${esc(q.name.length > 28 ? q.name.slice(0, 27) + "…" : q.name)}<tspan x="349" text-anchor="end" class="ef-tv" fill="${N[d.open][2]}">${esc(efW(efVbVal(q)))}</tspan></text>`).join("")
     + `<path d="M158 ${ty + 20 + 13 * tl.length}H349" stroke="var(--ef-rim)"/><text x="158" y="${ty + 31 + 13 * tl.length}" class="ef-tn" data-ef="teilsum">Summe<tspan x="349" text-anchor="end" class="ef-tv">${esc(efW(tv.length ? tv.reduce((a, w) => a + w, 0) : undefined))}</tspan></text></g>`;
   return `<svg class="ef" viewBox="0 0 507 273" role="img" aria-label="Energiefluss">` + vbLine
-    + line("pvHaus", 253, 84, 253, 157, "#f5a623") + line("batHaus", 132, 132, 216, 184, "#3fbf8f", f.batRev) + line("netzHaus", 375, 132, 290, 184, "var(--ef-nz)")
-    + line("pvNetz", 288, 62, 377, 103, "#f5a623")
+    + (so ? flow("pvHaus", "pv", "haus", "#f5a623") + flow("batHaus", "bat", "haus", "#3fbf8f", f.batRev) + flow("netzHaus", "netz", "haus", "var(--ef-nz)") + flow("pvNetz", "pv", "netz", "#f5a623", false, true) : line("pvHaus", 253, 84, 253, 157, "#f5a623") + line("batHaus", 132, 132, 216, 184, "#3fbf8f", f.batRev) + line("netzHaus", 375, 132, 290, 184, "var(--ef-nz)")
+    + line("pvNetz", 288, 62, 377, 103, "#f5a623"))
     + node("pv", v("pv"), "W", has("pvkwh") ? efNum(v("pvkwh"), 1) + " kWh" : "")
     + node("bat", abs(v("bat")), f.bs === 1 ? "W lädt" : f.bs === 2 ? "W entlädt" : "W", has("soc") ? efNum(v("soc"), 0) + " %" : "")
     + node("netz", abs(netz), "W", netz === undefined || netz === 0 ? "" : netz > 0 ? "Einspeisung" : "Bezug")
@@ -2594,7 +2634,7 @@ PLUGIN_TYPES["180-1"] = {
   tags: d => [...Object.values(d.ko), ...(d.vb || []).map(q => q.ko), ...(d.teil || []).map(q => q.ko)],
   html: d => efHas(d) ? `<div class="ef-box">${efSvg(d)}</div>` : '<div class="note">Warte auf Daten – dem Plugin ist kein KO zugewiesen.</div>',
   htmlClassic: d => `<div class="ef-box ef-cl">${efHas(d) ? efSvg(d) : '<div class="cl-qmsg"><span>Warte auf Daten</span></div>'}</div>`,
-  act: (d, b) => { if (b.dataset.pa === "eft") d.open = d.open === b.dataset.k ? "" : b.dataset.k; }   // Einzelwerte eines Kreises ein-/ausblenden
+  act: (d, b) => { if (b.dataset.pa === "eft") { d.open = d.open === b.dataset.k ? "" : b.dataset.k; d.popT = Date.now(); } }   // Einzelwerte eines Kreises bzw. eine Sammelkugel auf-/zuklappen
 };
 PLUGIN_TYPES[EF_PLUG] = { ...PLUGIN_TYPES["180-1"],
   read: x => { const ko = {}, vb = [], teil = [], tag = e => resKo((e.getAttribute("tag") || "").trim()); EF_KEYS.forEach(k => { ko[k] = ""; });
@@ -3102,6 +3142,8 @@ function buildNav() {
     <label class="startsel">Stil Klassisch <select id="clstylesel"><option value="modern">Modern</option><option value="gira" ${CLSTYLE === "gira" ? "selected" : ""}>Gira</option></select></label>`;
   h += `<label class="startsel">Gira-Addins <select id="addinsel"><option value="0">aus</option><option value="1" ${ADDINS_ON ? "selected" : ""}>ein (Versuch: Wetter)</option></select></label>`;
   h += `<label class="startsel">Ressourcen, Energiefluss <select id="reszsel"><option value="0">echte Werte</option><option value="1" ${RES_DEMO ? "selected" : ""}>Zufallswerte (Test, alle 5 s)</option></select></label>`;
+  h += `<label class="startsel">Energiefluss <select id="efartsel"><option value="spiel">Verspielt (Kugeln teilen sich)</option><option value="tech" ${EF_ART === "tech" ? "selected" : ""}>Technisch (Feld mit Einzelwerten)</option></select></label>`;
+  { const sb = document.querySelector('#cl-sys [data-sysa="efart"]'); if (sb) sb.textContent = "Energiefluss: " + (EF_ART === "tech" ? "technisch" : "verspielt"); }
   $("cl-ver").textContent = "QC-Client v" + VERSION;                                   // v0.9.47: Version auch im System-Menü der klassischen Ansicht
   { const cp = store.get("camproxy", null), sb = document.querySelector('#cl-sys [data-sysa="camproxy"]'); if (sb) sb.textContent = "Kamera-Proxy: " + (cp && cp.url ? "eingerichtet" : "aus");
     h += `<button class="cpbtn" id="cpbtn" type="button">Kamera-Proxy: ${cp && cp.url ? "eingerichtet" : "aus"}</button>`; }
@@ -3117,6 +3159,7 @@ function buildNav() {
   $("cpbtn").onclick = camProxyDlg;
   $("addinsel").onchange = e => addinSwitch(e.target.value === "1");
   $("reszsel").onchange = e => resDemo(e.target.value === "1");
+  $("efartsel").onchange = e => efSetArt(e.target.value);
   $("clstylesel").onchange = e => clSetStyle(e.target.value);
   $("uisel").onchange = e => clSetUi(e.target.value);
 }
@@ -3795,6 +3838,7 @@ $("classic").addEventListener("click", e => {
     if (t.dataset.sysa === "log") { $("cl-log").querySelector("pre").textContent = $("log").textContent; $("cl-log").classList.remove("hidden"); }
     if (t.dataset.sysa === "logclose") $("cl-log").classList.add("hidden");
     if (t.dataset.sysa === "camproxy") camProxyDlg();                                    // v0.9.44: auch ohne Wechsel nach „Modern“
+    if (t.dataset.sysa === "efart") efSetArt(EF_ART === "tech" ? "spiel" : "tech");       // v0.9.64
     if (t.dataset.sysa === "resdemo") resDemo(!RES_DEMO);                               // v0.9.56
     if (t.dataset.sysa === "copy") $("logcopy").click();
     if (t.dataset.sysa === "logout") { clShow(false); $("logout").click(); } }

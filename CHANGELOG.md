@@ -3,6 +3,14 @@
 Alle Versionen, neueste oben. Ausführlich mit Bildern: [changelog.html](changelog.html).
 Datum = Veröffentlichung auf GitHub; Versionen vor 0.5.5 entstanden vor dem Repo.
 
+## 0.9.64 – Energiefluss: Kugeln teilen sich („Verspielt“), Uhr-Symbol grün
+- **Neu:** Der Energiefluss hat zwei Darstellungen, wählbar in den Einstellungen („Energiefluss“) und im System-Menü der klassischen Ansicht, je Gerät gespeichert:
+  - **Verspielt** (Vorgabe): Ein Tipp auf einen Kreis mit Zahl teilt ihn in kleine Kugeln – jede mit Wert, Name und eigener Flusslinie zum Haus. Verbraucher, die im Weg stehen, rücken nach außen; ein Tipp auf eine der Kugeln fügt den Kreis wieder zusammen. Am Haus stehen ab zwei Wallboxen bzw. zwei sonstigen Verbrauchern **Sammelkugeln** „Wallboxen“ (rechts) und „Verbraucher“ (links) mit Summe und Anzahl; ein Tipp teilt sie in die einzelnen.
+  - **Technisch**: wie in 0.9.63 – ein Feld mit den Einzelwerten und der Summe, alle Verbraucher einzeln.
+- An den Einstellungen des Plugins 99-3 ändert sich nichts; es bleibt bei höchstens acht Einzelwerten je Kreis (bis fünf stehen bequem nebeneinander).
+- **Behoben:** In „Klassisch“ blieb das Uhr-Symbol in der dritten Spalte rot, obwohl die Zeitschaltuhr aktiv war. Jetzt ist es dann grün (rot = Uhr aus).
+- Geprüft am nachgebauten HomeServer und mit Zufallswerten. Am echten HomeServer noch nicht ausprobiert.
+
 ## 0.9.63 – Energiefluss: Einzelwerte hinter einem Kreis
 - **Neu (Wunsch aus dem Forum):** Hinter jedem der vier großen Kreise (PV-Anlage, Speicher, Netz, Haus) können **Einzelwerte** liegen – zum Beispiel drei Wechselrichter hinter „PV-Anlage“. Der Kreis zeigt weiter die Gesamtleistung aus seinem KO und trägt dann eine kleine Zahl mit der Anzahl; ein Tipp darauf blendet die Einzelwerte mit Name, Leistung und Summe ein, ein weiterer Tipp schließt sie. Höchstens acht je Kreis.
 - Die Einzelwerte stehen in den Einstellungen des eigenen Plugins 99-3 als `<teil an="pv|bat|netz|haus" name tag="KO-ID"/>`; ohne Namen heißen sie „Wechselrichter n“, „Speicher n“, „Zähler n“ bzw. „Bereich n“. Die Verbraucher waren schon frei: gezeigt wird jeder mit KO, bis zu 17, mit eigenem Namen, Symbol und Anschlusspunkt.

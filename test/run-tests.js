@@ -317,6 +317,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
   ok("Uhr-Symbol öffnet die Zeitschaltuhr", await pg.evaluate(() => tdlg.open && ttitle.textContent.includes("Taster Flanke 0")));
   await pg.evaluate(u => WSI.onmessage({ data: "12|" + u + "|1" }), UHR); await pg.waitForTimeout(100);
   ok("Uhr aktiv färbt das Symbol", await rowTxt("Taster Flanke 0").locator(".cl-uhr.on").count() === 1);
+  ok("Uhr aktiv ist auch in der dritten Spalte grün, nicht rot (v0.9.64)", await pg.evaluate(() => getComputedStyle(document.querySelector("#cl-left .cl-uhr.p3.on")).color === "rgb(143, 176, 0)"));
   await pg.evaluate(u => { WSI.onmessage({ data: "12|" + u + "|0" }); tdlg.close(); }, UHR); await pg.waitForTimeout(100);
   console.log("Vorlagen-Aktionen navigation und plugin (v0.9.47)");
   ok("Projekt-Zwischenspeicher unter neuem Schlüssel, alter entfernt", await pg.evaluate(() => !!store.get("proj5.hs.test", null) && store.get("proj4.hs.test", null) === null && !!Object.values(P_.els).find(e => e.tpl === "90-1").ids.slot_room));
@@ -595,6 +596,7 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
     // v0.9.63 Einzelwerte hinter einem Hauptkreis (<teil an name tag>)
     ok("Einzelwerte: PV und Speicher sind antippbar und zeigen die Anzahl, Haus und Netz nicht; der ohne KO zählt nicht", await pv.evaluate(() => { const g = k => document.querySelector(`#pbody [data-ef="${k}"]`), d = HOSTS.find(h => h.plug && h.plug.cls === "99-3").plug.data;
       return g("pv").dataset.pa === "eft" && g("pv").querySelector(".ef-tb").textContent === "2" && g("bat").querySelector(".ef-tb").textContent === "1" && !g("haus").dataset.pa && !g("netz").querySelector(".ef-tb") && d.teil.length === 3 && !document.querySelector("#pbody .ef-tp"); }));
+    await pv.selectOption("#efartsel", "tech");                                             // v0.9.64: das Feld gibt es in der Darstellung „Technisch“
     await pv.click('#pbody [data-ef="pv"]'); await pv.waitForTimeout(300);
     const tp = async () => (await pv.locator("#pbody .ef-tp").count()) ? (await pv.textContent("#pbody .ef-tp")).replace(/\s+/g, " ") : "";
     ok("Tipp auf PV: Einzelwerte mit Namen (Vorgabe „Wechselrichter 2“), Leistung und Summe", (await tp()).includes("PV-ANLAGE – EINZELWERTE") && (await tp()).includes("Wechselrichter Süd3000 W") && (await tp()).includes("Wechselrichter 21500 W") && (await tp()).includes("Summe4500 W") && !(await tp()).includes("ohne KO"), await tp());
@@ -617,6 +619,32 @@ const card = (pg, n) => pg.locator(".card", { hasText: n }).first();
       return t.length === 3 && Math.abs(t.reduce((a, q) => a + q.val, 0) - f.pv) <= 3; }), z4);
     await pv.selectOption("#reszsel", "0"); await pv.waitForTimeout(300); const z3 = (await pv.textContent("#pbody")).replace(/\s+/g, " ");
     ok("Zufallswerte aus: echte Werte, keine Beispiel-Verbraucher, nichts gesendet", !z3.includes("ZUFALLSWERTE") && !z3.includes("EINZELWERTE") && z3.includes("PV-ANLAGE4200W") && await pv.locator("#pbody .ef-vb").count() === 0 && (await sent(pv)).length === 0 && await pv.evaluate(() => V.get("9801") === "4200.0"), z3.slice(0, 200));
+    // v0.9.64 Darstellung „Verspielt“: Kreis teilt sich in Kugeln, Sammelkugeln am Haus
+    await pv.selectOption("#efartsel", "spiel"); await pv.evaluate(() => openPlugin("Energiefluss Verbraucher", "954")); await pv.waitForTimeout(900);
+    const ld = k => pv.getAttribute(`#pbody [data-ef="${k}"]`, "d");
+    ok("Verspielt ist gespeichert; zugeklappt wie bisher: Kreis mit Anzahl, Heizstab auf dem inneren Platz", await pv.evaluate(() => store.get("efart", "") === "spiel" && EF_ART === "spiel") && (await ld("vbl:s1")).endsWith("L312 24") && await pv.locator("#pbody .ef-tk").count() === 0);
+    await pv.click('#pbody [data-ef="pv"]'); await pv.waitForTimeout(600);
+    ok("Verspielt: Tipp auf PV teilt den Kreis in zwei Kugeln mit Wert und Name, kein Feld", await pv.locator("#pbody .ef-tk").count() === 2 && await pv.locator("#pbody .ef-tp").count() === 0 && await pv.locator('#pbody [data-ef="pv"]').count() === 0
+      && (await nt("teil:pv:0")).includes("3000W") && (await nt("teil:pv:0")).includes("Wechselrichter Süd") && (await nt("teil:pv:1")).includes("2000W"), await nt("teil:pv:0"));
+    ok("jede Teilkugel mit Leistung hat ihre eigene Linie zum Haus; der Heizstab weicht nach außen aus", await pv.locator('#pbody path[data-ef^="pvHaus"]').count() === 2 && (await ld("pvHaus")).startsWith("M22") && (await ld("vbl:s1")).endsWith("L352 24"), await ld("pvHaus") + " | " + await ld("vbl:s1"));
+    await pv.evaluate(() => WSI.onmessage({ data: "1|9852|0.0|0" })); await pv.waitForTimeout(300);
+    ok("KO-Telegramm: Teilkugel ohne Leistung verliert ihre Linie, bleibt aber stehen", await pv.locator('#pbody path[data-ef^="pvHaus"]').count() === 1 && (await nt("teil:pv:1")).includes("0W") && await pv.locator("#pbody .ef-tk").count() === 2);
+    await pv.click('#pbody [data-ef="teil:pv:1"]'); await pv.waitForTimeout(400);
+    ok("Tipp auf eine Teilkugel fügt den Kreis wieder zusammen", await pv.locator("#pbody .ef-tk").count() === 0 && (await nt("pv")).includes("PV-ANLAGE5000W") && (await ld("vbl:s1")).endsWith("L312 24") && (await ld("pvHaus")) === "M253 84L253 157");
+    ok("eine Wallbox und ein Verbraucher am Haus: keine Sammelkugel", await pv.locator('#pbody [data-ef^="vb:g:"]').count() === 0 && await pv.locator("#pbody .ef-vb").count() === 4);
+    await pv.selectOption("#reszsel", "1"); await pv.evaluate(() => { openPlugin("Energiefluss", "953"); }); await pv.waitForTimeout(900); await pv.evaluate(() => efDemoTick()); await pv.waitForTimeout(200);
+    ok("Sammelkugeln: zwei Wallboxen und fünf Verbraucher je als eine Kugel mit Anzahl und Summe", await pv.locator("#pbody .ef-vb").count() === 4 && (await nt("vb:g:wb")).includes("Wallboxen") && await pv.evaluate(() => { const f = HOSTS.find(h => h.plug && h.plug.cls === "180-1").plug.data.fake, g = k => document.querySelector(`#pbody [data-ef="vb:g:${k}"]`);
+      const sum = f.vb.filter(q => q.an === "haus" && efIsWb(q)).reduce((a, q) => a + q.val, 0);
+      return g("wb").querySelector(".ef-tb").textContent === "2" && g("vb").querySelector(".ef-tb").textContent === "5" && g("wb").querySelector(".ef-vv").textContent === efW(sum) && +g("wb").querySelector("circle").getAttribute("cx") > 253 && +g("vb").querySelector("circle").getAttribute("cx") < 253; }), await nt("vb:g:wb"));
+    await pv.click('#pbody [data-ef="vb:g:vb"]'); await pv.waitForTimeout(600);
+    ok("Tipp auf „Verbraucher“ teilt die Kugel in die fünf einzelnen, alle links; die Wallboxen bleiben zusammen", await pv.locator("#pbody .ef-vb").count() === 8 && await pv.locator('#pbody [data-ef="vb:g:vb"]').count() === 0 && await pv.locator('#pbody [data-ef="vb:g:wb"]').count() === 1
+      && await pv.evaluate(() => ["wm", "sm", "tr", "s1", "s2"].every(k => +document.querySelector(`#pbody [data-ef="vb:${k}"] circle`).getAttribute("cx") < 253)));
+    await pv.click('#pbody [data-ef="vb:sm"]'); await pv.waitForTimeout(400);
+    ok("Tipp auf einen der einzelnen fügt sie wieder zusammen", await pv.locator("#pbody .ef-vb").count() === 4 && await pv.locator('#pbody [data-ef="vb:g:vb"]').count() === 1);
+    await pv.click('#pbody [data-ef="vb:g:wb"]'); await pv.waitForTimeout(300); await pv.selectOption("#efartsel", "tech"); await pv.waitForTimeout(300);
+    ok("Umschalten auf „Technisch“: alle neun einzeln, nichts aufgeklappt, gespeichert", await pv.locator("#pbody .ef-vb").count() === 9 && await pv.locator('#pbody [data-ef^="vb:g:"]').count() === 0 && await pv.evaluate(() => store.get("efart", "") === "tech" && HOSTS.every(h => !h.plug || !h.plug.data || !h.plug.data.open)));
+    await pv.selectOption("#efartsel", "spiel"); await pv.selectOption("#reszsel", "0"); await pv.waitForTimeout(300);
+    ok("Verspielt: nichts gesendet", (await sent(pv)).length === 0);
     ok("keine Seitenfehler", errs.length === 0, JSON.stringify(errs)); await pv.close(); }
 
   console.log("Klassisch am Handy größer (v0.9.62)");
